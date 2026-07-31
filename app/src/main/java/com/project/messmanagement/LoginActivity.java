@@ -1,9 +1,11 @@
 package com.project.messmanagement;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -12,6 +14,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText emailInput, passwordInput;
     private Button btnAdmin, btnMember, btnBus, btnSignIn;
+    private TextView tvSignUpLink;
     private String selectedRole = "Admin"; // Default role
 
     @Override
@@ -26,11 +29,18 @@ public class LoginActivity extends AppCompatActivity {
         btnMember = findViewById(R.id.btn_member);
         btnBus = findViewById(R.id.btn_bus);
         btnSignIn = findViewById(R.id.btn_signin);
+        tvSignUpLink = findViewById(R.id.tv_signup_link);
 
         // Role Selection Listeners
         btnAdmin.setOnClickListener(v -> selectRole("Admin"));
         btnMember.setOnClickListener(v -> selectRole("Member"));
         btnBus.setOnClickListener(v -> selectRole("Bus"));
+
+        // Sign Up Link Listener
+        tvSignUpLink.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
+            startActivity(intent);
+        });
 
         // Sign In Listener
         btnSignIn.setOnClickListener(v -> {

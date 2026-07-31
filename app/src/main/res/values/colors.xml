@@ -17,5 +17,7 @@
     <color name="text_dark_blue">#5a8aaa</color>
     <color name="button_primary">#FFA500</color>
     <color name="button_inactive">#1f5573</color>
+    <color name="progress_active">#FFA500</color>
+    <color name="progress_inactive">#5a8aaa</color>
     <color name="border_color">#3d8ab8</color>
 </resources>

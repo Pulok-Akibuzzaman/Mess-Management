@@ -30,6 +30,13 @@
             android:theme="@style/Theme.MessManagement"
             android:windowSoftInputMode="adjustResize">
         </activity>
+
+        <activity
+            android:name=".SignupActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MessManagement"
+            android:windowSoftInputMode="adjustResize">
+        </activity>
     </application>
 
 </manifest>

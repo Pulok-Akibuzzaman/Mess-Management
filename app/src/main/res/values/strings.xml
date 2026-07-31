@@ -13,4 +13,21 @@
     <string name="role_bus">Bus</string>
     <string name="btn_sign_in">Sign In</string>
     <string name="footer_text">MessMate v1.0 - Secure &amp; Reliable</string>
+
+    <!-- Signup Strings -->
+    <string name="signup_title">Create Account</string>
+    <string name="signup_subtitle">Join your mess community</string>
+    <string name="step_1_title">STEP 1 — PERSONAL INFO</string>
+    <string name="label_full_name">FULL NAME</string>
+    <string name="label_email">EMAIL</string>
+    <string name="label_phone">PHONE</string>
+    <string name="placeholder_full_name">e.g. Arif Hossain</string>
+    <string name="placeholder_email">arif@email.com</string>
+    <string name="placeholder_phone">017XXXXXXXX</string>
+    <string name="btn_continue">Continue</string>
+    <string name="already_have_account">Already have an account? </string>
+    <string name="sign_in_link">Sign In</string>
+    <string name="chevron_right">&gt;</string>
+    <string name="dont_have_account">Don\'t have an account? </string>
+    <string name="sign_up_link">Sign Up</string>
 </resources>
