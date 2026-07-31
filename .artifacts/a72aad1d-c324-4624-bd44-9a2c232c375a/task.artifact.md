@@ -1,0 +1,12 @@
+- [x] Update `colors.xml` with MessMate palette
+- [x] Create drawable shapes:
+    - [x] `logo_background.xml`
+    - [x] `form_background.xml`
+    - [x] `input_background.xml`
+    - [x] `button_admin_active.xml`
+    - [x] `button_inactive.xml`
+    - [x] `button_signin.xml`
+- [x] Create `activity_login.xml` layout
+- [x] Verify XML syntax and references
+- [x] Create `LoginActivity.java`
+- [x] Update `AndroidManifest.xml`

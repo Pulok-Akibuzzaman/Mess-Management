@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Mess Management</string>
+
+    <!-- MessMate Strings -->
+    <string name="logo_text">49</string>
+    <string name="title_messmate">MessMate</string>
+    <string name="subtitle_messmate">Hostel mess management</string>
+    <string name="email_placeholder">admin@mess.com</string>
+    <string name="password_placeholder">••••••••</string>
+    <string name="login_as">LOGIN AS</string>
+    <string name="role_admin">Admin</string>
+    <string name="role_member">Member</string>
+    <string name="role_bus">Bus</string>
+    <string name="btn_sign_in">Sign In</string>
+    <string name="footer_text">MessMate v1.0 - Secure &amp; Reliable</string>
+</resources>
