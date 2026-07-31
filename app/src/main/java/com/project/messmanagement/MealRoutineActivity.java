@@ -19,13 +19,22 @@ public class MealRoutineActivity extends AppCompatActivity {
         
         // Activity logic for managing meal statuses can be added here
 
-        btn_home = findViewById(R.id.btn_home_layout); // pending
+        btn_home = findViewById(R.id.btn_home_layout);
         btn_member = findViewById(R.id.btn_member_layout); //pending
 
         btn_meals = findViewById(R.id.btn_meals_layout);
         btn_bazar = findViewById(R.id.btn_bazar_layout);
         btn_cash = findViewById(R.id.btn_cash_layout);
         btn_more = findViewById(R.id.btn_more_layout);
+
+        btn_home.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(MealRoutineActivity.this, MainActivity.class);
+                startActivity(i);
+                finish();
+            }
+        });
 
         btn_meals.setOnClickListener(new View.OnClickListener() {
             @Override
