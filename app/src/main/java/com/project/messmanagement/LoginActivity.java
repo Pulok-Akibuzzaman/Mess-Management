@@ -2,7 +2,6 @@ package com.project.messmanagement;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -15,14 +14,29 @@ public class LoginActivity extends AppCompatActivity {
     private EditText emailInput, passwordInput;
     private Button btnAdmin, btnMember, btnBus, btnSignIn;
     private TextView tvSignUpLink;
-    private String selectedRole = "Admin"; // Default role
+    private String selectedRole = "Admin";
+    private SessionManager sessionManager;
+    private AppDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Initialize Views
+        sessionManager = new SessionManager(this);
+        database = AppDatabase.getDatabase(this);
+
+        initializeViews();
+
+        if (sessionManager.isLoggedIn()) {
+            navigateToHome();
+            return;
+        }
+
+        setupListeners();
+    }
+
+    private void initializeViews() {
         emailInput = findViewById(R.id.email_input);
         passwordInput = findViewById(R.id.password_input);
         btnAdmin = findViewById(R.id.btn_admin);
@@ -31,40 +45,59 @@ public class LoginActivity extends AppCompatActivity {
         btnSignIn = findViewById(R.id.btn_signin);
         tvSignUpLink = findViewById(R.id.tv_signup_link);
 
-        // Role Selection Listeners
+        selectRole("Admin");
+    }
+
+    private void setupListeners() {
         btnAdmin.setOnClickListener(v -> selectRole("Admin"));
         btnMember.setOnClickListener(v -> selectRole("Member"));
         btnBus.setOnClickListener(v -> selectRole("Bus"));
 
-        // Sign Up Link Listener
         tvSignUpLink.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
             startActivity(intent);
         });
 
-        // Sign In Listener
-        btnSignIn.setOnClickListener(v -> {
-            String email = emailInput.getText().toString();
-            String password = passwordInput.getText().toString();
+        btnSignIn.setOnClickListener(v -> performLogin());
+    }
 
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Logging in as " + selectedRole, Toast.LENGTH_SHORT).show();
-                // TODO: Implement actual login logic
-            }
-        });
+    private void performLogin() {
+        String email = emailInput.getText().toString().trim();
+        String password = passwordInput.getText().toString().trim();
+
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new Thread(() -> {
+            User user = database.userDao().loginUser(email, password);
+            runOnUiThread(() -> {
+                if (user != null) {
+                    sessionManager.createLoginSession(user.id, user.email, user.name, user.role);
+                    Toast.makeText(LoginActivity.this, "Login successful! Welcome " + user.name, Toast.LENGTH_SHORT).show();
+                    navigateToHome();
+                } else {
+                    Toast.makeText(LoginActivity.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }).start();
+    }
+
+    private void navigateToHome() {
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void selectRole(String role) {
         selectedRole = role;
 
-        // Reset all buttons to inactive
         resetButtonStyle(btnAdmin);
         resetButtonStyle(btnMember);
         resetButtonStyle(btnBus);
 
-        // Set selected button to active
         if (role.equals("Admin")) {
             setActiveButtonStyle(btnAdmin);
         } else if (role.equals("Member")) {
@@ -75,12 +108,14 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setActiveButtonStyle(Button button) {
-        button.setBackground(ContextCompat.getDrawable(this, R.drawable.button_admin_active));
-        button.setTextColor(ContextCompat.getColor(this, R.color.text_white));
+        button.setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent));
+        button.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.nav_active));
+        button.setTextColor(ContextCompat.getColor(this, android.R.color.white));
     }
 
     private void resetButtonStyle(Button button) {
-        button.setBackground(ContextCompat.getDrawable(this, R.drawable.button_inactive));
+        button.setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent));
+        button.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.input_bg));
         button.setTextColor(ContextCompat.getColor(this, R.color.text_light_blue));
     }
 }

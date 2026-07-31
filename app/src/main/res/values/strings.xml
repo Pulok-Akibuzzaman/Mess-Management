@@ -24,10 +24,80 @@
     <string name="placeholder_full_name">e.g. Arif Hossain</string>
     <string name="placeholder_email">arif@email.com</string>
     <string name="placeholder_phone">017XXXXXXXX</string>
+    <string name="placeholder_password">Enter password (min 4 chars)</string>
     <string name="btn_continue">Continue</string>
     <string name="already_have_account">Already have an account? </string>
     <string name="sign_in_link">Sign In</string>
     <string name="chevron_right">&gt;</string>
     <string name="dont_have_account">Don\'t have an account? </string>
     <string name="sign_up_link">Sign Up</string>
+    <!-- Bazar Strings -->
+    <string name="title_bazar">Bazar</string>
+    <string name="label_july_total">JULY TOTAL BAZAR</string>
+    <string name="total_amount">৳4,900</string>
+    <string name="purchases_count">5 purchases this month</string>
+    <string name="header_history">PURCHASE HISTORY</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_members">Members</string>
+    <string name="nav_meals">Meals</string>
+    <string name="nav_bazar">Bazar</string>
+    <string name="nav_cash">Cash</string>
+    <string name="nav_more">More</string>
+
+    <!-- Cash Ledger Strings -->
+    <string name="title_cash_ledger">Cash Ledger</string>
+    <string name="label_current_balance">CURRENT BALANCE</string>
+    <string name="balance_amount">৳4,250</string>
+    <string name="incoming_amount">৳10,200 in</string>
+    <string name="outgoing_amount">৳5,950 out</string>
+    <string name="header_transactions">TRANSACTIONS</string>
+
+    <!-- Meal Routine Strings -->
+    <string name="title_meal_routine">Meal Routine</string>
+    <string name="btn_july_2025">July 2025</string>
+    <string name="alert_cutoff_title">Tonight\'s cut-off: 8:00 PM</string>
+    <string name="alert_cutoff_subtitle">Confirm your dinner before the cut-off time.</string>
+    <string name="section_today">TODAY — SATURDAY</string>
+    <string name="label_breakfast">Breakfast</string>
+    <string name="label_lunch">Lunch</string>
+    <string name="label_dinner">Dinner</string>
+    <string name="status_on">On</string>
+    <string name="status_off">Off</string>
+    <string name="section_weekly">WEEKLY OVERVIEW</string>
+    <string name="col_meal">Meal</string>
+    <string name="row_break">Break</string>
+    <string name="row_lunch">Lunch</string>
+    <string name="row_dinner">Dinne</string>
+    <string name="day_sat">Sat</string>
+    <string name="day_sun">Sun</string>
+    <string name="day_mon">Mon</string>
+    <string name="day_tue">Tue</string>
+    <string name="day_wed">Wed</string>
+    <string name="day_thu">Thu</string>
+    <string name="day_fri">Fri</string>
+    <string name="section_summary">MY MONTH SUMMARY</string>
+    <string name="count_breakfasts">28</string>
+    <string name="label_breakfasts">Breakfasts</string>
+    <string name="count_lunches">25</string>
+    <string name="label_lunches">Lunches</string>
+    <string name="count_dinners">24</string>
+    <string name="label_dinners">Dinners</string>
+
+    <!-- All Features Strings -->
+    <string name="title_all_features">All Features</string>
+    <string name="feat_utilities">Utilities</string>
+    <string name="feat_equipment">Equipment</string>
+    <string name="feat_notices">Notices</string>
+    <string name="feat_loans">Loans</string>
+    <string name="feat_polls">Polls</string>
+    <string name="feat_complaints">Complaints</string>
+    <string name="feat_sos">SOS</string>
+    <string name="feat_room_service">Room Service</string>
+    <string name="feat_bua_mgmt">Bua Mgmt</string>
+    <string name="feat_occasions">Occasions</string>
+    <string name="feat_monthly_report">Monthly Report</string>
+    <string name="feat_guest_meals">Guest Meals</string>
+    <string name="feat_bt_chat">BT Chat</string>
+    <string name="section_quick_stats">QUICK STATS — JULY</string>
+    <string name="btn_sign_out">Sign Out</string>
 </resources>

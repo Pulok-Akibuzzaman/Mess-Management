@@ -37,6 +37,34 @@
             android:theme="@style/Theme.MessManagement"
             android:windowSoftInputMode="adjustResize">
         </activity>
+
+        <activity
+            android:name=".BazarActivity"
+            android:exported="false"
+            android:label="@string/title_bazar"
+            android:theme="@style/Theme.MessManagement">
+        </activity>
+
+        <activity
+            android:name=".CashLedgerActivity"
+            android:exported="false"
+            android:label="@string/title_cash_ledger"
+            android:theme="@style/Theme.MessManagement">
+        </activity>
+
+        <activity
+            android:name=".MealRoutineActivity"
+            android:exported="false"
+            android:label="@string/title_meal_routine"
+            android:theme="@style/Theme.MessManagement">
+        </activity>
+
+        <activity
+            android:name=".AllFeaturesActivity"
+            android:exported="false"
+            android:label="@string/title_all_features"
+            android:theme="@style/Theme.MessManagement">
+        </activity>
     </application>
 
 </manifest>

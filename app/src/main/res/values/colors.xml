@@ -20,4 +20,44 @@
     <color name="progress_active">#FFA500</color>
     <color name="progress_inactive">#5a8aaa</color>
     <color name="border_color">#3d8ab8</color>
+    <!-- Bazar Colors -->
+    <color name="bazar_bg">#F5F5F5</color>
+    <color name="bazar_card_start">#1a7a96</color>
+    <color name="bazar_card_end">#2b8ab0</color>
+    <color name="text_dark">#1a1a1a</color>
+    <color name="text_gray">#808080</color>
+    <color name="icon_bg_light">#e8f4f8</color>
+    <color name="nav_active">#1a7a96</color>
+    <color name="nav_inactive">#a0a0a0</color>
+    <color name="fab_bg">#1a7a96</color>
+
+    <!-- Cash Ledger Colors -->
+    <color name="amount_positive">#4CAF50</color>
+    <color name="amount_negative">#F44336</color>
+    <color name="icon_bg_incoming">#e8f5e9</color>
+    <color name="icon_bg_outgoing">#ffebee</color>
+
+    <!-- Meal Routine Colors -->
+    <color name="alert_bg">#FFF8E1</color>
+    <color name="meal_card_active">#1a7a96</color>
+    <color name="meal_card_inactive_bg">#E3F2FD</color>
+    <color name="meal_card_inactive">#F5F5F5</color>
+    <color name="checkbox_active">#1a7a96</color>
+    <color name="checkbox_inactive">#E0E0E0</color>
+    <color name="text_teal">#1a7a96</color>
+    <color name="text_orange">#FFA500</color>
+
+    <!-- Feature Icon Colors -->
+    <color name="icon_orange">#FFA500</color>
+    <color name="icon_purple">#9C27B0</color>
+    <color name="icon_teal">#1a7a96</color>
+    <color name="icon_red">#F44336</color>
+    <color name="icon_green">#4CAF50</color>
+    <color name="icon_blue">#2196F3</color>
+    <color name="icon_brown">#FF9800</color>
+
+    <!-- Status Colors -->
+    <color name="amount_due_red">#F44336</color>
+    <color name="sign_out_bg">#FFEBEE</color>
+    <color name="sign_out_text">#F44336</color>
 </resources>

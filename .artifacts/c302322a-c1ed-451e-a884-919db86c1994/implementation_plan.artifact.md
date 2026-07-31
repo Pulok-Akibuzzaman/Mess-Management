@@ -1,50 +1,50 @@
-# Signup Activity Implementation Plan
+# Material Design UI Refresh Plan
 
-This plan outlines the creation of the `SignupActivity.java` file and the necessary updates to the layout and navigation.
+This plan outlines a comprehensive update to all MessMate app screens to fully leverage **Material Design 3 (M3)** components, ensuring a modern, standardized, and polished user experience.
 
 ## User Review Required
 
+> [!WARNING]
+> I will be updating the base theme to `Theme.Material3.DayNight.NoActionBar`. This may subtly alter the appearance of standard system widgets (like checkboxes, text fields, and ripples) across the entire app.
+
 > [!IMPORTANT]
-> I will be adding IDs to existing UI elements in `activity_signup.xml` to reference them in code.
-> I will also add a navigation link from the Login screen to the Signup screen.
+> I will replace custom headers with `MaterialToolbar` and standard `View`-based buttons with `MaterialButton` or `ExtendedFloatingActionButton` where appropriate.
 
 ## Proposed Changes
 
-### Resources
+### Theme & Styling
 
-#### [MODIFY] [strings.xml](file:///F:/EWU/CSE489/MessManagement/app/src/main/res/values/strings.xml)
-- Add `dont_have_account` and `sign_up_link` strings.
+#### [MODIFY] [themes.xml](file:///F:/EWU/CSE489/MessManagement/app/src/main/res/values/themes.xml)
+- Change parent to `Theme.Material3.DayNight.NoActionBar`.
+- Map MessMate colors (`primary_bg`, `nav_active`) to Material attributes like `colorPrimary`, `colorSurface`, etc.
 
-### Layouts
+### Layouts Refresh
 
-#### [MODIFY] [activity_signup.xml](file:///F:/EWU/CSE489/MessManagement/app/src/main/res/layout/activity_signup.xml)
-- Add IDs to `EditText` fields: `et_full_name`, `et_email`, `et_phone`.
-- Add ID to the Sign In link: `tv_signin_link`.
+#### [MODIFY] [activity_login.xml](file:///F:/EWU/CSE489/MessManagement/app/src/main/res/layout/activity_login.xml) & [activity_signup.xml](file:///F:/EWU/CSE489/MessManagement/app/src/main/res/layout/activity_signup.xml)
+- Wrap `EditText` in `TextInputLayout` for Material 3 text field styling (floating labels, error states).
+- Use `MaterialButton` for "Sign In" and "Continue".
 
-#### [MODIFY] [activity_login.xml](file:///F:/EWU/CSE489/MessManagement/app/src/main/res/layout/activity_login.xml)
-- Add a "Don't have an account? Sign Up" link container at the bottom, above the footer.
+#### [MODIFY] [activity_bazar.xml](file:///F:/EWU/CSE489/MessManagement/app/src/main/res/layout/activity_bazar.xml)
+- Replace custom header with `MaterialToolbar`.
+- Use `MaterialCardView` for the Total Bazar summary.
+- Replace the custom add button with a standard `FloatingActionButton`.
 
-### Code
+#### [MODIFY] [activity_cash_ledger.xml](file:///F:/EWU/CSE489/MessManagement/app/src/main/res/layout/activity_cash_ledger.xml)
+- Use `MaterialToolbar` for the header.
+- Ensure all items in the `RecyclerView` use `MaterialCardView` (already partially done, will standardize).
 
-#### [NEW] [SignupActivity.java](file:///F:/EWU/CSE489/MessManagement/app/src/main/java/com/project/messmanagement/SignupActivity.java)
-- Initialize UI components.
-- Implement "Continue" button logic (basic validation and Toast).
-- Implement "Sign In" link logic (navigate back to `LoginActivity`).
+#### [MODIFY] [activity_meal_routine.xml](file:///F:/EWU/CSE489/MessManagement/app/src/main/res/layout/activity_meal_routine.xml)
+- Replace custom alert banner with a `MaterialCardView` or `MaterialBanner` style.
+- Use `MaterialToolbar` with the month selector as a menu item or a themed `Button`.
+- Use `MaterialDivider` for the bottom navigation separation.
 
-#### [MODIFY] [LoginActivity.java](file:///F:/EWU/CSE489/MessManagement/app/src/main/java/com/project/messmanagement/LoginActivity.java)
-- Add logic to handle the new "Sign Up" link to navigate to `SignupActivity`.
-
-### Manifest
-
-#### [MODIFY] [AndroidManifest.xml](file:///F:/EWU/CSE489/MessManagement/app/src/main/AndroidManifest.xml)
-- Register `SignupActivity`.
+#### [MODIFY] [activity_all_features.xml](file:///F:/EWU/CSE489/MessManagement/app/src/main/res/layout/activity_all_features.xml)
+- Use `MaterialToolbar` for the header.
+- Use `MaterialButton` for the "Sign Out" button (already done, will refine styling).
 
 ## Verification Plan
 
-### Automated Tests
-- Run `gradle build` to ensure no syntax errors.
-
 ### Manual Verification
-- Deploy to device/emulator.
-- Verify navigation between Login and Signup screens.
-- Verify that clicking "Continue" in Signup shows a Toast or error message if fields are empty.
+- Review each screen in the Android Studio layout editor to ensure the Material 3 components render correctly.
+- Verify that color mapping in `themes.xml` applies consistently across all activities.
+- Test ripple effects on buttons and cards to ensure standard Material interaction feedback.

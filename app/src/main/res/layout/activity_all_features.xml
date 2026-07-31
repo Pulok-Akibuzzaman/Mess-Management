@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bazar_bg">
+
+    <!-- Material Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/bazar_bg"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="@string/title_all_features"
+        app:titleCentered="false"
+        app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
+        app:titleTextColor="@color/text_dark" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@id/bottom_nav"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingBottom="32dp">
+
+            <!-- Feature Grid -->
+            <GridLayout
+                android:id="@+id/grid_features"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:columnCount="4">
+
+                <!-- Row 1 -->
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_orange" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_bolt" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_utilities" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_purple" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_cube" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_equipment" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_blue" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_bell" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_notices" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_red" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_loans" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_loans" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Row 2 -->
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_green" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_bar_chart" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_polls" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_orange" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_complaints" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_complaints" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_red" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_warning" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_sos" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_blue" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_wrench" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_room_service" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Row 3 -->
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_green" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_chef_hat" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_bua_mgmt" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_purple" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_gift_box" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_occasions" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_orange" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_document" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_monthly_report" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                        <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                            <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_orange" />
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_coffee" android:contentDescription="@null" />
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_guest_meals" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </GridLayout>
+
+            <!-- Row 4: BT Chat (Centered) -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.MessMate.FeatureCard"
+                android:layout_width="84dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
+                    <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
+                        <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_blue" />
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_bluetooth" android:contentDescription="@null" />
+                    </FrameLayout>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/feat_bt_chat" android:textColor="@color/text_dark" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Quick Stats Section -->
+            <TextView
+                android:id="@+id/tv_stats_header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="32dp"
+                android:text="@string/section_quick_stats"
+                android:textColor="@color/text_dark"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_quick_stats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_stat" />
+
+            <!-- Sign Out Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_sign_out"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginTop="32dp"
+                android:backgroundTint="@color/sign_out_bg"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="@string/btn_sign_out"
+                android:textAllCaps="false"
+                android:textColor="@color/sign_out_text"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_logout"
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                app:iconTint="@color/sign_out_text"
+                app:strokeWidth="0dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Corrected Bottom Navigation Bar -->
+    <LinearLayout
+        android:id="@+id/bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:background="@drawable/bottom_nav_background"
+        android:baselineAligned="false"
+        android:elevation="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical" tools:ignore="UseCompoundDrawables">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_home" app:tint="@color/nav_active" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="@string/nav_home" android:textColor="@color/nav_active" android:textSize="11sp" android:textStyle="bold" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical" tools:ignore="UseCompoundDrawables">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_members" app:tint="@color/nav_inactive" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="@string/nav_members" android:textColor="@color/nav_inactive" android:textSize="11sp" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical" tools:ignore="UseCompoundDrawables">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_meals" app:tint="@color/nav_inactive" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="@string/nav_meals" android:textColor="@color/nav_inactive" android:textSize="11sp" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical" tools:ignore="UseCompoundDrawables">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_bazar" app:tint="@color/nav_inactive" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="@string/nav_bazar" android:textColor="@color/nav_inactive" android:textSize="11sp" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical" tools:ignore="UseCompoundDrawables">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_cash" app:tint="@color/nav_inactive" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="@string/nav_cash" android:textColor="@color/nav_inactive" android:textSize="11sp" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical" tools:ignore="UseCompoundDrawables">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_more" app:tint="@color/nav_inactive" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="@string/nav_more" android:textColor="@color/nav_inactive" android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
