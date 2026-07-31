@@ -159,7 +159,12 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:id="@+id/btn_home_layout">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -181,7 +186,12 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:id="@+id/btn_member_layout">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -203,7 +213,12 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:id="@+id/btn_meals_layout">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -225,7 +240,12 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:id="@+id/btn_bazar_layout">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -247,7 +267,12 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:id="@+id/btn_cash_layout">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -270,7 +295,12 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:id="@+id/btn_more_layout">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
