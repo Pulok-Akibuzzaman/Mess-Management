@@ -15,17 +15,17 @@
         android:paddingTop="24dp"
         android:paddingBottom="32dp">
 
-        <!-- Title row -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp">
 
             <TextView
+                android:id="@+id/tvTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:text="Add New Member"
+                android:text="Add Bazar Item"
                 android:textColor="#0D1B2A"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -43,85 +43,45 @@
 
         </RelativeLayout>
 
-        <!-- FULL NAME -->
         <TextView
             style="@style/LabelStyle"
-            android:text="FULL NAME" />
+            android:text="ITEM NAME" />
 
         <EditText
-            android:id="@+id/etFullName"
+            android:id="@+id/etItemName"
             style="@style/InputStyle"
-            android:hint="e.g. Arif Hossain"
-            android:inputType="textPersonName" />
-
-        <!-- ROOM NUMBER -->
-        <TextView
-            style="@style/LabelStyle"
-            android:text="ROOM NUMBER" />
-
-        <EditText
-            android:id="@+id/etRoomNumber"
-            style="@style/InputStyle"
-            android:hint="e.g. 206"
+            android:hint="e.g. Rice"
             android:inputType="text" />
 
-        <!-- CONTACT NUMBER -->
         <TextView
             style="@style/LabelStyle"
-            android:text="CONTACT NUMBER" />
+            android:text="AMOUNT (TK)" />
 
         <EditText
-            android:id="@+id/etContact"
+            android:id="@+id/etAmount"
             style="@style/InputStyle"
-            android:hint="017XXXXXXXX"
-            android:inputType="phone" />
+            android:hint="e.g. 500"
+            android:inputType="numberDecimal" />
 
-        <!-- EMAIL -->
         <TextView
             style="@style/LabelStyle"
-            android:text="EMAIL" />
+            android:text="DATE" />
 
         <EditText
-            android:id="@+id/etEmail"
+            android:id="@+id/etDate"
             style="@style/InputStyle"
-            android:hint="example@email.com"
-            android:inputType="textEmailAddress" />
-
-        <!-- STATUS -->
-        <TextView
-            style="@style/LabelStyle"
-            android:text="STATUS" />
-
-        <Spinner
-            android:id="@+id/spinnerStatus"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_input_field"
-            android:paddingHorizontal="16dp" />
-
-        <!-- JOIN DATE -->
-        <TextView
-            style="@style/LabelStyle"
-            android:text="JOIN DATE" />
-
-        <!-- Add Member Button -->
-        <EditText
-            android:id="@+id/etJoinDate"
-            style="@style/InputStyle"
-            android:clickable="true"
-            android:cursorVisible="false"
+            android:hint="Select Date"
+            android:inputType="none"
             android:focusable="false"
-            android:hint="26 Jul 2025"
-            android:inputType="none" />
+            android:clickable="true" />
 
         <Button
-            android:id="@+id/btnAddMember"
+            android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_button_teal"
-            android:text="Add Member"
+            android:text="Save Item"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold" />

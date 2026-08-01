@@ -1,63 +1,78 @@
 package com.project.messmanagement;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
-import android.widget.Spinner;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-import java.util.Arrays;
-import java.util.List;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class NoticesActivity extends AppCompatActivity {
+
+    LinearLayout container;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notices);
 
-        List<Notice> noticeList = Arrays.asList(
-                new Notice("Clean kitchen after use", "Please ensure the kitchen is clean after cooking.", "High"),
-                new Notice("Laundry schedule reminder", "Use the washing area only during 7am–10am.", "Medium"),
-                new Notice("Grocery shopping today", "Collect your share of bazar money by 5 PM.", "High")
-        );
+        container = findViewById(R.id.notice_container);
 
-        RecyclerView rvNotices = findViewById(R.id.rvNotices);
-        rvNotices.setLayoutManager(new LinearLayoutManager(this));
-        rvNotices.setAdapter(new NoticeAdapter(noticeList));
+        // Add sample notices
+        addNotice("Meeting Tonight", "Meeting at 9 PM to discuss meal rates.", "2026-08-01");
+        addNotice("Electricity Bill", "Please pay your share by Friday.", "2026-07-30");
 
-        ImageButton btnAddNotice = findViewById(R.id.btnAddNotice);
-        btnAddNotice.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btnAddNotice).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                BottomSheetDialog bottomSheet = new BottomSheetDialog(NoticesActivity.this);
-                View view = getLayoutInflater().inflate(R.layout.dialog_create_notice, null);
-                bottomSheet.setContentView(view);
-
-                ArrayAdapter<String> priorityAdapter = new ArrayAdapter<>(NoticesActivity.this,
-                        android.R.layout.simple_spinner_item,
-                        new String[]{"High", "Medium", "Low"});
-                priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                ((Spinner) view.findViewById(R.id.spinnerPriority)).setAdapter(priorityAdapter);
-
-                ArrayAdapter<String> audienceAdapter = new ArrayAdapter<>(NoticesActivity.this,
-                        android.R.layout.simple_spinner_item,
-                        new String[]{"All Members", "Bua Only", "Admin Only"});
-                audienceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                ((Spinner) view.findViewById(R.id.spinnerAudience)).setAdapter(audienceAdapter);
-
-                view.findViewById(R.id.btnCloseNotice).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v2) {
-                        bottomSheet.dismiss();
-                    }
-                });
-
-                bottomSheet.show();
+                Toast.makeText(NoticesActivity.this, "Add Notice clicked", Toast.LENGTH_SHORT).show();
             }
         });
+
+        setupNavigation();
+    }
+
+    private void setupNavigation() {
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
+            startActivity(new android.content.Intent(this, MainActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
+            startActivity(new android.content.Intent(this, MemberActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
+            startActivity(new android.content.Intent(this, MealRoutineActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
+            startActivity(new android.content.Intent(this, BazarActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
+            startActivity(new android.content.Intent(this, CashLedgerActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
+            startActivity(new android.content.Intent(this, AllFeaturesActivity.class));
+            finish();
+        });
+    }
+
+    private void addNotice(String title, String content, String date) {
+        if (container == null) return;
+
+        TextView tv = new TextView(this);
+        tv.setText(title + "\n" + content + "\n" + date);
+        tv.setTextSize(16);
+        tv.setPadding(20, 30, 20, 30);
+        tv.setTextColor(android.graphics.Color.BLACK);
+
+        View line = new View(this);
+        line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2));
+        line.setBackgroundColor(android.graphics.Color.LTGRAY);
+
+        container.addView(tv);
+        container.addView(line);
     }
 }

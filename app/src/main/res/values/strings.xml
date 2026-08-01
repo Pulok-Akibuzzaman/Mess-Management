@@ -5,12 +5,14 @@
     <string name="logo_text">49</string>
     <string name="title_messmate">MessMate</string>
     <string name="subtitle_messmate">Hostel mess management</string>
-    <string name="email_placeholder">admin@mess.com</string>
+    <string name="email_placeholder">Email</string>
     <string name="password_placeholder">••••••••</string>
     <string name="login_as">LOGIN AS</string>
     <string name="role_admin">Admin</string>
     <string name="role_member">Member</string>
-    <string name="role_bus">Bus</string>
+    <string name="role_bus">Bua</string>
+    <string name="remember_me">Remember Me</string>
+    <string name="forgot_password">Forgot Password?</string>
     <string name="btn_sign_in">Sign In</string>
     <string name="footer_text">MessMate v1.0 - Secure &amp; Reliable</string>
 
@@ -21,11 +23,12 @@
     <string name="label_full_name">FULL NAME</string>
     <string name="label_email">EMAIL</string>
     <string name="label_phone">PHONE</string>
-    <string name="placeholder_full_name">e.g. Arif Hossain</string>
-    <string name="placeholder_email">arif@email.com</string>
+    <string name="placeholder_full_name">Full Name</string>
+    <string name="placeholder_email">Email</string>
     <string name="placeholder_phone">017XXXXXXXX</string>
-    <string name="placeholder_password">Enter password (min 4 chars)</string>
-    <string name="btn_continue">Continue</string>
+    <string name="placeholder_password">Enter Password (min 6)</string>
+    <string name="placeholder_confirm_password">Confirm Password</string>
+    <string name="btn_continue">Sign Up</string>
     <string name="already_have_account">Already have an account? </string>
     <string name="sign_in_link">Sign In</string>
     <string name="chevron_right">&gt;</string>

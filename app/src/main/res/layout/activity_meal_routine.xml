@@ -464,16 +464,15 @@
 
         <!-- Members -->
         <LinearLayout
+            android:id="@+id/btn_member_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground"
-            android:id="@+id/btn_member_layout">
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -519,16 +518,15 @@
 
         <!-- Bazar -->
         <LinearLayout
+            android:id="@+id/btn_bazar_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground"
-            android:id="@+id/btn_bazar_layout">
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -546,16 +544,15 @@
 
         <!-- Cash -->
         <LinearLayout
+            android:id="@+id/btn_cash_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground"
-            android:id="@+id/btn_cash_layout">
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -573,16 +570,15 @@
 
         <!-- More -->
         <LinearLayout
+            android:id="@+id/btn_more_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground"
-            android:id="@+id/btn_more_layout">
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"

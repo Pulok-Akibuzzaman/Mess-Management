@@ -111,11 +111,12 @@
                 android:letterSpacing="0.08"
                 android:layout_marginBottom="12dp" />
 
-            <!-- Request List -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvRequests"
+            <!-- Request List Container -->
+            <LinearLayout
+                android:id="@+id/item_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:nestedScrollingEnabled="false" />
 
         </LinearLayout>

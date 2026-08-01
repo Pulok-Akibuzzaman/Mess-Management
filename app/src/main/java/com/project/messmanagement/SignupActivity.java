@@ -1,107 +1,119 @@
 package com.project.messmanagement;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import com.project.messmanagement.repositories.AuthRepository;
 
-/**
- * Signup Activity - User registration
- * Validates input and saves to SharedPreferences
- * Navigates to MainActivity on successful signup
- */
 public class SignupActivity extends AppCompatActivity {
-    private EditText etFullName, etEmail, etPhone, etPassword;
-    private Button btnContinue;
-    private TextView tvSignInLink;
-    private Spinner spinnerRole;
-    private AuthRepository authRepository;
+
+    // Declare UI elements
+    EditText etName, etEmail, etPhone, etPassword, etConfirmPassword;
+    Button btnSignup, btnRoleMember, btnRoleBua;
+    TextView tvLogin;
+    String selectedRole = "Member"; // Default role for signup
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        authRepository = new AuthRepository(this);
-        initViews();
-        setupListeners();
-    }
-
-    private void initViews() {
-        etFullName = findViewById(R.id.et_full_name);
+        // Initialize UI elements
+        etName = findViewById(R.id.et_full_name);
         etEmail = findViewById(R.id.et_email);
         etPhone = findViewById(R.id.et_phone);
         etPassword = findViewById(R.id.et_password);
-        btnContinue = findViewById(R.id.btn_continue_container);
-        tvSignInLink = findViewById(R.id.tv_signin_link);
+        etConfirmPassword = findViewById(R.id.et_confirm_password);
+        btnSignup = findViewById(R.id.btn_continue_container);
+        tvLogin = findViewById(R.id.tv_signin_link);
+        btnRoleMember = findViewById(R.id.btn_signup_member);
+        btnRoleBua = findViewById(R.id.btn_signup_bua);
 
-        try {
-            spinnerRole = findViewById(R.id.spinner_role);
-        } catch (Exception e) {
-            // Role spinner may not exist in layout
-        }
-    }
+        // Role Button Clicks
+        btnRoleMember.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateSignupRole("Member");
+            }
+        });
 
-    private void setupListeners() {
-        btnContinue.setOnClickListener(v -> performSignup());
-        tvSignInLink.setOnClickListener(v -> {
-            Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            finish();
+        btnRoleBua.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateSignupRole("Bua");
+            }
+        });
+
+        // Signup Button Click
+        btnSignup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String name = etName.getText().toString();
+                String email = etEmail.getText().toString();
+                String password = etPassword.getText().toString();
+                String confirmPassword = etConfirmPassword.getText().toString();
+
+                if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(SignupActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                } else if (password.length() < 6) {
+                    Toast.makeText(SignupActivity.this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                } else if (!password.equals(confirmPassword)) {
+                    Toast.makeText(SignupActivity.this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+                } else {
+                    // 1. Save data to SharedPreferences (Simple Database for Beginners)
+                    SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = pref.edit();
+                    editor.putString("email", email);
+                    editor.putString("password", password);
+                    editor.putString("name", name);
+                    editor.putString("role", selectedRole);
+                    editor.apply();
+
+                    Toast.makeText(SignupActivity.this, "Signup Successful as " + selectedRole, Toast.LENGTH_SHORT).show();
+
+                    // 2. Navigate to MainActivity and pass the Name and Role
+                    Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+                    intent.putExtra("USER_NAME", name);
+                    intent.putExtra("USER_ROLE", selectedRole);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+        });
+
+        // Login Link Click
+        tvLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
         });
     }
 
-    private void performSignup() {
-        String name = etFullName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
+    private void updateSignupRole(String role) {
+        selectedRole = role;
 
-        // Validation
-        if (TextUtils.isEmpty(name)) {
-            etFullName.setError("Full name is required");
-            return;
-        }
+        // Reset colors
+        btnRoleMember.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.input_bg)));
+        btnRoleBua.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.input_bg)));
 
-        if (TextUtils.isEmpty(email) || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError("Please enter a valid email");
-            return;
-        }
+        btnRoleMember.setTextColor(getResources().getColor(R.color.text_light_blue));
+        btnRoleBua.setTextColor(getResources().getColor(R.color.text_light_blue));
 
-        if (TextUtils.isEmpty(phone) || phone.length() < 10) {
-            etPhone.setError("Please enter a valid phone number");
-            return;
-        }
-
-        if (TextUtils.isEmpty(password) || password.length() < 4) {
-            etPassword.setError("Password must be at least 4 characters");
-            return;
-        }
-
-        String role = spinnerRole != null ? spinnerRole.getSelectedItem().toString() : "Member";
-
-        // Perform signup
-        boolean success = authRepository.signup(name, email, phone, password, role);
-
-        if (success) {
-            Toast.makeText(this, "Account created successfully! Welcome " + name, Toast.LENGTH_SHORT).show();
-            navigateToDashboard();
+        // Highlight selected
+        if (role.equals("Member")) {
+            btnRoleMember.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.nav_active)));
+            btnRoleMember.setTextColor(getResources().getColor(R.color.white));
         } else {
-            Toast.makeText(this, "Signup failed. Please try again.", Toast.LENGTH_SHORT).show();
+            btnRoleBua.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.nav_active)));
+            btnRoleBua.setTextColor(getResources().getColor(R.color.white));
         }
-    }
-
-    private void navigateToDashboard() {
-        Intent intent = new Intent(SignupActivity.this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
     }
 }

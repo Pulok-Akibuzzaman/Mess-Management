@@ -20,7 +20,7 @@
             android:background="@drawable/logo_background"
             android:contentDescription="@string/app_name"
             android:padding="16dp"
-            android:src="@drawable/ic_fork_spoon"
+            android:src="@drawable/ic_home"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -46,7 +46,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/signup_subtitle"
-            android:textColor="@color/text_light_blue"
+            android:textColor="@color/white"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -74,6 +74,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/placeholder_full_name"
+                    android:textColorHint="@color/white"
                     app:boxBackgroundColor="@color/input_bg"
                     app:boxCornerRadiusBottomEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
@@ -81,7 +82,7 @@
                     app:boxCornerRadiusTopStart="16dp"
                     app:boxStrokeWidth="0dp"
                     app:boxStrokeWidthFocused="0dp"
-                    app:hintTextColor="@color/text_light_blue">
+                    app:hintTextColor="@color/white">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_full_name"
@@ -97,6 +98,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:hint="@string/placeholder_email"
+                    android:textColorHint="@color/white"
                     app:boxBackgroundColor="@color/input_bg"
                     app:boxCornerRadiusBottomEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
@@ -104,7 +106,7 @@
                     app:boxCornerRadiusTopStart="16dp"
                     app:boxStrokeWidth="0dp"
                     app:boxStrokeWidthFocused="0dp"
-                    app:hintTextColor="@color/text_light_blue">
+                    app:hintTextColor="@color/white">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_email"
@@ -120,6 +122,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:hint="@string/placeholder_phone"
+                    android:textColorHint="@color/white"
                     app:boxBackgroundColor="@color/input_bg"
                     app:boxCornerRadiusBottomEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
@@ -127,7 +130,7 @@
                     app:boxCornerRadiusTopStart="16dp"
                     app:boxStrokeWidth="0dp"
                     app:boxStrokeWidthFocused="0dp"
-                    app:hintTextColor="@color/text_light_blue">
+                    app:hintTextColor="@color/white">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_phone"
@@ -143,6 +146,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:hint="@string/placeholder_password"
+                    android:textColorHint="@color/white"
                     app:boxBackgroundColor="@color/input_bg"
                     app:boxCornerRadiusBottomEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
@@ -150,7 +154,7 @@
                     app:boxCornerRadiusTopStart="16dp"
                     app:boxStrokeWidth="0dp"
                     app:boxStrokeWidthFocused="0dp"
-                    app:hintTextColor="@color/text_light_blue"
+                    app:hintTextColor="@color/white"
                     app:passwordToggleEnabled="true">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -161,12 +165,82 @@
                         android:textColor="@color/text_white" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Hidden or default role selection -->
-                <Spinner
-                    android:id="@+id/spinner_role"
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.FilledBox"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:visibility="gone" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:hint="@string/placeholder_confirm_password"
+                    android:textColorHint="@color/white"
+                    app:boxBackgroundColor="@color/input_bg"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:boxStrokeWidth="0dp"
+                    app:boxStrokeWidthFocused="0dp"
+                    app:hintTextColor="@color/white"
+                    app:passwordToggleEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_confirm_password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:textColor="@color/text_white" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/signup_as_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="SIGN UP AS"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/signup_role_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_signup_member"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="@string/role_member"
+                        android:textAllCaps="false"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
+                        android:paddingHorizontal="4dp"
+                        app:backgroundTint="@color/nav_active"
+                        app:cornerRadius="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_signup_bua"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:text="@string/role_bus"
+                        android:textAllCaps="false"
+                        android:textColor="@color/text_light_blue"
+                        android:textSize="12sp"
+                        android:insetLeft="0dp"
+                        android:insetRight="0dp"
+                        android:paddingHorizontal="4dp"
+                        app:backgroundTint="@color/input_bg"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_continue_container"
@@ -174,13 +248,13 @@
                     android:layout_height="56dp"
                     android:layout_marginTop="24dp"
                     android:text="@string/btn_continue"
-                    android:textColor="@color/black"
+                    android:textColor="@color/white"
                     android:textStyle="bold"
                     app:backgroundTint="@color/button_primary"
-                    app:cornerRadius="20dp"
+                    app:cornerRadius="16dp"
                     app:icon="@drawable/ic_chevron_right"
                     app:iconGravity="textEnd"
-                    app:iconTint="@color/black" />
+                    app:iconTint="@color/white" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -209,7 +283,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/already_have_account"
-                    android:textColor="@color/text_light_blue"
+                    android:textColor="@color/white"
                     android:textSize="14sp" />
 
                 <TextView
@@ -228,7 +302,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/footer_text"
-                android:textColor="@color/text_dark_blue"
+                android:textColor="@color/white"
                 android:textSize="11sp" />
         </LinearLayout>
 

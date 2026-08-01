@@ -129,15 +129,15 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/card_current_balance" />
 
-            <!-- Transaction History List -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_transactions"
+            <!-- Transaction History List Container -->
+            <LinearLayout
+                android:id="@+id/transaction_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:nestedScrollingEnabled="false"
-                app:layout_constraintTop_toBottomOf="@id/tv_transactions_header"
-                tools:listitem="@layout/item_transaction" />
+                android:orientation="vertical"
+                android:paddingHorizontal="24dp"
+                app:layout_constraintTop_toBottomOf="@id/tv_transactions_header" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
@@ -182,16 +182,15 @@
 
         <!-- Members -->
         <LinearLayout
+            android:id="@+id/btn_member_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground"
-            android:id="@+id/btn_member_layout">
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -209,16 +208,15 @@
 
         <!-- Meals -->
         <LinearLayout
+            android:id="@+id/btn_meals_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground"
-            android:id="@+id/btn_meals_layout">
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -236,16 +234,15 @@
 
         <!-- Bazar -->
         <LinearLayout
+            android:id="@+id/btn_bazar_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground"
-            android:id="@+id/btn_bazar_layout">
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -291,16 +288,15 @@
 
         <!-- More -->
         <LinearLayout
+            android:id="@+id/btn_more_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground"
-            android:id="@+id/btn_more_layout">
+            android:gravity="center"
+            android:orientation="vertical">
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"

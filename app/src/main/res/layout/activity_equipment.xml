@@ -36,16 +36,18 @@
 
     </RelativeLayout>
 
-    <!-- Equipment List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvEquipment"
+    <!-- Equipment List Container -->
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:clipToPadding="false" />
+        android:layout_weight="1">
+        <LinearLayout
+            android:id="@+id/item_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp" />
+    </ScrollView>
 
     <LinearLayout
         android:id="@+id/bottom_nav"

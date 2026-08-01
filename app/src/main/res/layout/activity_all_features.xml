@@ -41,7 +41,9 @@
                 android:columnCount="4">
 
                 <!-- Row 1 -->
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_utilities"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_orange" />
@@ -51,7 +53,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_equipment"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_purple" />
@@ -61,7 +65,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_notices"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_blue" />
@@ -71,7 +77,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_loans"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_red" />
@@ -82,7 +90,9 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Row 2 -->
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_polls"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_green" />
@@ -92,7 +102,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_complaints"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_orange" />
@@ -102,7 +114,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_sos"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_red" />
@@ -112,7 +126,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_room_service"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_blue" />
@@ -123,7 +139,9 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Row 3 -->
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_bua"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_green" />
@@ -133,7 +151,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_occasions"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_purple" />
@@ -143,7 +163,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_reports"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_orange" />
@@ -153,7 +175,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView style="@style/Widget.MessMate.FeatureCard">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_guest_meals"
+                    style="@style/Widget.MessMate.FeatureCard">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingVertical="16dp">
                         <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                             <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/icon_circle_orange" />
@@ -167,6 +191,7 @@
 
             <!-- Row 4: BT Chat (Centered) -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_bt_chat"
                 style="@style/Widget.MessMate.FeatureCard"
                 android:layout_width="84dp"
                 android:layout_gravity="center_horizontal"

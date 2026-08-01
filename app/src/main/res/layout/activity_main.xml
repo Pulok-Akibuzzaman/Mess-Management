@@ -33,7 +33,7 @@
                 android:id="@+id/tv_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Admin Panel"
+                android:text="Home"
                 android:textColor="@color/admin_text_dark"
                 android:textSize="28sp"
                 android:textStyle="bold"
@@ -96,24 +96,24 @@
                     android:id="@+id/tv_month_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="JULY 2025 TOTAL"
                     android:textColor="@color/admin_text_light_blue"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="JULY 2025 TOTAL" />
 
                 <TextView
                     android:id="@+id/tv_total_amount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="৳20,200"
                     android:textColor="@color/admin_text_white"
                     android:textSize="40sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tv_month_label" />
+                    app:layout_constraintTop_toBottomOf="@id/tv_month_label"
+                    tools:text="৳0" />
 
                 <View
                     android:id="@+id/divider_stats"
@@ -147,10 +147,10 @@
                             android:id="@+id/tv_meal_rate"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="৳87.3"
                             android:textColor="@color/admin_text_white"
                             android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            tools:text="৳0.0" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -169,10 +169,10 @@
                             android:id="@+id/tv_active_members"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="5"
                             android:textColor="@color/admin_text_white"
                             android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            tools:text="0" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -191,10 +191,10 @@
                             android:id="@+id/tv_cash_balance"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="৳4,800"
                             android:textColor="@color/admin_text_orange"
                             android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            tools:text="৳0" />
                     </LinearLayout>
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -228,10 +228,11 @@
                             android:src="@drawable/ic_fork_spoon"
                             app:tint="@color/admin_icon_teal" />
                         <TextView
+                            android:id="@+id/tv_total_meals"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="231"
+                            android:text="--"
                             android:textColor="@color/admin_text_dark"
                             android:textSize="24sp"
                             android:textStyle="bold" />
@@ -274,22 +275,17 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="৳8,900"
+                            android:text="--"
                             android:textColor="@color/admin_text_white"
                             android:textSize="24sp"
                             android:textStyle="bold" />
                         <TextView
+                            android:id="@+id/tv_bazar_spent_subtitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Bazar spent"
                             android:textColor="@color/admin_text_light_blue"
-                            android:textSize="12sp" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="12 purchases"
-                            android:textColor="@color/admin_text_light_blue"
-                            android:textSize="12sp" />
+                            android:textSize="12sp"
+                            tools:text="0 purchases" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -312,25 +308,21 @@
                             android:src="@drawable/ic_briefcase"
                             app:tint="@color/admin_icon_teal" />
                         <TextView
+                            android:id="@+id/tv_utilities_grid"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="৳6,100"
+                            android:text="--"
                             android:textColor="@color/admin_text_dark"
                             android:textSize="24sp"
                             android:textStyle="bold" />
                         <TextView
+                            android:id="@+id/tv_utilities_subtitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Utilities"
-                            android:textColor="@color/admin_text_dark"
-                            android:textSize="12sp" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="4 bills paid"
                             android:textColor="@color/admin_text_orange"
-                            android:textSize="12sp" />
+                            android:textSize="12sp"
+                            tools:text="0 bills paid" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -353,10 +345,11 @@
                             android:src="@drawable/ic_trending_up"
                             app:tint="@color/admin_icon_teal" />
                         <TextView
+                            android:id="@+id/tv_avg_per_head"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="৳4,040"
+                            android:text="--"
                             android:textColor="@color/admin_text_dark"
                             android:textSize="24sp"
                             android:textStyle="bold" />
@@ -367,11 +360,12 @@
                             android:textColor="@color/admin_text_dark"
                             android:textSize="12sp" />
                         <TextView
+                            android:id="@+id/tv_avg_per_head_subtitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="July estimate"
                             android:textColor="@color/admin_text_orange"
-                            android:textSize="12sp" />
+                            android:textSize="12sp"
+                            tools:text="July estimate" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
             </GridLayout>
@@ -469,9 +463,10 @@
                                 android:textColor="@color/admin_text_gray"
                                 android:textSize="12sp" />
                             <TextView
+                                android:id="@+id/tv_bazar_label_val"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="৳8,900"
+                                android:text="--"
                                 android:textColor="@color/admin_text_dark"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -497,9 +492,10 @@
                                 android:textColor="@color/admin_text_gray"
                                 android:textSize="12sp" />
                             <TextView
+                                android:id="@+id/tv_utility_label_val"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="৳6,100"
+                                android:text="--"
                                 android:textColor="@color/admin_text_dark"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -525,9 +521,10 @@
                                 android:textColor="@color/admin_text_gray"
                                 android:textSize="12sp" />
                             <TextView
+                                android:id="@+id/tv_bua_label_val"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="৳4,000"
+                                android:text="--"
                                 android:textColor="@color/admin_text_dark"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -553,9 +550,10 @@
                                 android:textColor="@color/admin_text_gray"
                                 android:textSize="12sp" />
                             <TextView
+                                android:id="@+id/tv_other_label_val"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="৳1,200"
+                                android:text="--"
                                 android:textColor="@color/admin_text_dark"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />

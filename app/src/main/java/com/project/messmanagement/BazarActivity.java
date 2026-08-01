@@ -1,115 +1,201 @@
 package com.project.messmanagement;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import java.util.ArrayList;
-import java.util.List;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class BazarActivity extends AppCompatActivity {
 
-    private RecyclerView rvHistory;
-    private PurchaseAdapter adapter;
-    private List<PurchaseItem> historyList;
-    private AppDatabase database;
-    private SessionManager sessionManager;
-
-    private LinearLayout btn_home, btn_member, btn_meals, btn_bazar, btn_cash, btn_more;
+    private LinearLayout container;
+    private DatabaseHelper db;
+    private TextView tvTotalAmount, tvPurchasesSubtitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bazar);
 
-        database = AppDatabase.getDatabase(this);
-        sessionManager = new SessionManager(this);
+        db = new DatabaseHelper(this);
+        container = findViewById(R.id.item_container);
+        tvTotalAmount = findViewById(R.id.tv_total_amount);
+        tvPurchasesSubtitle = findViewById(R.id.tv_purchases_subtitle);
 
-        rvHistory = findViewById(R.id.rv_purchase_history);
-        rvHistory.setLayoutManager(new LinearLayoutManager(this));
+        // 1. Setup Add Button (Floating Action Button)
+        findViewById(R.id.btn_add_bazar).setOnClickListener(v -> showBazarDialog(-1, "", 0, ""));
 
-        btn_home = findViewById(R.id.btn_home_layout);
-        btn_member = findViewById(R.id.btn_member_layout);
-
-        if (btn_member != null) {
-            btn_member.setOnClickListener(v -> {
-                Intent i = new Intent(BazarActivity.this, MemberActivity.class);
-                startActivity(i);
-                finish();
-            });
-        }
-
-        btn_meals = findViewById(R.id.btn_meals_layout);
-        btn_bazar = findViewById(R.id.btn_bazar_layout);
-        btn_cash = findViewById(R.id.btn_cash_layout);
-        btn_more = findViewById(R.id.btn_more_layout);
-
-
-        btn_home.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(BazarActivity.this, MainActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
-
-        btn_meals.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(BazarActivity.this, MealRoutineActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
-
-        btn_bazar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
-
-        btn_cash.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(BazarActivity.this, CashLedgerActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
-
-        btn_more.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(BazarActivity.this, AllFeaturesActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
-
-        loadHistoryData();
+        setupNavigation();
     }
 
-    private void loadHistoryData() {
-        new Thread(() -> {
-            int userId = sessionManager.getUserId();
-            List<Purchase> purchases = database.purchaseDao().getPurchasesByUser(userId);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshBazarList();
+    }
 
-            historyList = new ArrayList<>();
-            for (Purchase p : purchases) {
-                historyList.add(new PurchaseItem(p.getName(), p.getDate(), p.getPrice()));
+    private void refreshBazarList() {
+        if (container == null) return;
+        container.removeAllViews();
+
+        double total = 0;
+        int count = 0;
+
+        Cursor cursor = db.getAllBazarItems();
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow("item_name"));
+                double amount = cursor.getDouble(cursor.getColumnIndexOrThrow("amount"));
+                String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+
+                addBazarToUI(id, name, amount, date);
+                total += amount;
+                count++;
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+
+        // Update Top Card
+        if (tvTotalAmount != null) tvTotalAmount.setText("৳" + (int) total);
+        if (tvPurchasesSubtitle != null) tvPurchasesSubtitle.setText(count + " purchases this month");
+    }
+
+    private void showBazarDialog(final int id, String initialName, double initialAmount, String initialDate) {
+        final BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(R.layout.dialog_add_bazar, null);
+        dialog.setContentView(view);
+
+        TextView tvTitle = view.findViewById(R.id.tvTitle);
+        final EditText etName = view.findViewById(R.id.etItemName);
+        final EditText etAmount = view.findViewById(R.id.etAmount);
+        final EditText etDate = view.findViewById(R.id.etDate);
+        Button btnSave = view.findViewById(R.id.btnSave);
+        ImageButton btnClose = view.findViewById(R.id.btnClose);
+
+        final Calendar calendar = Calendar.getInstance();
+        final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.US);
+
+        if (id != -1) {
+            tvTitle.setText("Edit Bazar Item");
+            etName.setText(initialName);
+            etAmount.setText(String.valueOf(initialAmount));
+            etDate.setText(initialDate);
+        } else {
+            etDate.setText(sdf.format(calendar.getTime()));
+        }
+
+        etDate.setOnClickListener(v -> {
+            new DatePickerDialog(this, (view1, year, month, day) -> {
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, day);
+                etDate.setText(sdf.format(calendar.getTime()));
+            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
+        });
+
+        btnSave.setOnClickListener(v -> {
+            String name = etName.getText().toString().trim();
+            String amountStr = etAmount.getText().toString().trim();
+            String date = etDate.getText().toString();
+
+            if (!name.isEmpty() && !amountStr.isEmpty()) {
+                double amount = Double.parseDouble(amountStr);
+                if (id == -1) {
+                    db.addBazarItem(name, amount, date);
+                    Toast.makeText(this, "Item added", Toast.LENGTH_SHORT).show();
+                } else {
+                    db.updateBazarItem(id, name, amount, date);
+                    Toast.makeText(this, "Item updated", Toast.LENGTH_SHORT).show();
+                }
+                refreshBazarList();
+                dialog.dismiss();
+            } else {
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             }
+        });
 
-            runOnUiThread(() -> {
-                adapter = new PurchaseAdapter(historyList);
-                rvHistory.setAdapter(adapter);
-            });
-        }).start();
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private void addBazarToUI(final int id, final String name, final double amount, final String date) {
+        final LinearLayout itemLayout = new LinearLayout(this);
+        itemLayout.setOrientation(LinearLayout.VERTICAL);
+        itemLayout.setClickable(true);
+        itemLayout.setFocusable(true);
+        itemLayout.setBackgroundResource(android.R.drawable.list_selector_background);
+
+        TextView tv = new TextView(this);
+        tv.setText(name + "\n" + date + " | ৳" + (int) amount);
+        tv.setTextSize(16);
+        tv.setPadding(20, 30, 20, 30);
+        tv.setTextColor(Color.BLACK);
+
+        View line = new View(this);
+        line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2));
+        line.setBackgroundColor(Color.LTGRAY);
+
+        itemLayout.addView(tv);
+        itemLayout.addView(line);
+
+        // Edit on Click
+        itemLayout.setOnClickListener(v -> showBazarDialog(id, name, amount, date));
+
+        // Long Press to Delete
+        itemLayout.setOnLongClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Item")
+                    .setMessage("Delete " + name + "?")
+                    .setPositiveButton("Confirm", (dialog, which) -> {
+                        db.deleteBazarItem(id);
+                        refreshBazarList();
+                        Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            return true;
+        });
+
+        container.addView(itemLayout);
+    }
+
+    private void setupNavigation() {
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, MemberActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, MealRoutineActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, CashLedgerActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, AllFeaturesActivity.class));
+            finish();
+        });
     }
 }

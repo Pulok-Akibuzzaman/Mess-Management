@@ -15,17 +15,17 @@
         android:paddingTop="24dp"
         android:paddingBottom="32dp">
 
-        <!-- Title row -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp">
 
             <TextView
+                android:id="@+id/tvTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:text="Add New Member"
+                android:text="Add Transaction"
                 android:textColor="#0D1B2A"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -43,85 +43,57 @@
 
         </RelativeLayout>
 
-        <!-- FULL NAME -->
         <TextView
             style="@style/LabelStyle"
-            android:text="FULL NAME" />
-
-        <EditText
-            android:id="@+id/etFullName"
-            style="@style/InputStyle"
-            android:hint="e.g. Arif Hossain"
-            android:inputType="textPersonName" />
-
-        <!-- ROOM NUMBER -->
-        <TextView
-            style="@style/LabelStyle"
-            android:text="ROOM NUMBER" />
-
-        <EditText
-            android:id="@+id/etRoomNumber"
-            style="@style/InputStyle"
-            android:hint="e.g. 206"
-            android:inputType="text" />
-
-        <!-- CONTACT NUMBER -->
-        <TextView
-            style="@style/LabelStyle"
-            android:text="CONTACT NUMBER" />
-
-        <EditText
-            android:id="@+id/etContact"
-            style="@style/InputStyle"
-            android:hint="017XXXXXXXX"
-            android:inputType="phone" />
-
-        <!-- EMAIL -->
-        <TextView
-            style="@style/LabelStyle"
-            android:text="EMAIL" />
-
-        <EditText
-            android:id="@+id/etEmail"
-            style="@style/InputStyle"
-            android:hint="example@email.com"
-            android:inputType="textEmailAddress" />
-
-        <!-- STATUS -->
-        <TextView
-            style="@style/LabelStyle"
-            android:text="STATUS" />
+            android:text="TRANSACTION TYPE" />
 
         <Spinner
-            android:id="@+id/spinnerStatus"
+            android:id="@+id/spinnerType"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginBottom="16dp"
             android:background="@drawable/bg_input_field"
             android:paddingHorizontal="16dp" />
 
-        <!-- JOIN DATE -->
         <TextView
             style="@style/LabelStyle"
-            android:text="JOIN DATE" />
+            android:text="DESCRIPTION" />
 
-        <!-- Add Member Button -->
         <EditText
-            android:id="@+id/etJoinDate"
+            android:id="@+id/etDescription"
             style="@style/InputStyle"
-            android:clickable="true"
-            android:cursorVisible="false"
+            android:hint="e.g. Member Payment"
+            android:inputType="text" />
+
+        <TextView
+            style="@style/LabelStyle"
+            android:text="AMOUNT (TK)" />
+
+        <EditText
+            android:id="@+id/etAmount"
+            style="@style/InputStyle"
+            android:hint="e.g. 1000"
+            android:inputType="numberDecimal" />
+
+        <TextView
+            style="@style/LabelStyle"
+            android:text="DATE" />
+
+        <EditText
+            android:id="@+id/etDate"
+            style="@style/InputStyle"
+            android:hint="Select Date"
+            android:inputType="none"
             android:focusable="false"
-            android:hint="26 Jul 2025"
-            android:inputType="none" />
+            android:clickable="true" />
 
         <Button
-            android:id="@+id/btnAddMember"
+            android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_button_teal"
-            android:text="Add Member"
+            android:text="Save Transaction"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold" />
