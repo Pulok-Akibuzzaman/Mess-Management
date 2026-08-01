@@ -7,6 +7,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog  // ← এই import যোগ করো
 import android.widget.ImageButton
 
+import android.content.Intent
+import android.widget.LinearLayout
+import android.widget.Toast
+
 class MemberActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,7 +29,7 @@ class MemberActivity : AppCompatActivity() {
         rvMembers.layoutManager = LinearLayoutManager(this)
         rvMembers.adapter = MemberAdapter(memberList)
 
-        // + বাটন চাপলে Bottom Sheet খুলবে ← এই অংশ যোগ করো
+        // Add Member Button
         val btnAdd = findViewById<ImageButton>(R.id.btnAdd)
         btnAdd.setOnClickListener {
             val bottomSheet = BottomSheetDialog(this)
@@ -37,6 +41,41 @@ class MemberActivity : AppCompatActivity() {
             }
 
             bottomSheet.show()
+        }
+
+        setupBottomNavigation()
+    }
+
+    private fun setupBottomNavigation() {
+        val btnHome = findViewById<LinearLayout>(R.id.btn_home_layout)
+        val btnMeals = findViewById<LinearLayout>(R.id.btn_meals_layout)
+        val btnBazar = findViewById<LinearLayout>(R.id.btn_bazar_layout)
+        val btnCash = findViewById<LinearLayout>(R.id.btn_cash_layout)
+        val btnMore = findViewById<LinearLayout>(R.id.btn_more_layout)
+
+        btnHome?.setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+        }
+
+        btnMeals?.setOnClickListener {
+            startActivity(Intent(this, MealRoutineActivity::class.java))
+            finish()
+        }
+
+        btnBazar?.setOnClickListener {
+            startActivity(Intent(this, BazarActivity::class.java))
+            finish()
+        }
+
+        btnCash?.setOnClickListener {
+            startActivity(Intent(this, CashLedgerActivity::class.java))
+            finish()
+        }
+
+        btnMore?.setOnClickListener {
+            startActivity(Intent(this, AllFeaturesActivity::class.java))
+            finish()
         }
     }
 }

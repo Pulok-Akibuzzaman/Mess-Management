@@ -161,6 +161,13 @@
                         android:textColor="@color/text_white" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Hidden or default role selection -->
+                <Spinner
+                    android:id="@+id/spinner_role"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_continue_container"
                     android:layout_width="match_parent"

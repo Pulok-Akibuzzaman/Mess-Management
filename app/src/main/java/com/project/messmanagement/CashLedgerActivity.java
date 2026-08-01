@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -34,7 +35,15 @@ public class CashLedgerActivity extends AppCompatActivity {
 
 
         btn_home = findViewById(R.id.btn_home_layout);
-        btn_member = findViewById(R.id.btn_member_layout); //pending
+        btn_member = findViewById(R.id.btn_member_layout);
+
+        if (btn_member != null) {
+            btn_member.setOnClickListener(v -> {
+                Intent i = new Intent(CashLedgerActivity.this, MemberActivity.class);
+                startActivity(i);
+                finish();
+            });
+        }
 
         btn_meals = findViewById(R.id.btn_meals_layout);
         btn_bazar = findViewById(R.id.btn_bazar_layout);

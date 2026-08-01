@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -35,6 +36,14 @@ public class MealRoutineActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        if (btn_member != null) {
+            btn_member.setOnClickListener(v -> {
+                Intent i = new Intent(MealRoutineActivity.this, MemberActivity.class);
+                startActivity(i);
+                finish();
+            });
+        }
 
         btn_meals.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -53,10 +53,7 @@
             android:exported="false"
             android:label="@string/title_all_features"
             android:theme="@style/Theme.MessManagement" />
-        <activity
-            android:name=".Member"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
+
         <activity
             android:name=".MemberActivity"
             android:exported="false"
@@ -99,6 +96,38 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".LayoutTabProfileActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".OccasionActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".MonthlyReportActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".LoanActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ComplaintsActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".SOSActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".PollsActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".GuestMealsActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".BTChatActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
     </application>

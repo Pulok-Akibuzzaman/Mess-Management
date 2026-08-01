@@ -56,6 +56,26 @@
     <color name="icon_blue">#2196F3</color>
     <color name="icon_brown">#FF9800</color>
 
+    <!-- Admin Panel Colors -->
+    <color name="admin_primary_bg">#F5F5F5</color>
+    <color name="admin_card_bg">#FFFFFF</color>
+    <color name="admin_main_card_start">#1a7a96</color>
+    <color name="admin_main_card_end">#2b8ab0</color>
+    <color name="admin_stats_card_dark">#1a7a96</color>
+    <color name="admin_text_dark">#1a1a1a</color>
+    <color name="admin_text_gray">#808080</color>
+    <color name="admin_text_white">#FFFFFF</color>
+    <color name="admin_text_light_blue">#7fb3d5</color>
+    <color name="admin_text_orange">#FFA500</color>
+    <color name="admin_icon_teal">#1a7a96</color>
+    <color name="admin_chart_blue">#1a7a96</color>
+    <color name="admin_chart_orange">#FFA500</color>
+    <color name="admin_chart_green">#4CAF50</color>
+    <color name="admin_chart_red">#F44336</color>
+    <color name="admin_notification_red">#F44336</color>
+    <color name="admin_nav_active">#1a7a96</color>
+    <color name="admin_nav_inactive">#a0a0a0</color>
+
     <!-- Status Colors -->
     <color name="amount_due_red">#F44336</color>
     <color name="sign_out_bg">#FFEBEE</color>
