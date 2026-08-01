@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#EDF2F7">
+
+    <!-- Header -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Occasion Food"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#0F172A"
+            android:layout_centerVertical="true" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_add"
+            android:contentDescription="Add occasion"
+            app:fabCustomSize="40dp"
+            app:tint="@color/white"
+            app:backgroundTint="#1a4d63"
+            app:elevation="0dp"
+            app:pressedTranslationZ="0dp" />
+    </RelativeLayout>
+
+    <!-- Summary Card -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#0D5169"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TOTAL SPENT ON OCCASIONS"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:alpha="0.8"
+                android:letterSpacing="0.05" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="৳8,700"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="4 events this year"
+                android:textSize="14sp"
+                android:textColor="#FFFFFF"
+                android:alpha="0.9"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Past Occasions Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PAST OCCASIONS"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:textColor="#475569"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:layout_marginBottom="12dp"
+        android:letterSpacing="0.05" />
+
+    <!-- Occasions List -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="20dp">
+
+            <!-- Item 1: Eid celebration dinner -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Eid celebration dinner"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#1E293B" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Festival"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:textColor="#9C27B0"
+                            android:background="@drawable/pill_background"
+                            android:backgroundTint="#F5E6FF"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:paddingTop="2dp"
+                            android:paddingBottom="2dp"
+                            android:layout_marginStart="8dp" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="৳4,200"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#1E293B" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Jun 17 · 5 members"
+                        android:textSize="12sp"
+                        android:textColor="#94A3B8"
+                        android:layout_marginTop="2dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/pill_background"
+                        android:backgroundTint="#E3F2FD"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="8dp"
+                        android:layout_marginTop="10dp">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_gift_box"
+                            app:tint="#1B7A9E" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Per head: ৳840"
+                            android:textSize="12sp"
+                            android:textColor="#1B7A9E"
+                            android:textStyle="bold"
+                            android:layout_marginStart="8dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Item 2: New member welcome -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="New member welcome"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#1E293B" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Social"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:textColor="#1B7A9E"
+                            android:background="@drawable/pill_background"
+                            android:backgroundTint="#D1E9F6"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:paddingTop="2dp"
+                            android:paddingBottom="2dp"
+                            android:layout_marginStart="8dp" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="৳800"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#1E293B" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Jun 3 · 6 members"
+                        android:textSize="12sp"
+                        android:textColor="#94A3B8"
+                        android:layout_marginTop="2dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/pill_background"
+                        android:backgroundTint="#E3F2FD"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="8dp"
+                        android:layout_marginTop="10dp">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_gift_box"
+                            app:tint="#1B7A9E" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Per head: ৳133"
+                            android:textSize="12sp"
+                            android:textColor="#1B7A9E"
+                            android:textStyle="bold"
+                            android:layout_marginStart="8dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Item 3: Birthday - Rafiq Ahmed -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Birthday — Rafiq Ahmed"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#1E293B" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Birthday"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:textColor="#E91E63"
+                            android:background="@drawable/pill_background"
+                            android:backgroundTint="#FFE4F2"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:paddingTop="2dp"
+                            android:paddingBottom="2dp"
+                            android:layout_marginStart="8dp" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="৳1,500"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#1E293B" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="May 22 · 5 members"
+                        android:textSize="12sp"
+                        android:textColor="#94A3B8"
+                        android:layout_marginTop="2dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/pill_background"
+                        android:backgroundTint="#E3F2FD"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="8dp"
+                        android:layout_marginTop="10dp">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_gift_box"
+                            app:tint="#1B7A9E" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Per head: ৳300"
+                            android:textSize="12sp"
+                            android:textColor="#1B7A9E"
+                            android:textStyle="bold"
+                            android:layout_marginStart="8dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Item 4: Farewell - Jahid Hasan -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Farewell — Jahid Hasan"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#1E293B" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Social"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:textColor="#1B7A9E"
+                            android:background="@drawable/pill_background"
+                            android:backgroundTint="#D1E9F6"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:paddingTop="2dp"
+                            android:paddingBottom="2dp"
+                            android:layout_marginStart="8dp" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="৳2,200"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#1E293B" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Apr 15 · 6 members"
+                        android:textSize="12sp"
+                        android:textColor="#94A3B8"
+                        android:layout_marginTop="2dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/pill_background"
+                        android:backgroundTint="#E3F2FD"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="8dp"
+                        android:layout_marginTop="10dp">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_gift_box"
+                            app:tint="#1B7A9E" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Per head: ৳367"
+                            android:textSize="12sp"
+                            android:textColor="#1B7A9E"
+                            android:textStyle="bold"
+                            android:layout_marginStart="8dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Navigation -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:orientation="horizontal"
+        android:background="#FFFFFF"
+        android:elevation="8dp"
+        android:baselineAligned="false">
+
+        <LinearLayout
+            android:id="@+id/btn_home"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_home"
+                app:tint="#64748B"
+                android:contentDescription="Home" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Home"
+                android:textSize="11sp"
+                android:textColor="#64748B"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btn_members"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_members"
+                app:tint="#64748B"
+                android:contentDescription="Members" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Members"
+                android:textSize="11sp"
+                android:textColor="#64748B"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btn_meals"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_meals"
+                app:tint="#64748B"
+                android:contentDescription="Meals" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Meals"
+                android:textSize="11sp"
+                android:textColor="#64748B"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btn_bazar"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_bazar"
+                app:tint="#64748B"
+                android:contentDescription="Bazar" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bazar"
+                android:textSize="11sp"
+                android:textColor="#64748B"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btn_cash"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_cash"
+                app:tint="#64748B"
+                android:contentDescription="Cash" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cash"
+                android:textSize="11sp"
+                android:textColor="#64748B"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btn_more"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_more"
+                app:tint="#1B7A9E"
+                android:contentDescription="More" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="More"
+                android:textSize="11sp"
+                android:textColor="#1B7A9E"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
