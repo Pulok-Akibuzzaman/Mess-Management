@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Warning banner -->
+    <androidx.cardview.widget.CardView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="#FFF3E0">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="14dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="$"
+                android:textColor="#E65100"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="10dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="July 2025 salary is unpaid. Mark as paid after disbursement."
+                android:textColor="#5A3E00"
+                android:textSize="13sp" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Salary rows -->
+    <include layout="@layout/item_salary_row" android:id="@+id/rowJul" />
+    <include layout="@layout/item_salary_row" android:id="@+id/rowJun" />
+    <include layout="@layout/item_salary_row" android:id="@+id/rowMay" />
+    <include layout="@layout/item_salary_row" android:id="@+id/rowApr" />
+
+    <!-- Mark as Paid button -->
+    <Button
+        android:id="@+id/btnMarkPaid"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_button_teal"
+        android:text="Mark July as Paid"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

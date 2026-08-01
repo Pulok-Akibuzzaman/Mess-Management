@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="32dp">
+
+        <!-- Title row -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="Create Notice"
+                android:textColor="#0D1B2A"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnCloseNotice"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_avatar_circle"
+                android:src="@drawable/ic_close"
+                android:contentDescription="Close" />
+
+        </RelativeLayout>
+
+        <!-- NOTICE TITLE -->
+        <TextView
+            style="@style/LabelStyle"
+            android:text="NOTICE TITLE" />
+
+        <EditText
+            android:id="@+id/etNoticeTitle"
+            style="@style/InputStyle"
+            android:hint="e.g. Kitchen cleaning reminder"
+            android:inputType="textCapSentences" />
+
+        <!-- DETAILS -->
+        <TextView
+            style="@style/LabelStyle"
+            android:text="DETAILS" />
+
+        <EditText
+            android:id="@+id/etNoticeDetails"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_input_field"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:hint="Write notice details..."
+            android:textColorHint="#A0AAB4"
+            android:textColor="#0D1B2A"
+            android:textSize="15sp"
+            android:inputType="textMultiLine"
+            android:gravity="top" />
+
+        <!-- PRIORITY -->
+        <TextView
+            style="@style/LabelStyle"
+            android:text="PRIORITY" />
+
+        <Spinner
+            android:id="@+id/spinnerPriority"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_input_field"
+            android:paddingHorizontal="16dp" />
+
+        <!-- AUDIENCE -->
+        <TextView
+            style="@style/LabelStyle"
+            android:text="AUDIENCE" />
+
+        <Spinner
+            android:id="@+id/spinnerAudience"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_input_field"
+            android:paddingHorizontal="16dp" />
+
+        <!-- Post Button -->
+        <Button
+            android:id="@+id/btnPostNotice"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_button_teal"
+            android:text="Post Notice"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</ScrollView>

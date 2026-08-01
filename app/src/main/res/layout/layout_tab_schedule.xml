@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <include layout="@layout/item_schedule_row" android:id="@+id/rowMorning" />
+    <include layout="@layout/item_schedule_row" android:id="@+id/rowCooking" />
+    <include layout="@layout/item_schedule_row" android:id="@+id/rowDish" />
+    <include layout="@layout/item_schedule_row" android:id="@+id/rowEvening" />
+    <include layout="@layout/item_schedule_row" android:id="@+id/rowDeep" />
+
+</LinearLayout>
