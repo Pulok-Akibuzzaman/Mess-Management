@@ -72,6 +72,7 @@ public class SignupActivity extends AppCompatActivity {
                     editor.putString("password", password);
                     editor.putString("name", name);
                     editor.putString("role", selectedRole);
+                    editor.putBoolean("isLoggedIn", true);
                     editor.apply();
 
                     Toast.makeText(SignupActivity.this, "Signup Successful as " + selectedRole, Toast.LENGTH_SHORT).show();

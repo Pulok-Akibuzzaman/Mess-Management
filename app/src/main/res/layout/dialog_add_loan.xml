@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="32dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="Add Loan"
+                android:textColor="#0D1B2A"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnClose"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_avatar_circle"
+                android:src="@drawable/ic_close"
+                android:contentDescription="Close" />
+
+        </RelativeLayout>
+
+        <TextView
+            style="@style/LabelStyle"
+            android:text="LENDER / BORROWER" />
+
+        <EditText
+            android:id="@+id/etLenderName"
+            style="@style/InputStyle"
+            android:hint="e.g. Pulok"
+            android:inputType="textPersonName" />
+
+        <TextView
+            style="@style/LabelStyle"
+            android:text="AMOUNT (TK)" />
+
+        <EditText
+            android:id="@+id/etAmount"
+            style="@style/InputStyle"
+            android:hint="e.g. 1500"
+            android:inputType="numberDecimal" />
+
+        <TextView
+            style="@style/LabelStyle"
+            android:text="STATUS" />
+
+        <Spinner
+            android:id="@+id/spinnerLoanStatus"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_input_field"
+            android:paddingHorizontal="16dp" />
+
+        <TextView
+            style="@style/LabelStyle"
+            android:text="DATE" />
+
+        <EditText
+            android:id="@+id/etDate"
+            style="@style/InputStyle"
+            android:hint="Select Date"
+            android:inputType="none"
+            android:focusable="false"
+            android:clickable="true" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_button_teal"
+            android:text="Save Loan"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</ScrollView>

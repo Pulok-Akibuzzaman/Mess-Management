@@ -15,11 +15,9 @@ public class SOSActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notices);
 
-        // Change title in code (since we are reusing layout)
+        TextView tvTitle = findViewById(R.id.tvActivityTitle);
+        if (tvTitle != null) tvTitle.setText("SOS Alert");
 
-        // Instead, let's just find the textview by its position or content if we know it.
-        // But in the layout it's just a TextView. I'll just find the first TextView in the RelativeLayout.
-        
         android.widget.ImageButton btnSOS = findViewById(R.id.btnAddNotice);
         if (btnSOS != null) {
             btnSOS.setOnClickListener(v -> triggerSOS());

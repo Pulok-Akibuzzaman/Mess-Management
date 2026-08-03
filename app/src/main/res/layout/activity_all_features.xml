@@ -276,7 +276,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_home"
-                app:tint="@color/nav_active"
+                app:tint="@color/nav_inactive"
                 android:contentDescription="@null" />
 
             <TextView
@@ -284,9 +284,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="@string/nav_home"
-                android:textColor="@color/nav_active"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:textColor="@color/nav_inactive"
+                android:textSize="11sp" />
         </LinearLayout>
 
 
@@ -422,7 +421,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_more"
-                app:tint="@color/nav_inactive"
+                app:tint="@color/nav_active"
                 android:contentDescription="@null" />
 
             <TextView
@@ -430,8 +429,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="@string/nav_more"
-                android:textColor="@color/nav_inactive"
-                android:textSize="11sp" />
+                android:textColor="@color/nav_active"
+                android:textSize="11sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
 

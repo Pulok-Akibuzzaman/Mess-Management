@@ -1,6 +1,7 @@
 package com.project.messmanagement;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -63,6 +64,14 @@ public class AllFeaturesActivity extends AppCompatActivity {
         setupFeature(R.id.card_occasions, OccasionActivity.class);
         setupFeature(R.id.card_reports, MonthlyReportActivity.class);
         setupFeature(R.id.card_guest_meals, GuestMealsActivity.class);
+
+        // 3. Sign Out Button
+        findViewById(R.id.btn_sign_out).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                signOut(v);
+            }
+        });
     }
 
     private void setupFeature(int id, final Class<?> activityClass) {
@@ -80,6 +89,12 @@ public class AllFeaturesActivity extends AppCompatActivity {
 
     // This method can be linked to the XML onClick for the Sign Out button
     public void signOut(View view) {
+        // Clear login session
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putBoolean("isLoggedIn", false);
+        editor.apply();
+
         Toast.makeText(this, "Signed Out", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(AllFeaturesActivity.this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

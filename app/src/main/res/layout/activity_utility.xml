@@ -341,9 +341,13 @@
 
         <!-- Home -->
         <LinearLayout
+            android:id="@+id/btn_home_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center"
             android:orientation="vertical">
             <ImageView
@@ -363,9 +367,13 @@
 
         <!-- Members -->
         <LinearLayout
+            android:id="@+id/btn_member_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center"
             android:orientation="vertical">
             <ImageView
@@ -385,9 +393,13 @@
 
         <!-- Meals -->
         <LinearLayout
+            android:id="@+id/btn_meals_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center"
             android:orientation="vertical">
             <ImageView
@@ -407,9 +419,13 @@
 
         <!-- Bazar (Active) -->
         <LinearLayout
+            android:id="@+id/btn_bazar_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center"
             android:orientation="vertical">
             <ImageView
@@ -430,9 +446,13 @@
 
         <!-- Cash -->
         <LinearLayout
+            android:id="@+id/btn_cash_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center"
             android:orientation="vertical">
             <ImageView
@@ -452,9 +472,13 @@
 
         <!-- More -->
         <LinearLayout
+            android:id="@+id/btn_more_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center"
             android:orientation="vertical">
             <ImageView
