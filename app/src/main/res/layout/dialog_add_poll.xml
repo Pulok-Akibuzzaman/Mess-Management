@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="32dp">
+
+        <!-- Title row -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="Create New Poll"
+                android:textColor="#0D1B2A"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnClose"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_avatar_circle"
+                android:src="@drawable/ic_close"
+                android:contentDescription="Close" />
+
+        </RelativeLayout>
+
+        <!-- QUESTION -->
+        <TextView
+            style="@style/LabelStyle"
+            android:text="POLL QUESTION" />
+
+        <EditText
+            android:id="@+id/etQuestion"
+            style="@style/InputStyle"
+            android:hint="e.g. Do you like the new meal menu?"
+            android:inputType="textCapSentences" />
+
+        <!-- OPTION 1 -->
+        <TextView
+            style="@style/LabelStyle"
+            android:text="OPTION 1" />
+
+        <EditText
+            android:id="@+id/etOption1"
+            style="@style/InputStyle"
+            android:hint="e.g. Yes, it's great!"
+            android:inputType="textCapSentences" />
+
+        <!-- OPTION 2 -->
+        <TextView
+            style="@style/LabelStyle"
+            android:text="OPTION 2" />
+
+        <EditText
+            android:id="@+id/etOption2"
+            style="@style/InputStyle"
+            android:hint="e.g. No, needs change."
+            android:inputType="textCapSentences" />
+
+        <!-- Create Button -->
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_button_teal"
+            android:text="Create Poll"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</ScrollView>

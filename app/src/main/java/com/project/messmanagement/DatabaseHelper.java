@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "MessManager.db";
-    private static final int DATABASE_VERSION = 5; // Increased version to add loans table
+    private static final int DATABASE_VERSION = 9; 
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -25,249 +25,261 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE equipment (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, location TEXT, status TEXT, purchase_date TEXT, price REAL)");
         db.execSQL("CREATE TABLE notices (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT, priority TEXT, audience TEXT, date TEXT)");
         db.execSQL("CREATE TABLE loans (id INTEGER PRIMARY KEY AUTOINCREMENT, lender TEXT, amount REAL, status TEXT, date TEXT)");
+        db.execSQL("CREATE TABLE polls (id INTEGER PRIMARY KEY AUTOINCREMENT, question TEXT, option1 TEXT, option2 TEXT, votes1 INTEGER, votes2 INTEGER, status TEXT, date TEXT)");
+        db.execSQL("CREATE TABLE poll_votes (poll_id INTEGER, user_email TEXT, option_number INTEGER, PRIMARY KEY (poll_id, user_email))");
+        db.execSQL("CREATE TABLE complaints (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT, date TEXT)");
+        db.execSQL("CREATE TABLE emergency_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT)");
         
         insertSampleData(db);
     }
 
     private void insertSampleData(SQLiteDatabase db) {
-        // Sample Bazar
-        db.execSQL("INSERT INTO bazar (item_name, amount, date) VALUES ('Rice', 1200, '2026-08-01')");
-        db.execSQL("INSERT INTO bazar (item_name, amount, date) VALUES ('Oil', 800, '2026-08-01')");
-        
-        // Sample Meals
-        db.execSQL("INSERT INTO meals (count, date) VALUES (150, '2026-08-01')");
-        
-        // Sample Utilities
-        db.execSQL("INSERT INTO utilities (type, amount, date) VALUES ('Gas', 1000, '2026-08-01')");
-        
-        // Sample Cash
-        db.execSQL("INSERT INTO cash (description, amount, type, date) VALUES ('Initial Deposit', 10000, 'IN', '2026-08-01')");
-        db.execSQL("INSERT INTO cash (description, amount, type, date) VALUES ('Mess Rent', 2000, 'OUT', '2026-08-01')");
-        
-        // Sample Members
         db.execSQL("INSERT INTO members (name, room, status) VALUES ('Rafiq Ahmed', 'Room 201', 'Active')");
-        db.execSQL("INSERT INTO members (name, room, status) VALUES ('Karim Hossain', 'Room 202', 'Active')");
-        db.execSQL("INSERT INTO members (name, room, status) VALUES ('Sajid Ullah', 'Room 203', 'Away')");
-
-        // Sample Equipment
-        db.execSQL("INSERT INTO equipment (name, location, status, purchase_date, price) VALUES ('Kitchen Stove', 'Kitchen', 'Good Condition', '2026-01-10', 2500)");
-        db.execSQL("INSERT INTO equipment (name, location, status, purchase_date, price) VALUES ('Dining Table', 'Dining Room', 'Need Repair', '2025-12-05', 4500)");
-
-        // Sample Notices
-        db.execSQL("INSERT INTO notices (title, content, priority, audience, date) VALUES ('Meeting Tonight', 'Meeting at 9 PM to discuss meal rates.', 'High', 'All Members', '2026-08-01')");
-        db.execSQL("INSERT INTO notices (title, content, priority, audience, date) VALUES ('Electricity Bill', 'Please pay your share by Friday.', 'Medium', 'All Members', '2026-07-30')");
-
-        // Sample Loans
-        db.execSQL("INSERT INTO loans (lender, amount, status, date) VALUES ('Pulok', 1500, 'Pending', '2026-08-01')");
-        db.execSQL("INSERT INTO loans (lender, amount, status, date) VALUES ('Mess Fund', 2000, 'Urgent', '2026-08-02')");
+        db.execSQL("INSERT INTO bazar (item_name, amount, date) VALUES ('Rice', 1200, '2026-08-01')");
+        db.execSQL("INSERT INTO cash (description, amount, type, date) VALUES ('Initial Deposit', 10000, 'IN', '2026-08-01')");
+        db.execSQL("INSERT INTO emergency_contacts (name, phone) VALUES ('Police', '999')");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 2) db.execSQL("ALTER TABLE cash ADD COLUMN date TEXT");
-        if (oldVersion < 3) db.execSQL("CREATE TABLE equipment (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, location TEXT, status TEXT, purchase_date TEXT, price REAL)");
-        if (oldVersion < 4) db.execSQL("CREATE TABLE notices (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT, priority TEXT, audience TEXT, date TEXT)");
-        if (oldVersion < 5) db.execSQL("CREATE TABLE loans (id INTEGER PRIMARY KEY AUTOINCREMENT, lender TEXT, amount REAL, status TEXT, date TEXT)");
+        if (oldVersion < 3) db.execSQL("CREATE TABLE IF NOT EXISTS equipment (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, location TEXT, status TEXT, purchase_date TEXT, price REAL)");
+        if (oldVersion < 4) db.execSQL("CREATE TABLE IF NOT EXISTS notices (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT, priority TEXT, audience TEXT, date TEXT)");
+        if (oldVersion < 5) db.execSQL("CREATE TABLE IF NOT EXISTS loans (id INTEGER PRIMARY KEY AUTOINCREMENT, lender TEXT, amount REAL, status TEXT, date TEXT)");
+        if (oldVersion < 6) db.execSQL("CREATE TABLE IF NOT EXISTS polls (id INTEGER PRIMARY KEY AUTOINCREMENT, question TEXT, option1 TEXT, option2 TEXT, votes1 INTEGER, votes2 INTEGER, status TEXT, date TEXT)");
+        if (oldVersion < 7) db.execSQL("CREATE TABLE IF NOT EXISTS poll_votes (poll_id INTEGER, user_email TEXT, option_number INTEGER, PRIMARY KEY (poll_id, user_email))");
+        if (oldVersion < 8) db.execSQL("CREATE TABLE IF NOT EXISTS complaints (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT, date TEXT)");
+        if (oldVersion < 9) db.execSQL("CREATE TABLE IF NOT EXISTS emergency_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT)");
     }
 
     // --- MEMBER METHODS ---
     public void addMember(String name, String room, String status) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("name", name); values.put("room", room); values.put("status", status);
-        db.insert("members", null, values);
+        ContentValues v = new ContentValues();
+        v.put("name", name); v.put("room", room); v.put("status", status);
+        db.insert("members", null, v);
     }
     public void updateMember(int id, String name, String room, String status) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("name", name); values.put("room", room); values.put("status", status);
-        db.update("members", values, "id = ?", new String[]{String.valueOf(id)});
+        ContentValues v = new ContentValues();
+        v.put("name", name); v.put("room", room); v.put("status", status);
+        db.update("members", v, "id=?", new String[]{String.valueOf(id)});
     }
     public void deleteMember(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete("members", "id = ?", new String[]{String.valueOf(id)});
+        this.getWritableDatabase().delete("members", "id=?", new String[]{String.valueOf(id)});
     }
     public Cursor getAllMembers() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM members", null);
+        return this.getReadableDatabase().rawQuery("SELECT * FROM members", null);
     }
     public Cursor searchMembers(String query) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM members WHERE name LIKE ?", new String[]{"%" + query + "%"});
+        return this.getReadableDatabase().rawQuery("SELECT * FROM members WHERE name LIKE ?", new String[]{"%" + query + "%"});
     }
     public int getActiveMembersCount() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM members WHERE status = 'Active'", null);
-        int count = 0; if (cursor.moveToFirst()) count = cursor.getInt(0);
-        cursor.close(); return count;
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM members WHERE status='Active'", null);
+        int count = 0; if (c.moveToFirst()) count = c.getInt(0); c.close(); return count;
     }
 
     // --- BAZAR METHODS ---
     public void addBazarItem(String name, double amount, String date) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("item_name", name); values.put("amount", amount); values.put("date", date);
-        db.insert("bazar", null, values);
+        ContentValues v = new ContentValues();
+        v.put("item_name", name); v.put("amount", amount); v.put("date", date);
+        this.getWritableDatabase().insert("bazar", null, v);
     }
     public void updateBazarItem(int id, String name, double amount, String date) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("item_name", name); values.put("amount", amount); values.put("date", date);
-        db.update("bazar", values, "id = ?", new String[]{String.valueOf(id)});
+        ContentValues v = new ContentValues();
+        v.put("item_name", name); v.put("amount", amount); v.put("date", date);
+        this.getWritableDatabase().update("bazar", v, "id=?", new String[]{String.valueOf(id)});
     }
     public void deleteBazarItem(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete("bazar", "id = ?", new String[]{String.valueOf(id)});
+        this.getWritableDatabase().delete("bazar", "id=?", new String[]{String.valueOf(id)});
     }
     public Cursor getAllBazarItems() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM bazar ORDER BY date DESC", null);
+        return this.getReadableDatabase().rawQuery("SELECT * FROM bazar ORDER BY date DESC", null);
+    }
+    public double getTotalBazar() {
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM bazar", null);
+        double total = 0; if (c.moveToFirst()) total = c.getDouble(0); c.close(); return total;
+    }
+    public int getBazarCount() {
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM bazar", null);
+        int count = 0; if (c.moveToFirst()) count = c.getInt(0); c.close(); return count;
     }
 
     // --- CASH METHODS ---
     public void addCashTransaction(String desc, double amount, String type, String date) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("description", desc); values.put("amount", amount); values.put("type", type); values.put("date", date);
-        db.insert("cash", null, values);
+        ContentValues v = new ContentValues();
+        v.put("description", desc); v.put("amount", amount); v.put("type", type); v.put("date", date);
+        this.getWritableDatabase().insert("cash", null, v);
     }
     public void updateCashTransaction(int id, String desc, double amount, String type, String date) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("description", desc); values.put("amount", amount); values.put("type", type); values.put("date", date);
-        db.update("cash", values, "id = ?", new String[]{String.valueOf(id)});
+        ContentValues v = new ContentValues();
+        v.put("description", desc); v.put("amount", amount); v.put("type", type); v.put("date", date);
+        this.getWritableDatabase().update("cash", v, "id=?", new String[]{String.valueOf(id)});
     }
     public void deleteCashTransaction(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete("cash", "id = ?", new String[]{String.valueOf(id)});
+        this.getWritableDatabase().delete("cash", "id=?", new String[]{String.valueOf(id)});
     }
     public Cursor getAllCashTransactions() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM cash ORDER BY id DESC", null);
+        return this.getReadableDatabase().rawQuery("SELECT * FROM cash ORDER BY id DESC", null);
     }
     public double getTotalIn() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT SUM(amount) FROM cash WHERE type = 'IN'", null);
-        double total = 0; if (cursor.moveToFirst()) total = cursor.getDouble(0);
-        cursor.close(); return total;
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE type='IN'", null);
+        double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
     }
     public double getTotalOut() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT SUM(amount) FROM cash WHERE type = 'OUT'", null);
-        double total = 0; if (cursor.moveToFirst()) total = cursor.getDouble(0);
-        cursor.close(); return total;
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE type='OUT'", null);
+        double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
     }
+    public double getCashBalance() { return getTotalIn() - getTotalOut(); }
 
     // --- UTILITIES METHODS ---
     public void addUtility(String type, double amount, String date) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("type", type); values.put("amount", amount); values.put("date", date);
-        db.insert("utilities", null, values);
+        ContentValues v = new ContentValues();
+        v.put("type", type); v.put("amount", amount); v.put("date", date);
+        this.getWritableDatabase().insert("utilities", null, v);
     }
     public double getUtilityTotalByType(String type) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT SUM(amount) FROM utilities WHERE type = ?", new String[]{type});
-        double total = 0; if (cursor.moveToFirst()) total = cursor.getDouble(0);
-        cursor.close(); return total;
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM utilities WHERE type=?", new String[]{type});
+        double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
     }
     public double getUtilitiesTotal() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT SUM(amount) FROM utilities", null);
-        double total = 0; if (cursor.moveToFirst()) total = cursor.getDouble(0);
-        cursor.close(); return total;
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM utilities", null);
+        double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
     }
     public int getUtilitiesCount() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM utilities", null);
-        int count = 0; if (cursor.moveToFirst()) count = cursor.getInt(0);
-        cursor.close(); return count;
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM utilities", null);
+        int n = 0; if (c.moveToFirst()) n = c.getInt(0); c.close(); return n;
     }
 
     // --- EQUIPMENT METHODS ---
-    public void addEquipment(String name, String location, String status, String date, double price) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("name", name); values.put("location", location); values.put("status", status); values.put("purchase_date", date); values.put("price", price);
-        db.insert("equipment", null, values);
+    public void addEquipment(String name, String loc, String status, String date, double price) {
+        ContentValues v = new ContentValues();
+        v.put("name", name); v.put("location", loc); v.put("status", status); v.put("purchase_date", date); v.put("price", price);
+        this.getWritableDatabase().insert("equipment", null, v);
     }
-    public void updateEquipment(int id, String name, String location, String status, String date, double price) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("name", name); values.put("location", location); values.put("status", status); values.put("purchase_date", date); values.put("price", price);
-        db.update("equipment", values, "id = ?", new String[]{String.valueOf(id)});
+    public void updateEquipment(int id, String name, String loc, String status, String date, double price) {
+        ContentValues v = new ContentValues();
+        v.put("name", name); v.put("location", loc); v.put("status", status); v.put("purchase_date", date); v.put("price", price);
+        this.getWritableDatabase().update("equipment", v, "id=?", new String[]{String.valueOf(id)});
     }
     public void deleteEquipment(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete("equipment", "id = ?", new String[]{String.valueOf(id)});
+        this.getWritableDatabase().delete("equipment", "id=?", new String[]{String.valueOf(id)});
     }
     public Cursor getAllEquipment() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM equipment ORDER BY id DESC", null);
+        return this.getReadableDatabase().rawQuery("SELECT * FROM equipment ORDER BY id DESC", null);
     }
 
     // --- NOTICES METHODS ---
-    public void addNotice(String title, String content, String priority, String audience, String date) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("title", title); values.put("content", content); values.put("priority", priority); values.put("audience", audience); values.put("date", date);
-        db.insert("notices", null, values);
+    public void addNotice(String title, String content, String prio, String aud, String date) {
+        ContentValues v = new ContentValues();
+        v.put("title", title); v.put("content", content); v.put("priority", prio); v.put("audience", aud); v.put("date", date);
+        this.getWritableDatabase().insert("notices", null, v);
     }
-    public void updateNotice(int id, String title, String content, String priority, String audience, String date) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("title", title); values.put("content", content); values.put("priority", priority); values.put("audience", audience); values.put("date", date);
-        db.update("notices", values, "id = ?", new String[]{String.valueOf(id)});
+    public void updateNotice(int id, String title, String content, String prio, String aud, String date) {
+        ContentValues v = new ContentValues();
+        v.put("title", title); v.put("content", content); v.put("priority", prio); v.put("audience", aud); v.put("date", date);
+        this.getWritableDatabase().update("notices", v, "id=?", new String[]{String.valueOf(id)});
     }
     public void deleteNotice(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete("notices", "id = ?", new String[]{String.valueOf(id)});
+        this.getWritableDatabase().delete("notices", "id=?", new String[]{String.valueOf(id)});
     }
     public Cursor getAllNotices() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM notices ORDER BY id DESC", null);
+        return this.getReadableDatabase().rawQuery("SELECT * FROM notices ORDER BY id DESC", null);
     }
 
     // --- LOANS METHODS ---
     public void addLoan(String lender, double amount, String status, String date) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("lender", lender); values.put("amount", amount); values.put("status", status); values.put("date", date);
-        db.insert("loans", null, values);
+        ContentValues v = new ContentValues();
+        v.put("lender", lender); v.put("amount", amount); v.put("status", status); v.put("date", date);
+        this.getWritableDatabase().insert("loans", null, v);
     }
     public void updateLoan(int id, String lender, double amount, String status, String date) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("lender", lender); values.put("amount", amount); values.put("status", status); values.put("date", date);
-        db.update("loans", values, "id = ?", new String[]{String.valueOf(id)});
+        ContentValues v = new ContentValues();
+        v.put("lender", lender); v.put("amount", amount); v.put("status", status); v.put("date", date);
+        this.getWritableDatabase().update("loans", v, "id=?", new String[]{String.valueOf(id)});
     }
     public void deleteLoan(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete("loans", "id = ?", new String[]{String.valueOf(id)});
+        this.getWritableDatabase().delete("loans", "id=?", new String[]{String.valueOf(id)});
     }
     public Cursor getAllLoans() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM loans ORDER BY id DESC", null);
+        return this.getReadableDatabase().rawQuery("SELECT * FROM loans ORDER BY id DESC", null);
+    }
+
+    // --- POLLS METHODS ---
+    public void addPoll(String q, String o1, String o2, String date) {
+        ContentValues v = new ContentValues();
+        v.put("question", q); v.put("option1", o1); v.put("option2", o2);
+        v.put("votes1", 0); v.put("votes2", 0); v.put("status", "Open"); v.put("date", date);
+        this.getWritableDatabase().insert("polls", null, v);
+    }
+    public void updatePoll(int id, String q, String o1, String o2) {
+        ContentValues v = new ContentValues();
+        v.put("question", q); v.put("option1", o1); v.put("option2", o2);
+        this.getWritableDatabase().update("polls", v, "id=?", new String[]{String.valueOf(id)});
+    }
+    public int getUserVote(int pollId, String userEmail) {
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT option_number FROM poll_votes WHERE poll_id=? AND user_email=?", 
+                new String[]{String.valueOf(pollId), userEmail});
+        int opt = 0; if (c.moveToFirst()) opt = c.getInt(0); c.close(); return opt;
+    }
+    public void toggleVote(int pollId, String userEmail, int selectedOpt) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int existingOpt = getUserVote(pollId, userEmail);
+        if (existingOpt == selectedOpt) {
+            db.delete("poll_votes", "poll_id=? AND user_email=?", new String[]{String.valueOf(pollId), userEmail});
+            if (selectedOpt == 1) db.execSQL("UPDATE polls SET votes1 = votes1 - 1 WHERE id = " + pollId);
+            else db.execSQL("UPDATE polls SET votes2 = votes2 - 1 WHERE id = " + pollId);
+        } else {
+            if (existingOpt != 0) {
+                if (existingOpt == 1) db.execSQL("UPDATE polls SET votes1 = votes1 - 1 WHERE id = " + pollId);
+                else db.execSQL("UPDATE polls SET votes2 = votes2 - 1 WHERE id = " + pollId);
+            }
+            if (selectedOpt == 1) db.execSQL("UPDATE polls SET votes1 = votes1 + 1 WHERE id = " + pollId);
+            else db.execSQL("UPDATE polls SET votes2 = votes2 + 1 WHERE id = " + pollId);
+            ContentValues v = new ContentValues();
+            v.put("poll_id", pollId);
+            v.put("user_email", userEmail);
+            v.put("option_number", selectedOpt);
+            db.replace("poll_votes", null, v);
+        }
+    }
+    public void deletePoll(int id) {
+        this.getWritableDatabase().delete("polls", "id=?", new String[]{String.valueOf(id)});
+        this.getWritableDatabase().delete("poll_votes", "poll_id=?", new String[]{String.valueOf(id)});
+    }
+    public Cursor getAllPolls() {
+        return this.getReadableDatabase().rawQuery("SELECT * FROM polls ORDER BY id DESC", null);
+    }
+
+    // --- COMPLAINTS METHODS ---
+    public void addComplaint(String message, String date) {
+        ContentValues v = new ContentValues();
+        v.put("message", message); v.put("date", date);
+        this.getWritableDatabase().insert("complaints", null, v);
+    }
+    public void deleteComplaint(int id) {
+        this.getWritableDatabase().delete("complaints", "id=?", new String[]{String.valueOf(id)});
+    }
+    public Cursor getAllComplaints() {
+        return this.getReadableDatabase().rawQuery("SELECT * FROM complaints ORDER BY id DESC", null);
+    }
+
+    // --- EMERGENCY CONTACT METHODS ---
+    public void addEmergencyContact(String name, String phone) {
+        ContentValues v = new ContentValues();
+        v.put("name", name); v.put("phone", phone);
+        this.getWritableDatabase().insert("emergency_contacts", null, v);
+    }
+    public void deleteEmergencyContact(int id) {
+        this.getWritableDatabase().delete("emergency_contacts", "id=?", new String[]{String.valueOf(id)});
+    }
+    public Cursor getAllEmergencyContacts() {
+        return this.getReadableDatabase().rawQuery("SELECT * FROM emergency_contacts ORDER BY id DESC", null);
     }
 
     // --- DASHBOARD AGGREGATES ---
-    public double getTotalBazar() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT SUM(amount) FROM bazar", null);
-        double total = 0; if (cursor.moveToFirst()) total = cursor.getDouble(0);
-        cursor.close(); return total;
-    }
-    public int getBazarCount() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM bazar", null);
-        int count = 0; if (cursor.moveToFirst()) count = cursor.getInt(0);
-        cursor.close(); return count;
-    }
     public int getTotalMeals() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT SUM(count) FROM meals", null);
-        int total = 0; if (cursor.moveToFirst()) total = cursor.getInt(0);
-        cursor.close(); return total;
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(count) FROM meals", null);
+        int total = 0; if (c.moveToFirst()) total = c.getInt(0); c.close(); return total;
     }
-    public double getCashBalance() { return getTotalIn() - getTotalOut(); }
 }

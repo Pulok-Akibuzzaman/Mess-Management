@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="32dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="Add Emergency Contact"
+                android:textColor="#0D1B2A"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnClose"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_avatar_circle"
+                android:src="@drawable/ic_close"
+                android:contentDescription="Close" />
+
+        </RelativeLayout>
+
+        <TextView
+            style="@style/LabelStyle"
+            android:text="CONTACT NAME" />
+
+        <EditText
+            android:id="@+id/etContactName"
+            style="@style/InputStyle"
+            android:hint="e.g. My Dad"
+            android:inputType="textPersonName" />
+
+        <TextView
+            style="@style/LabelStyle"
+            android:text="PHONE NUMBER" />
+
+        <EditText
+            android:id="@+id/etContactPhone"
+            style="@style/InputStyle"
+            android:hint="e.g. 017xxxxxxxx"
+            android:inputType="phone" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_button_teal"
+            android:text="Save Contact"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</ScrollView>
