@@ -135,45 +135,63 @@ public class BazarActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void addBazarToUI(final int id, final String name, final double amount, final String date) {
-        final LinearLayout itemLayout = new LinearLayout(this);
-        itemLayout.setOrientation(LinearLayout.VERTICAL);
-        itemLayout.setClickable(true);
-        itemLayout.setFocusable(true);
-        itemLayout.setBackgroundResource(android.R.drawable.list_selector_background);
+    private void addBazarToUI(final int id,
+                              final String name,
+                              final double amount,
+                              final String date) {
 
-        TextView tv = new TextView(this);
-        tv.setText(name + "\n" + date + " | ৳" + (int) amount);
-        tv.setTextSize(16);
-        tv.setPadding(20, 30, 20, 30);
-        tv.setTextColor(Color.BLACK);
+        // Inflate your custom item layout
+        View itemView = getLayoutInflater().inflate(
+                R.layout.item_purchase,   // <-- Change this if your XML file has a different name
+                container,
+                false
+        );
 
-        View line = new View(this);
-        line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2));
-        line.setBackgroundColor(Color.LTGRAY);
+        // Find Views
+        TextView tvItemName = itemView.findViewById(R.id.tv_item_name);
+        TextView tvItemDetails = itemView.findViewById(R.id.tv_item_details);
+        TextView tvPrice = itemView.findViewById(R.id.tv_price);
 
-        itemLayout.addView(tv);
-        itemLayout.addView(line);
+        // Set values
+        tvItemName.setText(name);
+
+        // Since your database only stores name, amount and date,
+        // we don't have the buyer's name yet.
+        tvItemDetails.setText(date);
+
+        // Price
+        tvPrice.setText("৳" + (int) amount);
 
         // Edit on Click
-        itemLayout.setOnClickListener(v -> showBazarDialog(id, name, amount, date));
+        itemView.setOnClickListener(v ->
+                showBazarDialog(id, name, amount, date)
+        );
 
-        // Long Press to Delete
-        itemLayout.setOnLongClickListener(v -> {
-            new AlertDialog.Builder(this)
+        // Delete on Long Press
+        itemView.setOnLongClickListener(v -> {
+
+            new AlertDialog.Builder(BazarActivity.this)
                     .setTitle("Delete Item")
                     .setMessage("Delete " + name + "?")
                     .setPositiveButton("Confirm", (dialog, which) -> {
+
                         db.deleteBazarItem(id);
                         refreshBazarList();
-                        Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
+
+                        Toast.makeText(
+                                BazarActivity.this,
+                                "Deleted",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
                     })
                     .setNegativeButton("Cancel", null)
                     .show();
+
             return true;
         });
 
-        container.addView(itemLayout);
+        container.addView(itemView);
     }
 
     private void setupNavigation() {

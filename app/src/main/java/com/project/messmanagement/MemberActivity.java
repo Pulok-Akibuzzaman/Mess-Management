@@ -162,44 +162,79 @@ public class MemberActivity extends AppCompatActivity {
     }
 
     private void addMemberToUI(final int id, final String name, final String room, final String status) {
-        final LinearLayout itemLayout = new LinearLayout(this);
-        itemLayout.setOrientation(LinearLayout.VERTICAL);
-        itemLayout.setClickable(true);
-        itemLayout.setFocusable(true);
-        itemLayout.setBackgroundResource(android.R.drawable.list_selector_background);
 
-        TextView tv = new TextView(this);
-        tv.setText(name + "\n" + room + " | " + status);
-        tv.setTextSize(18);
-        tv.setPadding(20, 30, 20, 30);
-        tv.setTextColor(getResources().getColor(R.color.admin_text_dark));
+        // Inflate your custom card layout
+        View itemView = getLayoutInflater().inflate(
+                R.layout.item_membercard,
+                memberContainer,
+                false
+        );
 
-        View line = new View(this);
-        line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2));
-        line.setBackgroundColor(android.graphics.Color.LTGRAY);
+        // Find views
+        TextView tvInitials = itemView.findViewById(R.id.tvInitials);
+        TextView tvName = itemView.findViewById(R.id.tvName);
+        TextView tvStatus = itemView.findViewById(R.id.tvStatus);
+        TextView tvRoomPhone = itemView.findViewById(R.id.tvRoomPhone);
+        TextView tvMeals = itemView.findViewById(R.id.tvMeals);
+        TextView tvDue = itemView.findViewById(R.id.tvDue);
 
-        itemLayout.addView(tv);
-        itemLayout.addView(line);
+        String initials = "";
 
-        // Edit on Click
-        itemLayout.setOnClickListener(v -> showMemberDialog(id, name, room, status));
+        if (name != null && !name.trim().isEmpty()) {
+            String[] parts = name.trim().split("\\s+");
 
-        // Long Press to Delete
-        itemLayout.setOnLongClickListener(v -> {
+            initials += parts[0].substring(0, 1);
+
+            if (parts.length > 1) {
+                initials += parts[parts.length - 1].substring(0, 1);
+            }
+        }
+
+        tvInitials.setText(initials.toUpperCase());
+        tvName.setText(name);
+        tvStatus.setText(status);
+
+        if (status.equalsIgnoreCase("Active")) {
+            tvStatus.setBackgroundResource(R.drawable.bg_badge_active);
+            tvStatus.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+        } else {
+            tvStatus.setBackgroundResource(R.drawable.bg_badge_away);
+            tvStatus.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+        }
+        tvRoomPhone.setText(room);
+
+        tvMeals.setText("0");
+        tvDue.setText("৳0");
+
+        itemView.setOnClickListener(v ->
+                showMemberDialog(id, name, room, status)
+        );
+
+        itemView.setOnLongClickListener(v -> {
+
             new AlertDialog.Builder(MemberActivity.this)
                     .setTitle("Delete Member")
                     .setMessage("Are you sure you want to delete " + name + "?")
                     .setPositiveButton("Confirm", (dialog, which) -> {
+
                         db.deleteMember(id);
+
                         refreshMemberList("");
-                        Toast.makeText(MemberActivity.this, name + " deleted", Toast.LENGTH_SHORT).show();
+
+                        Toast.makeText(
+                                MemberActivity.this,
+                                name + " deleted",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
                     })
                     .setNegativeButton("Cancel", null)
                     .show();
+
             return true;
         });
 
-        memberContainer.addView(itemLayout);
+        memberContainer.addView(itemView);
     }
 
     private void setupNavigation() {
