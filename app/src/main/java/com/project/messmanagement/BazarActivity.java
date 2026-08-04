@@ -46,64 +46,12 @@ public class BazarActivity extends AppCompatActivity {
 
         loadHistoryData();
 
-        // NOTE: assumes activity_bazar.xml has an "add item" button with id btnAdd,
-        // matching the convention used in activity_member.xml. Update this id if
-        // your layout names it differently.
-        ImageButton btnAdd = findViewById(R.id.btnAdd);
+        ImageButton btnAdd = findViewById(R.id.btn_add_bazar);
         if (btnAdd != null) {
             btnAdd.setOnClickListener(v -> showBazarDialog(null));
         }
 
-        btn_home = findViewById(R.id.btn_home_layout);
-        btn_member = findViewById(R.id.btn_member_layout); //pending
-
-        btn_meals = findViewById(R.id.btn_meals_layout);
-        btn_bazar = findViewById(R.id.btn_bazar_layout);
-        btn_cash = findViewById(R.id.btn_cash_layout);
-        btn_more = findViewById(R.id.btn_more_layout);
-
-        btn_home.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(BazarActivity.this, MainActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
-
-        btn_meals.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(BazarActivity.this, MealRoutineActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
-
-        btn_bazar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // already on this screen
-            }
-        });
-
-        btn_cash.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(BazarActivity.this, CashLedgerActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
-
-        btn_more.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(BazarActivity.this, AllFeaturesActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
+        setupNavigation();
     }
 
     /** Reloads historyList from the database and refreshes the adapter. */
@@ -208,5 +156,28 @@ public class BazarActivity extends AppCompatActivity {
         });
 
         bottomSheet.show();
+    }
+
+    private void setupNavigation() {
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, CashLedgerActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, MealRoutineActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, MemberActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, AllFeaturesActivity.class));
+            finish();
+        });
     }
 }
