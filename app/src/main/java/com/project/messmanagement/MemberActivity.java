@@ -1,262 +1,150 @@
 package com.project.messmanagement;
 
-import android.app.DatePickerDialog;
-import android.content.Intent;
+import android.app.AlertDialog;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MemberActivity extends AppCompatActivity {
 
-    private LinearLayout memberContainer;
-    private DatabaseHelper db;
+    private DatabaseHelper dbHelper;
+    private MemberAdapter adapter;
+    private final List<Member> memberList = new ArrayList<>();
+    private EditText etSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_member);
 
-        memberContainer = findViewById(R.id.member_container);
-        db = new DatabaseHelper(this);
+        dbHelper = new DatabaseHelper(this);
 
-        // 1. Load members from Database
-        refreshMemberList("");
+        RecyclerView rvMembers = findViewById(R.id.rvMembers);
+        rvMembers.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new MemberAdapter(memberList, this::confirmDeleteMember);
+        rvMembers.setAdapter(adapter);
 
-        // 2. Setup Search
-        EditText etSearch = findViewById(R.id.etSearch);
+        loadMembers(null);
+
+        etSearch = findViewById(R.id.etSearch);
         etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                refreshMemberList(s.toString());
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                loadMembers(s.toString().trim());
             }
 
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
 
-        // 3. Setup Add Button
-        findViewById(R.id.btnAdd).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAddMemberDialog();
-            }
-        });
-
-        setupNavigation();
+        ImageButton btnAdd = findViewById(R.id.btnAdd);
+        btnAdd.setOnClickListener(v -> showAddMemberDialog());
     }
 
-    private void refreshMemberList(String query) {
-        if (memberContainer == null) return;
-        memberContainer.removeAllViews(); // Clear existing UI
+    /** Reloads memberList from the database (optionally filtered) and refreshes the adapter. */
+    private void loadMembers(String query) {
+        memberList.clear();
 
-        Cursor cursor;
-        if (query == null || query.isEmpty()) {
-            cursor = db.getAllMembers();
-        } else {
-            cursor = db.searchMembers(query);
-        }
+        Cursor c = (query == null || query.isEmpty())
+                ? dbHelper.getAllMembers()
+                : dbHelper.searchMembers(query);
 
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
-                String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
-                String room = cursor.getString(cursor.getColumnIndexOrThrow("room"));
-                String status = cursor.getString(cursor.getColumnIndexOrThrow("status"));
-                
-                // Add this member to the UI
-                addMemberToUI(id, name, room, status);
-            } while (cursor.moveToNext());
-            cursor.close();
+        int idxId     = c.getColumnIndexOrThrow("id");
+        int idxName   = c.getColumnIndexOrThrow("name");
+        int idxRoom   = c.getColumnIndexOrThrow("room");
+        int idxStatus = c.getColumnIndexOrThrow("status");
+
+        while (c.moveToNext()) {
+            int id        = c.getInt(idxId);
+            String name   = c.getString(idxName);
+            String room   = c.getString(idxRoom);
+            String status = c.getString(idxStatus);
+
+            // NOTE: the "members" table only stores name/room/status, so phone,
+            // meals and due amount aren't persisted yet. Defaulted here so the
+            // card layout still renders correctly.
+            memberList.add(new Member(id, name, initialsOf(name), room, "N/A", 0, "৳0", status));
         }
+        c.close();
+
+        adapter.notifyDataSetChanged();
+    }
+
+    private String initialsOf(String name) {
+        if (name == null || name.trim().isEmpty()) return "?";
+        String[] parts = name.trim().split("\\s+");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < Math.min(2, parts.length); i++) {
+            if (!parts[i].isEmpty()) {
+                sb.append(Character.toUpperCase(parts[i].charAt(0)));
+            }
+        }
+        return sb.toString();
+    }
+
+    /** Shown on long-press of a member card. */
+    private void confirmDeleteMember(Member member) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Member")
+                .setMessage("Are you sure you want to delete " + member.name + "?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    dbHelper.deleteMember(member.id);
+                    loadMembers(etSearch.getText().toString().trim());
+                    Toast.makeText(this, member.name + " deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     private void showAddMemberDialog() {
-        showMemberDialog(-1, "", "", "Active");
-    }
-
-    private void showMemberDialog(final int id, String initialName, String initialRoom, String initialStatus) {
-        final BottomSheetDialog dialog = new BottomSheetDialog(this);
+        BottomSheetDialog bottomSheet = new BottomSheetDialog(MemberActivity.this);
         View view = getLayoutInflater().inflate(R.layout.dialog_add_member, null);
-        dialog.setContentView(view);
+        bottomSheet.setContentView(view);
 
+        EditText etFullName   = view.findViewById(R.id.etFullName);
+        EditText etRoomNumber = view.findViewById(R.id.etRoomNumber);
+        Spinner spinnerStatus = view.findViewById(R.id.spinnerStatus);
 
-        final EditText etName = view.findViewById(R.id.etFullName);
-        final EditText etRoom = view.findViewById(R.id.etRoomNumber);
-        final EditText etJoinDate = view.findViewById(R.id.etJoinDate);
-        final Spinner spinnerStatus = view.findViewById(R.id.spinnerStatus);
-        Button btnAction = view.findViewById(R.id.btnAddMember);
-        ImageButton btnClose = view.findViewById(R.id.btnClose);
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(
+                this, android.R.layout.simple_spinner_dropdown_item,
+                new String[]{"Active", "Away"});
+        spinnerStatus.setAdapter(statusAdapter);
 
-        // Pre-fill data for editing
-        if (id != -1) {
-            btnAction.setText("Update Member");
-            etName.setText(initialName);
-            etRoom.setText(initialRoom.replace("Room ", ""));
-        }
+        view.findViewById(R.id.btnClose).setOnClickListener(v -> bottomSheet.dismiss());
 
-        final Calendar calendar = Calendar.getInstance();
-        final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.US);
-        etJoinDate.setText(sdf.format(calendar.getTime()));
+        view.findViewById(R.id.btnAddMember).setOnClickListener(v -> {
+            String name = etFullName.getText().toString().trim();
+            String room = etRoomNumber.getText().toString().trim();
+            String status = spinnerStatus.getSelectedItem() != null
+                    ? spinnerStatus.getSelectedItem().toString() : "Active";
 
-        etJoinDate.setOnClickListener(v -> {
-            new DatePickerDialog(MemberActivity.this, (view1, year, month, day) -> {
-                calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, month);
-                calendar.set(Calendar.DAY_OF_MONTH, day);
-                etJoinDate.setText(sdf.format(calendar.getTime()));
-            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
-        });
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new String[]{"Active", "Away"});
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerStatus.setAdapter(adapter);
-        if (id != -1) {
-            int spinnerPosition = adapter.getPosition(initialStatus.split(" \\(")[0]);
-            spinnerStatus.setSelection(spinnerPosition);
-        }
-
-        btnAction.setOnClickListener(v -> {
-            String name = etName.getText().toString().trim();
-            String room = "Room " + etRoom.getText().toString().trim();
-            String status = spinnerStatus.getSelectedItem().toString();
-
-            if (!name.isEmpty()) {
-                if (id == -1) {
-                    db.addMember(name, room, status);
-                    Toast.makeText(MemberActivity.this, "New member added!", Toast.LENGTH_SHORT).show();
-                } else {
-                    db.updateMember(id, name, room, status);
-                    Toast.makeText(MemberActivity.this, "Member updated!", Toast.LENGTH_SHORT).show();
-                }
-                refreshMemberList("");
-                dialog.dismiss();
-            } else {
-                Toast.makeText(MemberActivity.this, "Name is required", Toast.LENGTH_SHORT).show();
+            if (name.isEmpty() || room.isEmpty()) {
+                Toast.makeText(this, "Please enter a name and room number", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            dbHelper.addMember(name, room, status);
+            etSearch.setText("");
+            loadMembers(null);
+            bottomSheet.dismiss();
         });
 
-        btnClose.setOnClickListener(v -> dialog.dismiss());
-        dialog.show();
-    }
-
-    private void addMemberToUI(final int id, final String name, final String room, final String status) {
-
-        // Inflate your custom card layout
-        View itemView = getLayoutInflater().inflate(
-                R.layout.item_membercard,
-                memberContainer,
-                false
-        );
-
-        // Find views
-        TextView tvInitials = itemView.findViewById(R.id.tvInitials);
-        TextView tvName = itemView.findViewById(R.id.tvName);
-        TextView tvStatus = itemView.findViewById(R.id.tvStatus);
-        TextView tvRoomPhone = itemView.findViewById(R.id.tvRoomPhone);
-        TextView tvMeals = itemView.findViewById(R.id.tvMeals);
-        TextView tvDue = itemView.findViewById(R.id.tvDue);
-
-        String initials = "";
-
-        if (name != null && !name.trim().isEmpty()) {
-            String[] parts = name.trim().split("\\s+");
-
-            initials += parts[0].substring(0, 1);
-
-            if (parts.length > 1) {
-                initials += parts[parts.length - 1].substring(0, 1);
-            }
-        }
-
-        tvInitials.setText(initials.toUpperCase());
-        tvName.setText(name);
-        tvStatus.setText(status);
-
-        if (status.equalsIgnoreCase("Active")) {
-            tvStatus.setBackgroundResource(R.drawable.bg_badge_active);
-            tvStatus.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-        } else {
-            tvStatus.setBackgroundResource(R.drawable.bg_badge_away);
-            tvStatus.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-        }
-        tvRoomPhone.setText(room);
-
-        tvMeals.setText("0");
-        tvDue.setText("৳0");
-
-        itemView.setOnClickListener(v ->
-                showMemberDialog(id, name, room, status)
-        );
-
-        itemView.setOnLongClickListener(v -> {
-
-            new AlertDialog.Builder(MemberActivity.this)
-                    .setTitle("Delete Member")
-                    .setMessage("Are you sure you want to delete " + name + "?")
-                    .setPositiveButton("Confirm", (dialog, which) -> {
-
-                        db.deleteMember(id);
-
-                        refreshMemberList("");
-
-                        Toast.makeText(
-                                MemberActivity.this,
-                                name + " deleted",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-
-            return true;
-        });
-
-        memberContainer.addView(itemView);
-    }
-
-    private void setupNavigation() {
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MealRoutineActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, BazarActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, CashLedgerActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, AllFeaturesActivity.class));
-            finish();
-        });
+        bottomSheet.show();
     }
 }
