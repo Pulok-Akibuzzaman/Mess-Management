@@ -14,12 +14,19 @@ public class BazarAdapter extends RecyclerView.Adapter<BazarAdapter.ViewHolder> 
         void onLongClick(Bazar item);
     }
 
+    public interface OnBazarClickListener {
+        void onItemClick(Bazar item);
+    }
+
     private List<Bazar> items;
     private final OnBazarLongClickListener longClickListener;
+    private final OnBazarClickListener clickListener;
 
-    public BazarAdapter(List<Bazar> items, OnBazarLongClickListener longClickListener) {
+    public BazarAdapter(List<Bazar> items, OnBazarLongClickListener longClickListener,
+                        OnBazarClickListener clickListener) {
         this.items = items;
         this.longClickListener = longClickListener;
+        this.clickListener = clickListener;
     }
 
     /** Call this after mutating the underlying list (e.g. after a DB reload). */
@@ -53,6 +60,12 @@ public class BazarAdapter extends RecyclerView.Adapter<BazarAdapter.ViewHolder> 
         holder.tvItemName.setText(item.name);
         holder.tvItemDetails.setText(item.date);
         holder.tvPrice.setText(formatAmount(item.amount));
+
+        holder.itemView.setOnClickListener(v -> {
+            if (clickListener != null) {
+                clickListener.onItemClick(item);
+            }
+        });
 
         holder.itemView.setOnLongClickListener(v -> {
             if (longClickListener != null) {

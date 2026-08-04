@@ -11,15 +11,22 @@ import java.util.List;
 public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.ViewHolder> {
 
     public interface OnMemberLongClickListener {
-        void onLongClick(Member member);
+        void onItemLongClick(int position, Member member);
+    }
+
+    public interface OnMemberClickListener {
+        void onItemClick(int position, Member member);
     }
 
     private List<Member> members;
     private final OnMemberLongClickListener longClickListener;
+    private final OnMemberClickListener clickListener;
 
-    public MemberAdapter(List<Member> members, OnMemberLongClickListener longClickListener) {
+    public MemberAdapter(List<Member> members, OnMemberLongClickListener longClickListener,
+                         OnMemberClickListener clickListener) {
         this.members = members;
         this.longClickListener = longClickListener;
+        this.clickListener = clickListener;
     }
 
     /** Call this after mutating the underlying list (e.g. after a DB reload). */
@@ -68,9 +75,15 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.ViewHolder
             holder.tvStatus.setTextColor(Color.parseColor("#B85C00"));
         }
 
+        holder.itemView.setOnClickListener(v -> {
+            if (clickListener != null) {
+                clickListener.onItemClick(holder.getAdapterPosition(), member);
+            }
+        });
+
         holder.itemView.setOnLongClickListener(v -> {
             if (longClickListener != null) {
-                longClickListener.onLongClick(member);
+                longClickListener.onItemLongClick(holder.getAdapterPosition(), member);
             }
             return true; // consume the long click so it doesn't also fire a normal click
         });

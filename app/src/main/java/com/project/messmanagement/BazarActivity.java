@@ -30,6 +30,8 @@ public class BazarActivity extends AppCompatActivity {
     private final List<Bazar> historyList = new ArrayList<>();
     private DatabaseHelper dbHelper;
 
+    private LinearLayout btn_home, btn_member, btn_meals, btn_bazar, btn_cash, btn_more;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,17 +41,69 @@ public class BazarActivity extends AppCompatActivity {
 
         rvHistory = findViewById(R.id.rv_purchase_history);
         rvHistory.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new BazarAdapter(historyList, this::confirmDeleteItem);
+        adapter = new BazarAdapter(historyList, this::confirmDeleteItem, this::showEditBazarDialog);
         rvHistory.setAdapter(adapter);
 
         loadHistoryData();
 
-        ImageButton btnAdd = findViewById(R.id.btn_add_bazar);
+        // NOTE: assumes activity_bazar.xml has an "add item" button with id btnAdd,
+        // matching the convention used in activity_member.xml. Update this id if
+        // your layout names it differently.
+        ImageButton btnAdd = findViewById(R.id.btnAdd);
         if (btnAdd != null) {
-            btnAdd.setOnClickListener(v -> showAddBazarDialog());
+            btnAdd.setOnClickListener(v -> showBazarDialog(null));
         }
 
-        setupNavigation();
+        btn_home = findViewById(R.id.btn_home_layout);
+        btn_member = findViewById(R.id.btn_member_layout); //pending
+
+        btn_meals = findViewById(R.id.btn_meals_layout);
+        btn_bazar = findViewById(R.id.btn_bazar_layout);
+        btn_cash = findViewById(R.id.btn_cash_layout);
+        btn_more = findViewById(R.id.btn_more_layout);
+
+        btn_home.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(BazarActivity.this, MainActivity.class);
+                startActivity(i);
+                finish();
+            }
+        });
+
+        btn_meals.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(BazarActivity.this, MealRoutineActivity.class);
+                startActivity(i);
+                finish();
+            }
+        });
+
+        btn_bazar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // already on this screen
+            }
+        });
+
+        btn_cash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(BazarActivity.this, CashLedgerActivity.class);
+                startActivity(i);
+                finish();
+            }
+        });
+
+        btn_more.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(BazarActivity.this, AllFeaturesActivity.class);
+                startActivity(i);
+                finish();
+            }
+        });
     }
 
     /** Reloads historyList from the database and refreshes the adapter. */
@@ -88,7 +142,14 @@ public class BazarActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void showAddBazarDialog() {
+    private void showEditBazarDialog(Bazar item) {
+        showBazarDialog(item);
+    }
+
+    /** existingItem == null → add mode. Otherwise → edit mode, pre-filled and saved via update. */
+    private void showBazarDialog(Bazar existingItem) {
+        boolean isEdit = existingItem != null;
+
         BottomSheetDialog bottomSheet = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_add_bazar, null);
         bottomSheet.setContentView(view);
@@ -97,6 +158,12 @@ public class BazarActivity extends AppCompatActivity {
         EditText etAmount   = view.findViewById(R.id.etAmount);
         EditText etDate     = view.findViewById(R.id.etDate);
         Button btnSave      = view.findViewById(R.id.btnSave);
+
+        if (isEdit) {
+            etItemName.setText(existingItem.name);
+            etAmount.setText(String.valueOf(existingItem.amount));
+            etDate.setText(existingItem.date);
+        }
 
         etDate.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
@@ -129,33 +196,17 @@ public class BazarActivity extends AppCompatActivity {
                 return;
             }
 
-            dbHelper.addBazarItem(name, amount, date);
+            if (isEdit) {
+                dbHelper.updateBazarItem(existingItem.id, name, amount, date);
+                Toast.makeText(this, "Item updated", Toast.LENGTH_SHORT).show();
+            } else {
+                dbHelper.addBazarItem(name, amount, date);
+            }
+
             loadHistoryData();
             bottomSheet.dismiss();
         });
 
         bottomSheet.show();
-    }
-    private void setupNavigation() {
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MemberActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MealRoutineActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, CashLedgerActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, AllFeaturesActivity.class));
-            finish();
-        });
     }
 }

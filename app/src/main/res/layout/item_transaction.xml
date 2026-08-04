@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="8dp"
-            android:text="Monthly collection — Rafiq"
+            android:text="Monthly collection"
             android:textColor="@color/text_dark"
             android:textSize="15sp"
             android:textStyle="bold"

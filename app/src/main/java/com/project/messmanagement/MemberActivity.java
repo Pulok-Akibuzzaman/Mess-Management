@@ -38,9 +38,19 @@ public class MemberActivity extends AppCompatActivity {
 
         RecyclerView rvMembers = findViewById(R.id.rvMembers);
         rvMembers.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new MemberAdapter(memberList, this::confirmDeleteMember);
-
-
+        adapter = new MemberAdapter(memberList,
+                new MemberAdapter.OnMemberLongClickListener() {
+                    @Override
+                    public void onItemLongClick(int position, Member member) {
+                        showConsentDialog(position);
+                    }
+                },
+                new MemberAdapter.OnMemberClickListener() {
+                    @Override
+                    public void onItemClick(int position, Member member) {
+                        showEditMemberDialog(member);
+                    }
+                });
         rvMembers.setAdapter(adapter);
 
         loadMembers(null);
@@ -56,10 +66,10 @@ public class MemberActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        ImageButton btnAdd = findViewById(R.id.btnAdd);
-        btnAdd.setOnClickListener(v -> showAddMemberDialog());
-
         setupNavigation();
+
+        ImageButton btnAdd = findViewById(R.id.btnAdd);
+        btnAdd.setOnClickListener(v -> showMemberDialog(null));
     }
 
     /** Reloads memberList from the database (optionally filtered) and refreshes the adapter. */
@@ -104,7 +114,9 @@ public class MemberActivity extends AppCompatActivity {
     }
 
     /** Shown on long-press of a member card. */
-    private void confirmDeleteMember(Member member) {
+    private void showConsentDialog(int position) {
+        Member member = memberList.get(position);
+
         new AlertDialog.Builder(this)
                 .setTitle("Delete Member")
                 .setMessage("Are you sure you want to delete " + member.name + "?")
@@ -117,7 +129,10 @@ public class MemberActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void showAddMemberDialog() {
+    /** existingMember == null → add mode. Otherwise → edit mode, pre-filled and saved via update. */
+    private void showMemberDialog(Member existingMember) {
+        boolean isEdit = existingMember != null;
+
         BottomSheetDialog bottomSheet = new BottomSheetDialog(MemberActivity.this);
         View view = getLayoutInflater().inflate(R.layout.dialog_add_member, null);
         bottomSheet.setContentView(view);
@@ -130,6 +145,13 @@ public class MemberActivity extends AppCompatActivity {
                 this, android.R.layout.simple_spinner_dropdown_item,
                 new String[]{"Active", "Away"});
         spinnerStatus.setAdapter(statusAdapter);
+
+        if (isEdit) {
+            etFullName.setText(existingMember.name);
+            etRoomNumber.setText(existingMember.room);
+            int statusPos = statusAdapter.getPosition(existingMember.status);
+            spinnerStatus.setSelection(statusPos >= 0 ? statusPos : 0);
+        }
 
         view.findViewById(R.id.btnClose).setOnClickListener(v -> bottomSheet.dismiss());
 
@@ -144,7 +166,13 @@ public class MemberActivity extends AppCompatActivity {
                 return;
             }
 
-            dbHelper.addMember(name, room, status);
+            if (isEdit) {
+                dbHelper.updateMember(existingMember.id, name, room, status);
+                Toast.makeText(this, "Member updated", Toast.LENGTH_SHORT).show();
+            } else {
+                dbHelper.addMember(name, room, status);
+            }
+
             etSearch.setText("");
             loadMembers(null);
             bottomSheet.dismiss();
@@ -153,21 +181,25 @@ public class MemberActivity extends AppCompatActivity {
         bottomSheet.show();
     }
 
+    private void showEditMemberDialog(Member member) {
+        showMemberDialog(member);
+    }
+
     private void setupNavigation() {
         findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
             startActivity(new Intent(this, MainActivity.class));
             finish();
         });
-        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, BazarActivity.class));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, CashLedgerActivity.class));
             finish();
         });
         findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
             startActivity(new Intent(this, MealRoutineActivity.class));
             finish();
         });
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, CashLedgerActivity.class));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, BazarActivity.class));
             finish();
         });
         findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
