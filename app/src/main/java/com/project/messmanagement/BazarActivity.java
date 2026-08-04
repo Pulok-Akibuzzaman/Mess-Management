@@ -1,199 +1,141 @@
 package com.project.messmanagement;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class BazarActivity extends AppCompatActivity {
 
-    private LinearLayout container;
-    private DatabaseHelper db;
-    private TextView tvTotalAmount, tvPurchasesSubtitle;
+    private RecyclerView rvHistory;
+    private BazarAdapter adapter;
+    private final List<Bazar> historyList = new ArrayList<>();
+    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bazar);
 
-        db = new DatabaseHelper(this);
-        container = findViewById(R.id.item_container);
-        tvTotalAmount = findViewById(R.id.tv_total_amount);
-        tvPurchasesSubtitle = findViewById(R.id.tv_purchases_subtitle);
+        dbHelper = new DatabaseHelper(this);
 
-        // 1. Setup Add Button (Floating Action Button)
-        findViewById(R.id.btn_add_bazar).setOnClickListener(v -> showBazarDialog(-1, "", 0, ""));
+        rvHistory = findViewById(R.id.rv_purchase_history);
+        rvHistory.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new BazarAdapter(historyList, this::confirmDeleteItem);
+        rvHistory.setAdapter(adapter);
+
+        loadHistoryData();
+
+        ImageButton btnAdd = findViewById(R.id.btn_add_bazar);
+        if (btnAdd != null) {
+            btnAdd.setOnClickListener(v -> showAddBazarDialog());
+        }
 
         setupNavigation();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        refreshBazarList();
-    }
+    /** Reloads historyList from the database and refreshes the adapter. */
+    private void loadHistoryData() {
+        historyList.clear();
 
-    private void refreshBazarList() {
-        if (container == null) return;
-        container.removeAllViews();
+        Cursor c = dbHelper.getAllBazarItems();
+        int idxId     = c.getColumnIndexOrThrow("id");
+        int idxName   = c.getColumnIndexOrThrow("item_name");
+        int idxAmount = c.getColumnIndexOrThrow("amount");
+        int idxDate   = c.getColumnIndexOrThrow("date");
 
-        double total = 0;
-        int count = 0;
-
-        Cursor cursor = db.getAllBazarItems();
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
-                String name = cursor.getString(cursor.getColumnIndexOrThrow("item_name"));
-                double amount = cursor.getDouble(cursor.getColumnIndexOrThrow("amount"));
-                String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
-
-                addBazarToUI(id, name, amount, date);
-                total += amount;
-                count++;
-            } while (cursor.moveToNext());
-            cursor.close();
+        while (c.moveToNext()) {
+            int id = c.getInt(idxId);
+            String name = c.getString(idxName);
+            double amount = c.getDouble(idxAmount);
+            String date = c.getString(idxDate);
+            historyList.add(new Bazar(id, name, date, amount));
         }
+        c.close();
 
-        // Update Top Card
-        if (tvTotalAmount != null) tvTotalAmount.setText("৳" + (int) total);
-        if (tvPurchasesSubtitle != null) tvPurchasesSubtitle.setText(count + " purchases this month");
+        adapter.notifyDataSetChanged();
     }
 
-    private void showBazarDialog(final int id, String initialName, double initialAmount, String initialDate) {
-        final BottomSheetDialog dialog = new BottomSheetDialog(this);
+    /** Shown on long-press of a bazar item card. */
+    private void confirmDeleteItem(Bazar item) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Item")
+                .setMessage("Are you sure you want to delete " + item.name + "?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    dbHelper.deleteBazarItem(item.id);
+                    loadHistoryData();
+                    Toast.makeText(this, item.name + " deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
+    private void showAddBazarDialog() {
+        BottomSheetDialog bottomSheet = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_add_bazar, null);
-        dialog.setContentView(view);
+        bottomSheet.setContentView(view);
 
-        TextView tvTitle = view.findViewById(R.id.tvTitle);
-        final EditText etName = view.findViewById(R.id.etItemName);
-        final EditText etAmount = view.findViewById(R.id.etAmount);
-        final EditText etDate = view.findViewById(R.id.etDate);
-        Button btnSave = view.findViewById(R.id.btnSave);
-        ImageButton btnClose = view.findViewById(R.id.btnClose);
-
-        final Calendar calendar = Calendar.getInstance();
-        final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.US);
-
-        if (id != -1) {
-            tvTitle.setText("Edit Bazar Item");
-            etName.setText(initialName);
-            etAmount.setText(String.valueOf(initialAmount));
-            etDate.setText(initialDate);
-        } else {
-            etDate.setText(sdf.format(calendar.getTime()));
-        }
+        EditText etItemName = view.findViewById(R.id.etItemName);
+        EditText etAmount   = view.findViewById(R.id.etAmount);
+        EditText etDate     = view.findViewById(R.id.etDate);
+        Button btnSave      = view.findViewById(R.id.btnSave);
 
         etDate.setOnClickListener(v -> {
-            new DatePickerDialog(this, (view1, year, month, day) -> {
-                calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, month);
-                calendar.set(Calendar.DAY_OF_MONTH, day);
-                etDate.setText(sdf.format(calendar.getTime()));
-            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
+            Calendar calendar = Calendar.getInstance();
+            DatePickerDialog picker = new DatePickerDialog(this, (datePicker, year, month, dayOfMonth) -> {
+                Calendar picked = Calendar.getInstance();
+                picked.set(year, month, dayOfMonth);
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+                etDate.setText(sdf.format(picked.getTime()));
+            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+            picker.show();
         });
+
+        view.findViewById(R.id.btnClose).setOnClickListener(v -> bottomSheet.dismiss());
 
         btnSave.setOnClickListener(v -> {
-            String name = etName.getText().toString().trim();
+            String name = etItemName.getText().toString().trim();
             String amountStr = etAmount.getText().toString().trim();
-            String date = etDate.getText().toString();
+            String date = etDate.getText().toString().trim();
 
-            if (!name.isEmpty() && !amountStr.isEmpty()) {
-                double amount = Double.parseDouble(amountStr);
-                if (id == -1) {
-                    db.addBazarItem(name, amount, date);
-                    Toast.makeText(this, "Item added", Toast.LENGTH_SHORT).show();
-                } else {
-                    db.updateBazarItem(id, name, amount, date);
-                    Toast.makeText(this, "Item updated", Toast.LENGTH_SHORT).show();
-                }
-                refreshBazarList();
-                dialog.dismiss();
-            } else {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            if (name.isEmpty() || amountStr.isEmpty() || date.isEmpty()) {
+                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            double amount;
+            try {
+                amount = Double.parseDouble(amountStr);
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Enter a valid amount", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            dbHelper.addBazarItem(name, amount, date);
+            loadHistoryData();
+            bottomSheet.dismiss();
         });
 
-        btnClose.setOnClickListener(v -> dialog.dismiss());
-        dialog.show();
+        bottomSheet.show();
     }
-
-    private void addBazarToUI(final int id,
-                              final String name,
-                              final double amount,
-                              final String date) {
-
-        // Inflate your custom item layout
-        View itemView = getLayoutInflater().inflate(
-                R.layout.item_purchase,   // <-- Change this if your XML file has a different name
-                container,
-                false
-        );
-
-        // Find Views
-        TextView tvItemName = itemView.findViewById(R.id.tv_item_name);
-        TextView tvItemDetails = itemView.findViewById(R.id.tv_item_details);
-        TextView tvPrice = itemView.findViewById(R.id.tv_price);
-
-        // Set values
-        tvItemName.setText(name);
-
-        // Since your database only stores name, amount and date,
-        // we don't have the buyer's name yet.
-        tvItemDetails.setText(date);
-
-        // Price
-        tvPrice.setText("৳" + (int) amount);
-
-        // Edit on Click
-        itemView.setOnClickListener(v ->
-                showBazarDialog(id, name, amount, date)
-        );
-
-        // Delete on Long Press
-        itemView.setOnLongClickListener(v -> {
-
-            new AlertDialog.Builder(BazarActivity.this)
-                    .setTitle("Delete Item")
-                    .setMessage("Delete " + name + "?")
-                    .setPositiveButton("Confirm", (dialog, which) -> {
-
-                        db.deleteBazarItem(id);
-                        refreshBazarList();
-
-                        Toast.makeText(
-                                BazarActivity.this,
-                                "Deleted",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-
-            return true;
-        });
-
-        container.addView(itemView);
-    }
-
     private void setupNavigation() {
         findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
             startActivity(new Intent(this, MainActivity.class));
