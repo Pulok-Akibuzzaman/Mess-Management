@@ -22,19 +22,23 @@ import com.github.mikephil.charting.data.PieEntry;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
+import android.net.Uri;
+import android.database.Cursor;
 
 public class MainActivity extends AppCompatActivity {
 
     // 1. Declare UI Elements
     TextView tvWelcome, tvTotalAmount, tvMealRate, tvActiveMembers, tvCashBalance, tvMonthLabel;
-    TextView tvTotalMealsGrid, tvBazarSpentGrid, tvUtilitiesGrid, tvAvgPerHeadGrid;
+    TextView tvTotalMealsGrid, tvBazarSpentGrid, tvUtilitiesGrid, tvMyTotalBillGrid;
     TextView tvBazarLabelVal, tvUtilityLabelVal, tvBuaLabelVal, tvOtherLabelVal;
-    TextView tvAvgPerHeadSubtitle, tvBazarSpentSubtitle, tvUtilitiesSubtitle;
+    TextView tvMyBillSubtitle, tvBazarSpentSubtitle, tvUtilitiesSubtitle;
     BarChart barChart;
     PieChart pieChart;
     LinearLayout btnBazar, btnCash, btnMeals, btnMore, btnMember;
     ImageView btnLogout;
     android.widget.FrameLayout btnNotification;
+    
+    String currentUserEmail;
     
     // 2. Declare Database Helper
     DatabaseHelper db;
@@ -46,10 +50,39 @@ public class MainActivity extends AppCompatActivity {
 
         // 3. Initialize DB and Views
         db = new DatabaseHelper(this);
+        
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        currentUserEmail = pref.getString("email", "anonymous");
+        
         initViews();
         
         // 4. Navigation
         setupNavigation();
+        checkSafetyTimer();
+    }
+
+    private void checkSafetyTimer() {
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        long threshold = pref.getLong("sos_timeout_millis", 0);
+        if (threshold > 0) {
+            long lastActivity = pref.getLong("last_activity_time", System.currentTimeMillis());
+            if (System.currentTimeMillis() - lastActivity > threshold) {
+                // Timer Expired!
+                triggerEmergencyDial();
+            }
+        }
+    }
+
+    private void triggerEmergencyDial() {
+        Cursor cursor = db.getAllEmergencyContacts();
+        if (cursor != null && cursor.moveToFirst()) {
+            String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
+            cursor.close();
+            Intent intent = new Intent(Intent.ACTION_DIAL);
+            intent.setData(Uri.parse("tel:" + phone));
+            startActivity(intent);
+            Toast.makeText(this, "SAFETY ALERT: Inactivity Timeout Reached!", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -71,8 +104,8 @@ public class MainActivity extends AppCompatActivity {
         tvTotalMealsGrid = findViewById(R.id.tv_total_meals);
         tvBazarSpentGrid = findViewById(R.id.tv_bazar_spent);
         tvUtilitiesGrid = findViewById(R.id.tv_utilities_grid);
-        tvAvgPerHeadGrid = findViewById(R.id.tv_avg_per_head);
-        tvAvgPerHeadSubtitle = findViewById(R.id.tv_avg_per_head_subtitle);
+        tvMyTotalBillGrid = findViewById(R.id.tv_avg_per_head); // Reusing this ID for Individual Bill
+        tvMyBillSubtitle = findViewById(R.id.tv_avg_per_head_subtitle);
         tvBazarSpentSubtitle = findViewById(R.id.tv_bazar_spent_subtitle);
         tvUtilitiesSubtitle = findViewById(R.id.tv_utilities_subtitle);
 
@@ -108,15 +141,18 @@ public class MainActivity extends AppCompatActivity {
     private void loadDashboardData() {
         // Fetch values from SQLite
         double totalBazar = db.getTotalBazar();
-        int totalMeals = db.getTotalMeals();
+        int totalMessMeals = db.getTotalMeals();
         double utilities = db.getUtilitiesTotal();
         int activeMembers = db.getActiveMembersCount();
         double cashBalance = db.getCashBalance();
+        int myMeals = db.getUserTotalMeals(currentUserEmail);
 
-        // Simple Calculations
-        double mealRate = totalMeals > 0 ? totalBazar / totalMeals : 0;
-        double totalMessExpense = totalBazar + utilities + 4000; // 4000 for Bua
-        double avgPerHead = activeMembers > 0 ? totalMessExpense / activeMembers : 0;
+        // Individual Calculations
+        double mealRate = totalMessMeals > 0 ? totalBazar / totalMessMeals : 0;
+        double fixedCostPerHead = activeMembers > 0 ? (utilities + 4000) / activeMembers : 0; // 4000 is Bua
+        double myTotalBill = (myMeals * mealRate) + fixedCostPerHead;
+        
+        double totalMessExpense = totalBazar + utilities + 4000;
 
         // Update UI
         tvTotalAmount.setText("৳" + (int)totalMessExpense);
@@ -125,12 +161,15 @@ public class MainActivity extends AppCompatActivity {
         tvCashBalance.setText("৳" + (int)cashBalance);
         
         // Update Grid
-        if (tvTotalMealsGrid != null) tvTotalMealsGrid.setText(String.valueOf(totalMeals));
+        if (tvTotalMealsGrid != null) tvTotalMealsGrid.setText(String.valueOf(totalMessMeals));
         if (tvBazarSpentGrid != null) tvBazarSpentGrid.setText("৳" + (int)totalBazar);
         if (tvBazarSpentSubtitle != null) tvBazarSpentSubtitle.setText(db.getBazarCount() + " purchases");
         if (tvUtilitiesGrid != null) tvUtilitiesGrid.setText("৳" + (int)utilities);
         if (tvUtilitiesSubtitle != null) tvUtilitiesSubtitle.setText(db.getUtilitiesCount() + " bills paid");
-        if (tvAvgPerHeadGrid != null) tvAvgPerHeadGrid.setText("৳" + (int)avgPerHead);
+        
+        // --- THIS IS NOW INDIVIDUAL ---
+        if (tvMyTotalBillGrid != null) tvMyTotalBillGrid.setText("৳" + (int)myTotalBill);
+        if (tvMyBillSubtitle != null) tvMyBillSubtitle.setText("My share (" + myMeals + " meals)");
 
         // Update Breakdown Labels
         if (tvBazarLabelVal != null) tvBazarLabelVal.setText("৳" + (int)totalBazar);
@@ -138,13 +177,7 @@ public class MainActivity extends AppCompatActivity {
         if (tvBuaLabelVal != null) tvBuaLabelVal.setText("৳4000");
         if (tvOtherLabelVal != null) tvOtherLabelVal.setText("৳0");
 
-        if (tvAvgPerHeadSubtitle != null) {
-            Calendar cal = Calendar.getInstance();
-            String month = cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault());
-            tvAvgPerHeadSubtitle.setText(month + " estimate");
-        }
-
-        setupCharts(totalMeals, totalBazar, utilities);
+        setupCharts(totalMessMeals, totalBazar, utilities);
     }
 
     private void setupCharts(int meals, double bazar, double util) {

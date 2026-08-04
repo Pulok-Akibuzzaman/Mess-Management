@@ -1,11 +1,15 @@
 package com.project.messmanagement;
 
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,19 +18,19 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class SOSActivity extends AppCompatActivity {
 
     private LinearLayout contactContainer;
     private DatabaseHelper db;
-    private TextView tvLastCheckin;
+    private TextView tvLastCheckin, tvDeadmanStatus;
+    private CountDownTimer countdownDisplay;
+    private long triggerThresholdMillis = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,16 +40,21 @@ public class SOSActivity extends AppCompatActivity {
         db = new DatabaseHelper(this);
         contactContainer = findViewById(R.id.contact_container);
         tvLastCheckin = findViewById(R.id.tv_last_checkin);
+        tvDeadmanStatus = findViewById(R.id.tv_deadman_status);
 
-        // Update Last Activity on load
-        updateLastActivity();
-        loadLastCheckinText();
-
-        // 1. SOS Button Click (Action Dial)
+        // 1. SOS Button Click
         findViewById(R.id.card_sos_trigger).setOnClickListener(v -> triggerSOS());
         
         // 2. Add Contact Button
         findViewById(R.id.btn_add_contact).setOnClickListener(v -> showAddContactDialog());
+
+        // 3. Set Timer Button
+        findViewById(R.id.btn_set_timer).setOnClickListener(v -> showSetTimerDialog());
+
+        // Check if we were opened by the background alarm
+        if (getIntent().getBooleanExtra("TRIGGER_DIAL", false)) {
+            triggerSOS();
+        }
 
         setupNavigation();
     }
@@ -54,22 +63,129 @@ public class SOSActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshContactList();
-        loadLastCheckinText();
+        
+        // User is here! They are safe. Reset Activity and CANCEL any background alarm.
+        updateLastActivity();
+        loadTimerState();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (countdownDisplay != null) countdownDisplay.cancel();
     }
 
     private void updateLastActivity() {
         SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         pref.edit().putLong("last_activity_time", System.currentTimeMillis()).apply();
+        tvLastCheckin.setText("Last Activity: Just now");
+        
+        // Re-schedule the background alarm based on new "Safe" time
+        scheduleBackgroundSOS();
     }
 
-    private void loadLastCheckinText() {
+    private void loadTimerState() {
         SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        long lastTime = pref.getLong("last_activity_time", System.currentTimeMillis());
-        long diff = System.currentTimeMillis() - lastTime;
-        long hours = TimeUnit.MILLISECONDS.toHours(diff);
+        triggerThresholdMillis = pref.getLong("sos_timeout_millis", 0);
         
-        if (hours == 0) tvLastCheckin.setText("Last Activity: Just now");
-        else tvLastCheckin.setText("Last Activity: " + hours + "h ago");
+        if (countdownDisplay != null) countdownDisplay.cancel();
+
+        if (triggerThresholdMillis > 0) {
+            long lastActivity = pref.getLong("last_activity_time", System.currentTimeMillis());
+            long expiryTime = lastActivity + triggerThresholdMillis;
+            long diff = expiryTime - System.currentTimeMillis();
+
+            if (diff <= 0) {
+                tvDeadmanStatus.setText("STATUS: TIMEOUT EXPIRED");
+                tvDeadmanStatus.setTextColor(Color.RED);
+            } else {
+                startCountdownDisplay(diff);
+            }
+        } else {
+            tvDeadmanStatus.setText("Safety Timer: Not Set");
+            tvDeadmanStatus.setTextColor(Color.GRAY);
+        }
+    }
+
+    private void startCountdownDisplay(long millis) {
+        countdownDisplay = new CountDownTimer(millis, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long h = TimeUnit.MILLISECONDS.toHours(millisUntilFinished);
+                long m = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished) % 60;
+                long s = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) % 60;
+                tvDeadmanStatus.setText(String.format(java.util.Locale.US, "Next Check-in: %02d:%02d:%02d", h, m, s));
+                tvDeadmanStatus.setTextColor(Color.parseColor("#FFA500"));
+            }
+
+            @Override
+            public void onFinish() {
+                tvDeadmanStatus.setText("STATUS: ALERTING...");
+                tvDeadmanStatus.setTextColor(Color.RED);
+            }
+        }.start();
+    }
+
+    private void scheduleBackgroundSOS() {
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        long timeout = pref.getLong("sos_timeout_millis", 0);
+        
+        AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Intent intent = new Intent(this, SOSReceiver.class);
+        PendingIntent pi = PendingIntent.getBroadcast(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        if (timeout > 0) {
+            long triggerAt = System.currentTimeMillis() + timeout;
+            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi);
+        } else {
+            am.cancel(pi);
+        }
+    }
+
+    private void showSetTimerDialog() {
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.HORIZONTAL);
+        layout.setPadding(50, 40, 50, 10);
+
+        final EditText etHours = new EditText(this);
+        etHours.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etHours.setHint("Hours");
+        etHours.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+
+        final EditText etMins = new EditText(this);
+        etMins.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etMins.setHint("Minutes");
+        etMins.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+
+        layout.addView(etHours);
+        layout.addView(etMins);
+
+        new AlertDialog.Builder(this)
+            .setTitle("Safety Timeout")
+            .setMessage("Set background inactivity limit:")
+            .setView(layout)
+            .setPositiveButton("Set", (d, w) -> {
+                String hVal = etHours.getText().toString();
+                String mVal = etMins.getText().toString();
+                long hours = hVal.isEmpty() ? 0 : Long.parseLong(hVal);
+                long mins = mVal.isEmpty() ? 0 : Long.parseLong(mVal);
+                
+                if (hours > 0 || mins > 0) {
+                    long totalMillis = (hours * 3600000) + (mins * 60000);
+                    getSharedPreferences("UserPrefs", MODE_PRIVATE).edit()
+                        .putLong("sos_timeout_millis", totalMillis).apply();
+                    updateLastActivity();
+                    loadTimerState();
+                    Toast.makeText(this, "Background SOS active", Toast.LENGTH_SHORT).show();
+                }
+            })
+            .setNegativeButton("Disable", (d, w) -> {
+                getSharedPreferences("UserPrefs", MODE_PRIVATE).edit()
+                    .putLong("sos_timeout_millis", 0).apply();
+                scheduleBackgroundSOS();
+                loadTimerState();
+            })
+            .show();
     }
 
     private void refreshContactList() {
@@ -93,14 +209,9 @@ public class SOSActivity extends AppCompatActivity {
         if (cursor != null && cursor.moveToFirst()) {
             String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
             cursor.close();
-            
-            // ACTION_DIAL pre-fills the number
             Intent intent = new Intent(Intent.ACTION_DIAL);
             intent.setData(Uri.parse("tel:" + phone));
             startActivity(intent);
-            Toast.makeText(this, "Opening Dialer...", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Please add an Emergency Contact first", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -108,27 +219,19 @@ public class SOSActivity extends AppCompatActivity {
         final BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_add_contact, null);
         dialog.setContentView(view);
-
         final EditText etName = view.findViewById(R.id.etContactName);
         final EditText etPhone = view.findViewById(R.id.etContactPhone);
-        Button btnSave = view.findViewById(R.id.btnSave);
-        ImageButton btnClose = view.findViewById(R.id.btnClose);
-
-        btnSave.setOnClickListener(v -> {
+        
+        view.findViewById(R.id.btnSave).setOnClickListener(v -> {
             String name = etName.getText().toString().trim();
             String phone = etPhone.getText().toString().trim();
-
             if (!name.isEmpty() && !phone.isEmpty()) {
                 db.addEmergencyContact(name, phone);
                 refreshContactList();
                 dialog.dismiss();
-                Toast.makeText(this, "Contact saved", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Fill all fields", Toast.LENGTH_SHORT).show();
             }
         });
-
-        btnClose.setOnClickListener(v -> dialog.dismiss());
+        view.findViewById(R.id.btnClose).setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
 
@@ -137,13 +240,11 @@ public class SOSActivity extends AppCompatActivity {
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setPadding(0, 10, 0, 10);
         row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-
         TextView tv = new TextView(this);
         tv.setText(name + " (" + phone + ")");
         tv.setTextSize(16);
         tv.setTextColor(Color.BLACK);
         tv.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-        
         Button btnCall = new Button(this);
         btnCall.setText("Call");
         btnCall.setOnClickListener(v -> {
@@ -151,23 +252,15 @@ public class SOSActivity extends AppCompatActivity {
             intent.setData(Uri.parse("tel:" + phone));
             startActivity(intent);
         });
-
         row.addView(tv);
         row.addView(btnCall);
-
         row.setOnLongClickListener(v -> {
-            new AlertDialog.Builder(this)
-                .setTitle("Delete Contact")
-                .setMessage("Remove " + name + "?")
-                .setPositiveButton("Delete", (d, w) -> {
-                    db.deleteEmergencyContact(id);
-                    refreshContactList();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+            new AlertDialog.Builder(this).setMessage("Delete " + name + "?").setPositiveButton("Delete", (d, w) -> {
+                db.deleteEmergencyContact(id);
+                refreshContactList();
+            }).show();
             return true;
         });
-
         contactContainer.addView(row);
     }
 
@@ -176,9 +269,35 @@ public class SOSActivity extends AppCompatActivity {
             startActivity(new Intent(this, MainActivity.class));
             finish();
         });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, AllFeaturesActivity.class));
-            finish();
-        });
+        if (findViewById(R.id.btn_member_layout) != null) {
+            findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
+                startActivity(new Intent(this, MemberActivity.class));
+                finish();
+            });
+        }
+        if (findViewById(R.id.btn_meals_layout) != null) {
+            findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
+                startActivity(new Intent(this, MealRoutineActivity.class));
+                finish();
+            });
+        }
+        if (findViewById(R.id.btn_bazar_layout) != null) {
+            findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
+                startActivity(new Intent(this, BazarActivity.class));
+                finish();
+            });
+        }
+        if (findViewById(R.id.btn_cash_layout) != null) {
+            findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
+                startActivity(new Intent(this, CashLedgerActivity.class));
+                finish();
+            });
+        }
+        if (findViewById(R.id.btn_more_layout) != null) {
+            findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
+                startActivity(new Intent(this, AllFeaturesActivity.class));
+                finish();
+            });
+        }
     }
 }

@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "MessManager.db";
-    private static final int DATABASE_VERSION = 9; 
+    private static final int DATABASE_VERSION = 13; 
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -18,7 +18,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE bazar (id INTEGER PRIMARY KEY AUTOINCREMENT, item_name TEXT, amount REAL, date TEXT)");
-        db.execSQL("CREATE TABLE meals (id INTEGER PRIMARY KEY AUTOINCREMENT, count INTEGER, date TEXT)");
         db.execSQL("CREATE TABLE utilities (id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT, amount REAL, date TEXT)");
         db.execSQL("CREATE TABLE cash (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, amount REAL, type TEXT, date TEXT)");
         db.execSQL("CREATE TABLE members (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, room TEXT, status TEXT)");
@@ -29,41 +28,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE poll_votes (poll_id INTEGER, user_email TEXT, option_number INTEGER, PRIMARY KEY (poll_id, user_email))");
         db.execSQL("CREATE TABLE complaints (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT, date TEXT)");
         db.execSQL("CREATE TABLE emergency_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT)");
+        db.execSQL("CREATE TABLE meal_tracking (id INTEGER PRIMARY KEY AUTOINCREMENT, user_email TEXT, date TEXT, breakfast INTEGER DEFAULT 0, lunch INTEGER DEFAULT 0, dinner INTEGER DEFAULT 0, UNIQUE(user_email, date))");
+        db.execSQL("CREATE TABLE bua_profile (id INTEGER PRIMARY KEY, name TEXT, phone TEXT, address TEXT, salary REAL, join_date TEXT)");
+        db.execSQL("CREATE TABLE room_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, member_name TEXT, room_no TEXT, issue TEXT, priority TEXT, status TEXT, date TEXT)");
         
         insertSampleData(db);
     }
 
     private void insertSampleData(SQLiteDatabase db) {
         db.execSQL("INSERT INTO members (name, room, status) VALUES ('Rafiq Ahmed', 'Room 201', 'Active')");
+        db.execSQL("INSERT INTO members (name, room, status) VALUES ('Karim Hossain', 'Room 202', 'Active')");
         db.execSQL("INSERT INTO bazar (item_name, amount, date) VALUES ('Rice', 1200, '2026-08-01')");
         db.execSQL("INSERT INTO cash (description, amount, type, date) VALUES ('Initial Deposit', 10000, 'IN', '2026-08-01')");
-        db.execSQL("INSERT INTO emergency_contacts (name, phone) VALUES ('Police', '999')");
+        db.execSQL("INSERT INTO bua_profile (id, name, phone, address, salary, join_date) VALUES (1, 'Fatema Khatun', '017XXXXXXXX', 'Mirpur-10, Dhaka', 4000, 'March 2023')");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 2) db.execSQL("ALTER TABLE cash ADD COLUMN date TEXT");
-        if (oldVersion < 3) db.execSQL("CREATE TABLE IF NOT EXISTS equipment (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, location TEXT, status TEXT, purchase_date TEXT, price REAL)");
-        if (oldVersion < 4) db.execSQL("CREATE TABLE IF NOT EXISTS notices (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT, priority TEXT, audience TEXT, date TEXT)");
-        if (oldVersion < 5) db.execSQL("CREATE TABLE IF NOT EXISTS loans (id INTEGER PRIMARY KEY AUTOINCREMENT, lender TEXT, amount REAL, status TEXT, date TEXT)");
-        if (oldVersion < 6) db.execSQL("CREATE TABLE IF NOT EXISTS polls (id INTEGER PRIMARY KEY AUTOINCREMENT, question TEXT, option1 TEXT, option2 TEXT, votes1 INTEGER, votes2 INTEGER, status TEXT, date TEXT)");
-        if (oldVersion < 7) db.execSQL("CREATE TABLE IF NOT EXISTS poll_votes (poll_id INTEGER, user_email TEXT, option_number INTEGER, PRIMARY KEY (poll_id, user_email))");
-        if (oldVersion < 8) db.execSQL("CREATE TABLE IF NOT EXISTS complaints (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT, date TEXT)");
-        if (oldVersion < 9) db.execSQL("CREATE TABLE IF NOT EXISTS emergency_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT)");
+        if (oldVersion < 12) {
+            db.execSQL("DROP TABLE IF EXISTS meal_tracking");
+            db.execSQL("CREATE TABLE meal_tracking (id INTEGER PRIMARY KEY AUTOINCREMENT, user_email TEXT, date TEXT, breakfast INTEGER DEFAULT 0, lunch INTEGER DEFAULT 0, dinner INTEGER DEFAULT 0, UNIQUE(user_email, date))");
+        }
+        if (oldVersion < 13) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS bua_profile (id INTEGER PRIMARY KEY, name TEXT, phone TEXT, address TEXT, salary REAL, join_date TEXT)");
+            db.execSQL("INSERT OR IGNORE INTO bua_profile (id, name, phone, address, salary, join_date) VALUES (1, 'Fatema Khatun', '017XXXXXXXX', 'Mirpur-10, Dhaka', 4000, 'March 2023')");
+            db.execSQL("CREATE TABLE IF NOT EXISTS room_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, member_name TEXT, room_no TEXT, issue TEXT, priority TEXT, status TEXT, date TEXT)");
+        }
     }
 
     // --- MEMBER METHODS ---
     public void addMember(String name, String room, String status) {
-        SQLiteDatabase db = this.getWritableDatabase();
         ContentValues v = new ContentValues();
         v.put("name", name); v.put("room", room); v.put("status", status);
-        db.insert("members", null, v);
+        this.getWritableDatabase().insert("members", null, v);
     }
     public void updateMember(int id, String name, String room, String status) {
-        SQLiteDatabase db = this.getWritableDatabase();
         ContentValues v = new ContentValues();
         v.put("name", name); v.put("room", room); v.put("status", status);
-        db.update("members", v, "id=?", new String[]{String.valueOf(id)});
+        this.getWritableDatabase().update("members", v, "id=?", new String[]{String.valueOf(id)});
     }
     public void deleteMember(int id) {
         this.getWritableDatabase().delete("members", "id=?", new String[]{String.valueOf(id)});
@@ -277,9 +279,54 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return this.getReadableDatabase().rawQuery("SELECT * FROM emergency_contacts ORDER BY id DESC", null);
     }
 
-    // --- DASHBOARD AGGREGATES ---
+    // --- BUA PROFILE METHODS ---
+    public Cursor getBuaProfile() {
+        return this.getReadableDatabase().rawQuery("SELECT * FROM bua_profile WHERE id=1", null);
+    }
+    public void updateBuaProfile(String name, String phone, String address, double salary) {
+        ContentValues v = new ContentValues();
+        v.put("name", name); v.put("phone", phone); v.put("address", address); v.put("salary", salary);
+        this.getWritableDatabase().update("bua_profile", v, "id=1", null);
+    }
+
+    // --- ROOM REQUEST METHODS ---
+    public void addRoomRequest(String member, String room, String issue, String prio, String date) {
+        ContentValues v = new ContentValues();
+        v.put("member_name", member); v.put("room_no", room); v.put("issue", issue);
+        v.put("priority", prio); v.put("status", "Pending"); v.put("date", date);
+        this.getWritableDatabase().insert("room_requests", null, v);
+    }
+    public void updateRoomRequestStatus(int id, String status) {
+        ContentValues v = new ContentValues();
+        v.put("status", status);
+        this.getWritableDatabase().update("room_requests", v, "id=?", new String[]{String.valueOf(id)});
+    }
+    public void deleteRoomRequest(int id) {
+        this.getWritableDatabase().delete("room_requests", "id=?", new String[]{String.valueOf(id)});
+    }
+    public Cursor getAllRoomRequests() {
+        return this.getReadableDatabase().rawQuery("SELECT * FROM room_requests ORDER BY id DESC", null);
+    }
+
+    // --- MEAL TRACKING METHODS ---
+    public void updateDailyMeals(String email, String date, int b, int l, int d) {
+        ContentValues v = new ContentValues();
+        v.put("user_email", email);
+        v.put("date", date);
+        v.put("breakfast", b);
+        v.put("lunch", l);
+        v.put("dinner", d);
+        this.getWritableDatabase().replace("meal_tracking", null, v);
+    }
+    public Cursor getMealStatus(String email, String date) {
+        return this.getReadableDatabase().rawQuery("SELECT * FROM meal_tracking WHERE user_email=? AND date=?", new String[]{email, date});
+    }
     public int getTotalMeals() {
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(count) FROM meals", null);
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(breakfast + lunch + dinner) FROM meal_tracking", null);
+        int total = 0; if (c.moveToFirst()) total = c.getInt(0); c.close(); return total;
+    }
+    public int getUserTotalMeals(String email) {
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(breakfast + lunch + dinner) FROM meal_tracking WHERE user_email=?", new String[]{email});
         int total = 0; if (c.moveToFirst()) total = c.getInt(0); c.close(); return total;
     }
 }

@@ -1,82 +1,125 @@
 package com.project.messmanagement;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
 public class MealRoutineActivity extends AppCompatActivity {
 
+    private DatabaseHelper db;
+    private String currentUserEmail;
+    private String todayDate;
+    private int b = 0, l = 0, d = 0;
 
-    private LinearLayout btn_home, btn_member, btn_meals, btn_bazar, btn_cash, btn_more;
+    private TextView tvB, tvL, tvD;
+    private TextView tvTodayDate, tvMyTotal;
+    private LinearLayout routineContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meal_routine);
+
+        db = new DatabaseHelper(this);
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        currentUserEmail = pref.getString("email", "anonymous");
+
+        todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Calendar.getInstance().getTime());
+
+        initViews();
+        loadTodayStatus();
+        loadWeeklyRoutine();
+        updateSummary();
+        setupNavigation();
+    }
+
+    private void initViews() {
+        tvB = findViewById(R.id.tv_b_count);
+        tvL = findViewById(R.id.tv_l_count);
+        tvD = findViewById(R.id.tv_d_count);
+        tvTodayDate = findViewById(R.id.tv_today_date);
         
-        // Activity logic for managing meal statuses can be added here
+        tvMyTotal = findViewById(R.id.tv_my_total_meals);
+        
+        routineContainer = findViewById(R.id.routine_container);
 
-        btn_home = findViewById(R.id.btn_home_layout);
-        btn_member = findViewById(R.id.btn_member_layout); //pending
+        tvTodayDate.setText(new SimpleDateFormat("EEEE, dd MMM", Locale.US).format(Calendar.getInstance().getTime()));
 
-        btn_meals = findViewById(R.id.btn_meals_layout);
-        btn_bazar = findViewById(R.id.btn_bazar_layout);
-        btn_cash = findViewById(R.id.btn_cash_layout);
-        btn_more = findViewById(R.id.btn_more_layout);
+        findViewById(R.id.btn_b_plus).setOnClickListener(v -> updateMeal("B", 1));
+        findViewById(R.id.btn_b_minus).setOnClickListener(v -> updateMeal("B", -1));
+        findViewById(R.id.btn_l_plus).setOnClickListener(v -> updateMeal("L", 1));
+        findViewById(R.id.btn_l_minus).setOnClickListener(v -> updateMeal("L", -1));
+        findViewById(R.id.btn_d_plus).setOnClickListener(v -> updateMeal("D", 1));
+        findViewById(R.id.btn_d_minus).setOnClickListener(v -> updateMeal("D", -1));
+    }
 
-        btn_home.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MealRoutineActivity.this, MainActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
-
-        if (btn_member != null) {
-            btn_member.setOnClickListener(v -> {
-                Intent i = new Intent(MealRoutineActivity.this, MemberActivity.class);
-                startActivity(i);
-                finish();
-            });
+    private void loadTodayStatus() {
+        Cursor cursor = db.getMealStatus(currentUserEmail, todayDate);
+        if (cursor != null && cursor.moveToFirst()) {
+            b = cursor.getInt(cursor.getColumnIndexOrThrow("breakfast"));
+            l = cursor.getInt(cursor.getColumnIndexOrThrow("lunch"));
+            d = cursor.getInt(cursor.getColumnIndexOrThrow("dinner"));
+            cursor.close();
         }
+        updateCounts();
+    }
 
-        btn_meals.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Already here
-            }
-        });
+    private void updateMeal(String type, int delta) {
+        if (type.equals("B")) b = Math.max(0, b + delta);
+        else if (type.equals("L")) l = Math.max(0, l + delta);
+        else if (type.equals("D")) d = Math.max(0, d + delta);
 
-        btn_bazar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MealRoutineActivity.this, BazarActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
+        db.updateDailyMeals(currentUserEmail, todayDate, b, l, d);
+        updateCounts();
+        updateSummary();
+    }
 
-        btn_cash.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MealRoutineActivity.this, CashLedgerActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
+    private void updateCounts() {
+        tvB.setText(String.valueOf(b));
+        tvL.setText(String.valueOf(l));
+        tvD.setText(String.valueOf(d));
+    }
 
-        btn_more.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MealRoutineActivity.this, AllFeaturesActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
+    private void updateSummary() {
+        int myTotal = db.getUserTotalMeals(currentUserEmail);
+        tvMyTotal.setText(String.valueOf(myTotal));
+    }
+
+    private void loadWeeklyRoutine() {
+        String[] days = {"Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
+        String[] menu = { "Chicken", "Beef", "Fish", "Egg", "Roast", "Khichuri", "Vortas" };
+        routineContainer.removeAllViews();
+        for (int i = 0; i < days.length; i++) {
+            addRoutineRow(days[i], menu[i]);
+        }
+    }
+
+    private void addRoutineRow(String day, String meal) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(0, 10, 0, 10);
+        TextView d = new TextView(this); d.setText(day); d.setTextColor(Color.BLACK); d.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1));
+        TextView m = new TextView(this); m.setText(meal); m.setTextColor(Color.GRAY); m.setGravity(android.view.Gravity.END);
+        row.addView(d); row.addView(m);
+        routineContainer.addView(row);
+    }
+
+    private void setupNavigation() {
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> { startActivity(new Intent(this, MainActivity.class)); finish(); });
+        findViewById(R.id.btn_member_layout).setOnClickListener(v -> { startActivity(new Intent(this, MemberActivity.class)); finish(); });
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> { startActivity(new Intent(this, BazarActivity.class)); finish(); });
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> { startActivity(new Intent(this, CashLedgerActivity.class)); finish(); });
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> { startActivity(new Intent(this, AllFeaturesActivity.class)); finish(); });
     }
 }
