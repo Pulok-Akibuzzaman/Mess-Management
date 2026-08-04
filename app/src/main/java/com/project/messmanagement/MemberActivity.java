@@ -1,6 +1,7 @@
 package com.project.messmanagement;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
@@ -38,6 +39,8 @@ public class MemberActivity extends AppCompatActivity {
         RecyclerView rvMembers = findViewById(R.id.rvMembers);
         rvMembers.setLayoutManager(new LinearLayoutManager(this));
         adapter = new MemberAdapter(memberList, this::confirmDeleteMember);
+
+
         rvMembers.setAdapter(adapter);
 
         loadMembers(null);
@@ -55,6 +58,8 @@ public class MemberActivity extends AppCompatActivity {
 
         ImageButton btnAdd = findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener(v -> showAddMemberDialog());
+
+        setupNavigation();
     }
 
     /** Reloads memberList from the database (optionally filtered) and refreshes the adapter. */
@@ -146,5 +151,28 @@ public class MemberActivity extends AppCompatActivity {
         });
 
         bottomSheet.show();
+    }
+
+    private void setupNavigation() {
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, BazarActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, MealRoutineActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, CashLedgerActivity.class));
+            finish();
+        });
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
+            startActivity(new Intent(this, AllFeaturesActivity.class));
+            finish();
+        });
     }
 }
