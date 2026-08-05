@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Background Shadow/Outline effect -->
+    <path
+        android:pathData="M20,50 L50,30 L80,50 L80,70 L50,50 L20,70 Z"
+        android:fillColor="#000000"
+        android:fillAlpha="0.1"/>
+
+    <!-- Right Side (Medium Blue) -->
+    <path
+        android:pathData="M50,30 L80,50 L80,70 L50,50 Z"
+        android:fillColor="#1565C0"/>
+
+    <!-- Left Side (Darker Blue) -->
+    <path
+        android:pathData="M50,30 L20,50 L20,70 L50,50 Z"
+        android:fillColor="#0D47A1"/>
+
+    <!-- Center Fold/Highlight (Lighter Blue) -->
+    <path
+        android:pathData="M50,30 L65,40 L50,50 L35,40 Z"
+        android:fillColor="#1E88E5"/>
+
+</vector>

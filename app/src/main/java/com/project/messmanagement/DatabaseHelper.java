@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "MessManager.db";
-    private static final int DATABASE_VERSION = 13; 
+    private static final int DATABASE_VERSION = 17; 
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -20,7 +20,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE bazar (id INTEGER PRIMARY KEY AUTOINCREMENT, item_name TEXT, amount REAL, date TEXT)");
         db.execSQL("CREATE TABLE utilities (id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT, amount REAL, date TEXT)");
         db.execSQL("CREATE TABLE cash (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, amount REAL, type TEXT, date TEXT)");
-        db.execSQL("CREATE TABLE members (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, room TEXT, status TEXT)");
+        db.execSQL("CREATE TABLE members (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, room TEXT, status TEXT, email TEXT)");
         db.execSQL("CREATE TABLE equipment (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, location TEXT, status TEXT, purchase_date TEXT, price REAL)");
         db.execSQL("CREATE TABLE notices (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT, priority TEXT, audience TEXT, date TEXT)");
         db.execSQL("CREATE TABLE loans (id INTEGER PRIMARY KEY AUTOINCREMENT, lender TEXT, amount REAL, status TEXT, date TEXT)");
@@ -31,13 +31,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE meal_tracking (id INTEGER PRIMARY KEY AUTOINCREMENT, user_email TEXT, date TEXT, breakfast INTEGER DEFAULT 0, lunch INTEGER DEFAULT 0, dinner INTEGER DEFAULT 0, UNIQUE(user_email, date))");
         db.execSQL("CREATE TABLE bua_profile (id INTEGER PRIMARY KEY, name TEXT, phone TEXT, address TEXT, salary REAL, join_date TEXT)");
         db.execSQL("CREATE TABLE room_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, member_name TEXT, room_no TEXT, issue TEXT, priority TEXT, status TEXT, date TEXT)");
+        db.execSQL("CREATE TABLE guest_meals (id INTEGER PRIMARY KEY AUTOINCREMENT, member_name TEXT, guest_name TEXT, meal_count INTEGER, meal_type TEXT, date TEXT)");
+        db.execSQL("CREATE TABLE occasions (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, type TEXT, total_cost REAL, member_count INTEGER, date TEXT)");
+        db.execSQL("CREATE TABLE bua_salary_history (id INTEGER PRIMARY KEY AUTOINCREMENT, month_year TEXT, amount REAL, paid_date TEXT, status TEXT)");
         
         insertSampleData(db);
     }
 
     private void insertSampleData(SQLiteDatabase db) {
-        db.execSQL("INSERT INTO members (name, room, status) VALUES ('Rafiq Ahmed', 'Room 201', 'Active')");
-        db.execSQL("INSERT INTO members (name, room, status) VALUES ('Karim Hossain', 'Room 202', 'Active')");
+        db.execSQL("INSERT INTO members (name, room, status, email) VALUES ('Rafiq Ahmed', 'Room 201', 'Active', 'rafiq@gmail.com')");
+        db.execSQL("INSERT INTO members (name, room, status, email) VALUES ('Karim Hossain', 'Room 202', 'Active', 'karim@gmail.com')");
         db.execSQL("INSERT INTO bazar (item_name, amount, date) VALUES ('Rice', 1200, '2026-08-01')");
         db.execSQL("INSERT INTO cash (description, amount, type, date) VALUES ('Initial Deposit', 10000, 'IN', '2026-08-01')");
         db.execSQL("INSERT INTO bua_profile (id, name, phone, address, salary, join_date) VALUES (1, 'Fatema Khatun', '017XXXXXXXX', 'Mirpur-10, Dhaka', 4000, 'March 2023')");
@@ -54,17 +57,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("INSERT OR IGNORE INTO bua_profile (id, name, phone, address, salary, join_date) VALUES (1, 'Fatema Khatun', '017XXXXXXXX', 'Mirpur-10, Dhaka', 4000, 'March 2023')");
             db.execSQL("CREATE TABLE IF NOT EXISTS room_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, member_name TEXT, room_no TEXT, issue TEXT, priority TEXT, status TEXT, date TEXT)");
         }
+        if (oldVersion < 14) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS guest_meals (id INTEGER PRIMARY KEY AUTOINCREMENT, member_name TEXT, guest_name TEXT, meal_count INTEGER, meal_type TEXT, date TEXT)");
+        }
+        if (oldVersion < 15) {
+            db.execSQL("ALTER TABLE members ADD COLUMN email TEXT");
+        }
+        if (oldVersion < 16) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS occasions (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, type TEXT, total_cost REAL, member_count INTEGER, date TEXT)");
+        }
+        if (oldVersion < 17) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS bua_salary_history (id INTEGER PRIMARY KEY AUTOINCREMENT, month_year TEXT, amount REAL, paid_date TEXT, status TEXT)");
+        }
     }
 
     // --- MEMBER METHODS ---
-    public void addMember(String name, String room, String status) {
+    public void addMember(String name, String room, String status, String email) {
         ContentValues v = new ContentValues();
-        v.put("name", name); v.put("room", room); v.put("status", status);
+        v.put("name", name); v.put("room", room); v.put("status", status); v.put("email", email);
         this.getWritableDatabase().insert("members", null, v);
     }
-    public void updateMember(int id, String name, String room, String status) {
+    public void updateMember(int id, String name, String room, String status, String email) {
         ContentValues v = new ContentValues();
-        v.put("name", name); v.put("room", room); v.put("status", status);
+        v.put("name", name); v.put("room", room); v.put("status", status); v.put("email", email);
         this.getWritableDatabase().update("members", v, "id=?", new String[]{String.valueOf(id)});
     }
     public void deleteMember(int id) {
@@ -283,9 +298,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Cursor getBuaProfile() {
         return this.getReadableDatabase().rawQuery("SELECT * FROM bua_profile WHERE id=1", null);
     }
-    public void updateBuaProfile(String name, String phone, String address, double salary) {
+    public void updateBuaProfile(String name, String phone, String address, double salary, String joinDate) {
         ContentValues v = new ContentValues();
-        v.put("name", name); v.put("phone", phone); v.put("address", address); v.put("salary", salary);
+        v.put("name", name); v.put("phone", phone); v.put("address", address); 
+        v.put("salary", salary); v.put("join_date", joinDate);
         this.getWritableDatabase().update("bua_profile", v, "id=1", null);
     }
 
@@ -328,5 +344,64 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public int getUserTotalMeals(String email) {
         Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(breakfast + lunch + dinner) FROM meal_tracking WHERE user_email=?", new String[]{email});
         int total = 0; if (c.moveToFirst()) total = c.getInt(0); c.close(); return total;
+    }
+
+    // --- GUEST MEALS METHODS ---
+    public void addGuestMeal(String member, String guest, int count, String type, String date) {
+        ContentValues v = new ContentValues();
+        v.put("member_name", member); v.put("guest_name", guest);
+        v.put("meal_count", count); v.put("meal_type", type); v.put("date", date);
+        this.getWritableDatabase().insert("guest_meals", null, v);
+    }
+    public void updateGuestMeal(int id, String member, String guest, int count, String type, String date) {
+        ContentValues v = new ContentValues();
+        v.put("member_name", member); v.put("guest_name", guest);
+        v.put("meal_count", count); v.put("meal_type", type); v.put("date", date);
+        this.getWritableDatabase().update("guest_meals", v, "id=?", new String[]{String.valueOf(id)});
+    }
+    public void deleteGuestMeal(int id) {
+        this.getWritableDatabase().delete("guest_meals", "id=?", new String[]{String.valueOf(id)});
+    }
+    public Cursor getAllGuestMeals() {
+        return this.getReadableDatabase().rawQuery("SELECT * FROM guest_meals ORDER BY id DESC", null);
+    }
+
+    // --- OCCASIONS METHODS ---
+    public void addOccasion(String title, String type, double cost, int members, String date) {
+        ContentValues v = new ContentValues();
+        v.put("title", title); v.put("type", type);
+        v.put("total_cost", cost); v.put("member_count", members); v.put("date", date);
+        this.getWritableDatabase().insert("occasions", null, v);
+    }
+    public void updateOccasion(int id, String title, String type, double cost, int members, String date) {
+        ContentValues v = new ContentValues();
+        v.put("title", title); v.put("type", type);
+        v.put("total_cost", cost); v.put("member_count", members); v.put("date", date);
+        this.getWritableDatabase().update("occasions", v, "id=?", new String[]{String.valueOf(id)});
+    }
+    public void deleteOccasion(int id) {
+        this.getWritableDatabase().delete("occasions", "id=?", new String[]{String.valueOf(id)});
+    }
+    public Cursor getAllOccasions() {
+        return this.getReadableDatabase().rawQuery("SELECT * FROM occasions ORDER BY id DESC", null);
+    }
+    public double getTotalOccasionCost() {
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(total_cost) FROM occasions", null);
+        double total = 0; if (c.moveToFirst()) total = c.getDouble(0); c.close(); return total;
+    }
+
+    // --- BUA SALARY METHODS ---
+    public void addBuaSalaryPayment(String monthYear, double amount, String paidDate) {
+        ContentValues v = new ContentValues();
+        v.put("month_year", monthYear); v.put("amount", amount);
+        v.put("paid_date", paidDate); v.put("status", "Paid");
+        this.getWritableDatabase().insert("bua_salary_history", null, v);
+    }
+    public Cursor getBuaSalaryHistory() {
+        return this.getReadableDatabase().rawQuery("SELECT * FROM bua_salary_history ORDER BY id DESC", null);
+    }
+    public boolean isBuaSalaryPaid(String monthYear) {
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT id FROM bua_salary_history WHERE month_year=?", new String[]{monthYear});
+        boolean paid = c.getCount() > 0; c.close(); return paid;
     }
 }

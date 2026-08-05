@@ -182,9 +182,10 @@
                         android:orientation="vertical"
                         android:padding="16dp">
                         <TextView
+                            android:id="@+id/tvBuaServiceStat"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="2y 4m"
+                            android:text="0y 0m"
                             android:textColor="#0D1B2A"
                             android:textSize="20sp"
                             android:textStyle="bold" />
@@ -211,9 +212,10 @@
                         android:orientation="vertical"
                         android:padding="16dp">
                         <TextView
+                            android:id="@+id/tvBuaJoinedStat"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Mar '23"
+                            android:text="N/A"
                             android:textColor="#1A4F5C"
                             android:textSize="20sp"
                             android:textStyle="bold" />

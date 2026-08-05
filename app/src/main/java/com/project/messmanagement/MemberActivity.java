@@ -84,17 +84,18 @@ public class MemberActivity extends AppCompatActivity {
         int idxName   = c.getColumnIndexOrThrow("name");
         int idxRoom   = c.getColumnIndexOrThrow("room");
         int idxStatus = c.getColumnIndexOrThrow("status");
+        int idxEmail  = c.getColumnIndexOrThrow("email");
 
         while (c.moveToNext()) {
             int id        = c.getInt(idxId);
             String name   = c.getString(idxName);
             String room   = c.getString(idxRoom);
             String status = c.getString(idxStatus);
+            String email  = c.getString(idxEmail);
 
-            // NOTE: the "members" table only stores name/room/status, so phone,
-            // meals and due amount aren't persisted yet. Defaulted here so the
-            // card layout still renders correctly.
-            memberList.add(new Member(id, name, initialsOf(name), room, "N/A", 0, "৳0", status));
+            // NOTE: the "members" table only stores name/room/status/email, 
+            // so phone, meals and due amount aren't persisted yet.
+            memberList.add(new Member(id, name, initialsOf(name), room, "N/A", 0, "৳0", status, email));
         }
         c.close();
 
@@ -139,6 +140,7 @@ public class MemberActivity extends AppCompatActivity {
 
         EditText etFullName   = view.findViewById(R.id.etFullName);
         EditText etRoomNumber = view.findViewById(R.id.etRoomNumber);
+        EditText etEmail      = view.findViewById(R.id.etEmail);
         Spinner spinnerStatus = view.findViewById(R.id.spinnerStatus);
 
         ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(
@@ -149,6 +151,7 @@ public class MemberActivity extends AppCompatActivity {
         if (isEdit) {
             etFullName.setText(existingMember.name);
             etRoomNumber.setText(existingMember.room);
+            etEmail.setText(existingMember.email);
             int statusPos = statusAdapter.getPosition(existingMember.status);
             spinnerStatus.setSelection(statusPos >= 0 ? statusPos : 0);
         }
@@ -158,19 +161,20 @@ public class MemberActivity extends AppCompatActivity {
         view.findViewById(R.id.btnAddMember).setOnClickListener(v -> {
             String name = etFullName.getText().toString().trim();
             String room = etRoomNumber.getText().toString().trim();
+            String email = etEmail.getText().toString().trim();
             String status = spinnerStatus.getSelectedItem() != null
                     ? spinnerStatus.getSelectedItem().toString() : "Active";
 
-            if (name.isEmpty() || room.isEmpty()) {
-                Toast.makeText(this, "Please enter a name and room number", Toast.LENGTH_SHORT).show();
+            if (name.isEmpty() || room.isEmpty() || email.isEmpty()) {
+                Toast.makeText(this, "Please enter all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             if (isEdit) {
-                dbHelper.updateMember(existingMember.id, name, room, status);
+                dbHelper.updateMember(existingMember.id, name, room, status, email);
                 Toast.makeText(this, "Member updated", Toast.LENGTH_SHORT).show();
             } else {
-                dbHelper.addMember(name, room, status);
+                dbHelper.addMember(name, room, status, email);
             }
 
             etSearch.setText("");

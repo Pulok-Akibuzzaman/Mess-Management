@@ -51,6 +51,9 @@
         <TextView style="@style/LabelStyle" android:text="SALARY (TK)" />
         <EditText android:id="@+id/etBuaSalary" style="@style/InputStyle" android:hint="4000" android:inputType="number" />
 
+        <TextView style="@style/LabelStyle" android:text="JOIN DATE" />
+        <EditText android:id="@+id/etBuaJoinDate" style="@style/InputStyle" android:hint="e.g. March 2023" android:inputType="none" android:focusable="false" android:clickable="true" />
+
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"

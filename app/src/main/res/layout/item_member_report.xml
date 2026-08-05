@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/tvInitial"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:text="RA"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textColor="#0F172A"
+        android:gravity="center"
+        android:background="@drawable/pill_background"
+        android:backgroundTint="#F1F5F9" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/tvMemberName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rafiq Ahmed"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#1E293B" />
+            <TextView
+                android:id="@+id/tvTotalOwed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="৳0"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#1E293B"
+                android:layout_alignParentEnd="true" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+            <TextView
+                android:id="@+id/tvMealCalc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Meals: 0 × ৳0 = ৳0"
+                android:textSize="13sp"
+                android:textColor="#94A3B8" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="2dp">
+            <TextView
+                android:id="@+id/tvSharedCost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Shared cost: ৳0"
+                android:textSize="13sp"
+                android:textColor="#94A3B8" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.MessManagement" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.MessManagement" parent="Theme.Material3.Light.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/nav_active</item>
         <item name="colorOnPrimary">@color/white</item>

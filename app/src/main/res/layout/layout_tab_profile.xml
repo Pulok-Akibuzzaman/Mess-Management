@@ -29,7 +29,7 @@
             android:id="@+id/rowJoinDate" />
         <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F2F5" />
         <include layout="@layout/item_profile_row"
-            android:id="@+id/rowNationalId" />
+            android:id="@+id/rowTenure" />
         <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F2F5" />
         <include layout="@layout/item_profile_row"
             android:id="@+id/rowEmergency" />

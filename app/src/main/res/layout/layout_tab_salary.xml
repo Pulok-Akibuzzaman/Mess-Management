@@ -7,6 +7,7 @@
 
     <!-- Warning banner -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/cardWarningUnpaid"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -32,9 +33,10 @@
                 android:layout_marginEnd="10dp" />
 
             <TextView
+                android:id="@+id/tvSalaryWarning"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="July 2025 salary is unpaid. Mark as paid after disbursement."
+                android:text="Current month salary is unpaid. Mark as paid after disbursement."
                 android:textColor="#5A3E00"
                 android:textSize="13sp" />
 
@@ -42,11 +44,14 @@
 
     </androidx.cardview.widget.CardView>
 
-    <!-- Salary rows -->
-    <include layout="@layout/item_salary_row" android:id="@+id/rowJul" />
-    <include layout="@layout/item_salary_row" android:id="@+id/rowJun" />
-    <include layout="@layout/item_salary_row" android:id="@+id/rowMay" />
-    <include layout="@layout/item_salary_row" android:id="@+id/rowApr" />
+    <!-- Salary History List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvSalaryHistory"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="12dp"
+        android:scrollbars="vertical" />
 
     <!-- Mark as Paid button -->
     <Button
@@ -55,7 +60,7 @@
         android:layout_height="56dp"
         android:layout_marginTop="8dp"
         android:background="@drawable/bg_button_teal"
-        android:text="Mark July as Paid"
+        android:text="Mark Current Month as Paid"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold" />
