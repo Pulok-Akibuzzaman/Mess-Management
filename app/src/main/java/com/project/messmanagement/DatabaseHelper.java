@@ -189,8 +189,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int id = -1; if (c.moveToFirst()) id = c.getInt(0); c.close(); return id;
     }
     public double getMemberPaidAmount(String email) {
-        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE member_email=? AND type='IN' AND date LIKE ?", new String[]{email, "%" + month});
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE member_email=? AND type='IN'", new String[]{email});
         double paid = 0; if (c.moveToFirst()) paid = c.getDouble(0); c.close(); return paid;
     }
 
@@ -225,8 +224,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return this.getReadableDatabase().rawQuery("SELECT * FROM bazar ORDER BY date DESC", null);
     }
     public double getTotalBazar() {
-        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM bazar WHERE date LIKE ?", new String[]{"%" + month});
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM bazar", null);
         double total = 0; if (c.moveToFirst()) total = c.getDouble(0); c.close(); return total;
     }
     public int getBazarCount() {
@@ -278,8 +276,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{userEmail});
     }
     public double getTotalIn() {
-        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE type='IN' AND date LIKE ?", new String[]{"%" + month});
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE type='IN'", null);
         double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
     }
     public double getTotalOut() {
@@ -313,9 +310,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
     }
     public double getUtilitiesTotal() {
-        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
         // Exclude Bua Salary and House Rent to avoid double counting in shared costs
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM utilities WHERE type NOT IN ('Bua Salary', 'House Rent') AND date LIKE ?", new String[]{"%" + month});
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM utilities WHERE type NOT IN ('Bua Salary', 'House Rent')", null);
         double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
     }
     public double getHouseRent() {
@@ -517,29 +513,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return this.getReadableDatabase().rawQuery(query, new String[]{email, name});
     }
     public int getTotalMeals() {
-        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
         int regular = 0;
-        Cursor c1 = this.getReadableDatabase().rawQuery("SELECT SUM(breakfast + lunch + dinner) FROM meal_tracking WHERE date LIKE ?", new String[]{"%" + month + "%"});
+        Cursor c1 = this.getReadableDatabase().rawQuery("SELECT SUM(breakfast + lunch + dinner) FROM meal_tracking", null);
         if (c1.moveToFirst()) regular = c1.getInt(0);
         c1.close();
 
         int guest = 0;
-        Cursor c2 = this.getReadableDatabase().rawQuery("SELECT SUM(meal_count) FROM guest_meals WHERE date LIKE ?", new String[]{"%" + month});
+        Cursor c2 = this.getReadableDatabase().rawQuery("SELECT SUM(meal_count) FROM guest_meals", null);
         if (c2.moveToFirst()) guest = c2.getInt(0);
         c2.close();
 
         return regular + guest;
     }
     public int getUserTotalMeals(String email, String name) {
-        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
         int regular = 0;
-        Cursor c1 = this.getReadableDatabase().rawQuery("SELECT SUM(breakfast + lunch + dinner) FROM meal_tracking WHERE user_email=? AND date LIKE ?", new String[]{email, "%" + month + "%"});
+        Cursor c1 = this.getReadableDatabase().rawQuery("SELECT SUM(breakfast + lunch + dinner) FROM meal_tracking WHERE user_email=?", new String[]{email});
         if (c1.moveToFirst()) regular = c1.getInt(0);
         c1.close();
 
         int guest = 0;
         if (name != null && !name.isEmpty()) {
-            Cursor c2 = this.getReadableDatabase().rawQuery("SELECT SUM(meal_count) FROM guest_meals WHERE member_name=? AND date LIKE ?", new String[]{name, "%" + month});
+            Cursor c2 = this.getReadableDatabase().rawQuery("SELECT SUM(meal_count) FROM guest_meals WHERE member_name=?", new String[]{name});
             if (c2.moveToFirst()) guest = c2.getInt(0);
             c2.close();
         }
@@ -627,8 +621,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return this.getReadableDatabase().rawQuery("SELECT * FROM occasions ORDER BY id DESC", null);
     }
     public double getTotalOccasionCost() {
-        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(total_cost) FROM occasions WHERE date LIKE ?", new String[]{"%" + month});
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(total_cost) FROM occasions", null);
         double total = 0; if (c.moveToFirst()) total = c.getDouble(0); c.close(); return total;
     }
 
