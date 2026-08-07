@@ -21,10 +21,12 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.ViewHolder
     private List<Member> members;
     private final OnMemberLongClickListener longClickListener;
     private final OnMemberClickListener clickListener;
+    private boolean isAdmin = false;
 
-    public MemberAdapter(List<Member> members, OnMemberLongClickListener longClickListener,
+    public MemberAdapter(List<Member> members, boolean isAdmin, OnMemberLongClickListener longClickListener,
                          OnMemberClickListener clickListener) {
         this.members = members;
+        this.isAdmin = isAdmin;
         this.longClickListener = longClickListener;
         this.clickListener = clickListener;
     }
@@ -37,6 +39,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.ViewHolder
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvInitials, tvName, tvStatus, tvRoomPhone, tvMeals, tvDue;
+        View ivChevron;
 
         public ViewHolder(View view) {
             super(view);
@@ -46,6 +49,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.ViewHolder
             tvRoomPhone = view.findViewById(R.id.tvRoomPhone);
             tvMeals     = view.findViewById(R.id.tvMeals);
             tvDue       = view.findViewById(R.id.tvDue);
+            ivChevron   = view.findViewById(R.id.ivChevron);
         }
     }
 
@@ -64,8 +68,10 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.ViewHolder
         holder.tvName.setText(member.name);
         holder.tvStatus.setText(member.status);
         holder.tvRoomPhone.setText(member.room + " · " + member.phone);
-        holder.tvMeals.setText(String.valueOf(member.meals));
+        holder.tvMeals.setText(member.meals + " (" + member.mealCost + ")");
         holder.tvDue.setText(member.due);
+        
+        holder.ivChevron.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
 
         if ("Active".equalsIgnoreCase(member.status)) {
             holder.tvStatus.setBackgroundResource(R.drawable.bg_badge_active);

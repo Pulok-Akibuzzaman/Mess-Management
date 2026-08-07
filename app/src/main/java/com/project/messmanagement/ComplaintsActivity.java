@@ -14,16 +14,22 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class ComplaintsActivity extends AppCompatActivity {
 
-    private LinearLayout container;
+    private RecyclerView rvComplaints;
+    private ComplaintAdapter adapter;
+    private List<Complaint> complaintList = new ArrayList<>();
     private DatabaseHelper db;
 
     @Override
@@ -32,7 +38,13 @@ public class ComplaintsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_notices); // Reuse list layout
 
         db = new DatabaseHelper(this);
-        container = findViewById(R.id.notice_container);
+        rvComplaints = findViewById(R.id.rvNotices); // Reuse layout component
+        rvComplaints.setLayoutManager(new LinearLayoutManager(this));
+        rvComplaints.setVisibility(View.VISIBLE);
+        findViewById(R.id.scrollLegacy).setVisibility(View.GONE);
+
+        adapter = new ComplaintAdapter(complaintList, complaint -> confirmDelete(complaint));
+        rvComplaints.setAdapter(adapter);
         
         TextView tvTitle = findViewById(R.id.tvActivityTitle);
         if (tvTitle != null) tvTitle.setText("Complaints");
@@ -50,8 +62,7 @@ public class ComplaintsActivity extends AppCompatActivity {
     }
 
     private void refreshComplaintList() {
-        if (container == null) return;
-        container.removeAllViews();
+        complaintList.clear();
 
         Cursor cursor = db.getAllComplaints();
         if (cursor != null && cursor.moveToFirst()) {
@@ -60,10 +71,24 @@ public class ComplaintsActivity extends AppCompatActivity {
                 String message = cursor.getString(cursor.getColumnIndexOrThrow("message"));
                 String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
 
-                addComplaintToUI(id, message, date);
+                complaintList.add(new Complaint(id, message, date));
             } while (cursor.moveToNext());
             cursor.close();
         }
+        adapter.notifyDataSetChanged();
+    }
+
+    private void confirmDelete(Complaint complaint) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Complaint")
+                .setMessage("Remove this complaint entry?")
+                .setPositiveButton("Confirm", (dialog, which) -> {
+                    db.deleteComplaint(complaint.id);
+                    refreshComplaintList();
+                    Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void showComplaintDialog() {
@@ -91,48 +116,6 @@ public class ComplaintsActivity extends AppCompatActivity {
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
-    }
-
-    private void addComplaintToUI(final int id, final String message, final String date) {
-        final LinearLayout itemLayout = new LinearLayout(this);
-        itemLayout.setOrientation(LinearLayout.VERTICAL);
-        itemLayout.setPadding(30, 40, 30, 40);
-        itemLayout.setBackgroundResource(android.R.drawable.list_selector_background);
-
-        TextView tvMsg = new TextView(this);
-        tvMsg.setText(message);
-        tvMsg.setTextSize(16);
-        tvMsg.setTextColor(Color.BLACK);
-        itemLayout.addView(tvMsg);
-
-        TextView tvDate = new TextView(this);
-        tvDate.setText("Submitted on: " + date);
-        tvDate.setTextSize(11);
-        tvDate.setTextColor(Color.GRAY);
-        tvDate.setPadding(0, 8, 0, 0);
-        itemLayout.addView(tvDate);
-
-        // Long Press to Delete (Admin feature)
-        itemLayout.setOnLongClickListener(v -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Delete Complaint")
-                    .setMessage("Remove this complaint entry?")
-                    .setPositiveButton("Confirm", (dialog, which) -> {
-                        db.deleteComplaint(id);
-                        refreshComplaintList();
-                        Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-            return true;
-        });
-
-        View line = new View(this);
-        line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2));
-        line.setBackgroundColor(Color.LTGRAY);
-
-        container.addView(itemLayout);
-        container.addView(line);
     }
 
     private void setupNavigation() {

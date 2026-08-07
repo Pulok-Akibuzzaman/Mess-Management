@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.content.SharedPreferences;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import java.text.SimpleDateFormat;
@@ -57,25 +58,21 @@ public class MonthlyReportActivity extends AppCompatActivity {
         double totalBazar = db.getTotalBazar();
         double totalUtilities = db.getUtilitiesTotal();
         int totalMeals = db.getTotalMeals();
-        int memberCount = db.getActiveMembersCount();
+        int memberCount = db.getResidentCount();
         
-        double buaSalary = 0;
-        Cursor buaCursor = db.getBuaProfile();
-        if (buaCursor != null) {
-            if (buaCursor.moveToFirst()) {
-                buaSalary = buaCursor.getDouble(buaCursor.getColumnIndexOrThrow("salary"));
-            }
-            buaCursor.close();
-        }
-
-        double grandTotal = totalBazar + totalUtilities + buaSalary;
-        double mealRate = totalMeals > 0 ? totalBazar / totalMeals : 0;
-        double sharedCostPerMember = memberCount > 0 ? (totalUtilities + buaSalary) / memberCount : 0;
+        double buaSalary = db.getBuaSalary();
+        double houseRent = db.getHouseRent();
+        double grandTotal = totalBazar + totalUtilities + buaSalary + houseRent;
+        
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        double fixedRate = sp.getFloat("fixed_meal_rate", 0.0f);
+        
+        double sharedCostPerMember = memberCount > 0 ? (totalUtilities + buaSalary + houseRent) / memberCount : 0;
 
         // Update Main Card
         tvGrandTotal.setText(String.format(Locale.US, "৳%,.0f", grandTotal));
         tvTotalMeals.setText(String.valueOf(totalMeals));
-        tvMealRate.setText(String.format(Locale.US, "৳%,.1f", mealRate));
+        tvMealRate.setText(String.format(Locale.US, "৳%,.1f", fixedRate));
         tvMemberCount.setText(String.valueOf(memberCount));
 
         // Update Breakdown
@@ -108,11 +105,11 @@ public class MonthlyReportActivity extends AppCompatActivity {
             do {
                 String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
                 String email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
-                int userMeals = (email != null) ? db.getUserTotalMeals(email) : 0;
-                double foodCost = userMeals * mealRate;
+                int userMeals = (email != null) ? db.getUserTotalMeals(email, name) : 0;
+                double foodCost = userMeals * fixedRate;
                 double totalOwed = foodCost + sharedCostPerMember;
 
-                addMemberToUI(name, userMeals, mealRate, foodCost, sharedCostPerMember, totalOwed);
+                addMemberToUI(name, userMeals, fixedRate, foodCost, sharedCostPerMember, totalOwed);
             } while (cursor.moveToNext());
             cursor.close();
         }

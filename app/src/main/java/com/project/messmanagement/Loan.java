@@ -1,0 +1,15 @@
+package com.project.messmanagement;
+
+public class Loan {
+    int id;
+    String lender, status, date;
+    double amount;
+
+    public Loan(int id, String lender, double amount, String status, String date) {
+        this.id = id;
+        this.lender = lender;
+        this.amount = amount;
+        this.status = status;
+        this.date = date;
+    }
+}

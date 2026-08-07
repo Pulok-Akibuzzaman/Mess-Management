@@ -3,6 +3,7 @@ package com.project.messmanagement;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -16,6 +17,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
@@ -27,8 +30,11 @@ import java.util.Locale;
 
 public class RoomServiceActivity extends AppCompatActivity {
 
-    private LinearLayout container;
+    private RecyclerView rvRequests;
+    private RoomRequestAdapter adapter;
+    private List<RoomRequest> requestList = new ArrayList<>();
     private DatabaseHelper db;
+    private boolean isAdmin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +42,25 @@ public class RoomServiceActivity extends AppCompatActivity {
         setContentView(R.layout.activity_room_service);
 
         db = new DatabaseHelper(this);
-        container = findViewById(R.id.item_container);
+        
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        isAdmin = "Admin".equalsIgnoreCase(pref.getString("role", "Member"));
+
+        rvRequests = findViewById(R.id.rvRoomRequests);
+        rvRequests.setLayoutManager(new LinearLayoutManager(this));
+        
+        adapter = new RoomRequestAdapter(requestList, new RoomRequestAdapter.OnRequestClickListener() {
+            @Override
+            public void onItemClick(RoomRequest request) {
+                if (isAdmin) showStatusDialog(request);
+            }
+
+            @Override
+            public void onItemLongClick(RoomRequest request) {
+                if (isAdmin) confirmDelete(request);
+            }
+        });
+        rvRequests.setAdapter(adapter);
 
         // 1. Top Right "+" Button -> Full Dialog
         findViewById(R.id.btnAddRequest).setOnClickListener(v -> showRoomRequestDialog());
@@ -66,8 +90,7 @@ public class RoomServiceActivity extends AppCompatActivity {
     }
 
     private void refreshRequestList() {
-        if (container == null) return;
-        container.removeAllViews();
+        requestList.clear();
 
         Cursor cursor = db.getAllRoomRequests();
         if (cursor != null && cursor.moveToFirst()) {
@@ -80,10 +103,32 @@ public class RoomServiceActivity extends AppCompatActivity {
                 String status = cursor.getString(cursor.getColumnIndexOrThrow("status"));
                 String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
 
-                addRequestToUI(id, member, room, issue, priority, status, date);
+                requestList.add(new RoomRequest(id, member, room, issue, priority, status, date));
             } while (cursor.moveToNext());
             cursor.close();
         }
+        adapter.notifyDataSetChanged();
+    }
+
+    private void showStatusDialog(RoomRequest request) {
+        new AlertDialog.Builder(this)
+            .setTitle("Update Status")
+            .setItems(new String[]{"Pending", "In Progress", "Completed"}, (d, which) -> {
+                String newStatus = (which == 0) ? "Pending" : (which == 1) ? "In Progress" : "Completed";
+                db.updateRoomRequestStatus(request.id, newStatus);
+                refreshRequestList();
+            }).show();
+    }
+
+    private void confirmDelete(RoomRequest request) {
+        new AlertDialog.Builder(this)
+            .setMessage("Remove this request?")
+            .setPositiveButton("Delete", (d, w) -> {
+                db.deleteRoomRequest(request.id);
+                refreshRequestList();
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
     }
 
     private void showRoomRequestDialog() {
@@ -141,58 +186,6 @@ public class RoomServiceActivity extends AppCompatActivity {
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
-    }
-
-    private void addRequestToUI(final int id, String member, String room, String issue, String priority, final String status, String date) {
-        final LinearLayout itemLayout = new LinearLayout(this);
-        itemLayout.setOrientation(LinearLayout.VERTICAL);
-        itemLayout.setPadding(30, 40, 30, 40);
-        itemLayout.setBackgroundResource(android.R.drawable.list_selector_background);
-
-        TextView tvTitle = new TextView(this);
-        tvTitle.setText(issue + " (" + priority + ")");
-        tvTitle.setTextSize(17);
-        tvTitle.setTypeface(null, android.graphics.Typeface.BOLD);
-        tvTitle.setTextColor(priority.equals("Emergency") ? Color.RED : Color.BLACK);
-        itemLayout.addView(tvTitle);
-
-        TextView tvDetails = new TextView(this);
-        tvDetails.setText(member + " | " + room + "\nStatus: " + status + " | " + date);
-        tvDetails.setTextSize(14);
-        tvDetails.setTextColor(Color.GRAY);
-        tvDetails.setPadding(0, 5, 0, 0);
-        itemLayout.addView(tvDetails);
-
-        // Click to change status
-        itemLayout.setOnClickListener(v -> {
-            new AlertDialog.Builder(this)
-                .setTitle("Update Status")
-                .setItems(new String[]{"Pending", "In Progress", "Completed"}, (d, which) -> {
-                    String newStatus = (which == 0) ? "Pending" : (which == 1) ? "In Progress" : "Completed";
-                    db.updateRoomRequestStatus(id, newStatus);
-                    refreshRequestList();
-                }).show();
-        });
-
-        // Long Press to Delete
-        itemLayout.setOnLongClickListener(v -> {
-            new AlertDialog.Builder(this)
-                .setMessage("Remove this request?")
-                .setPositiveButton("Delete", (d, w) -> {
-                    db.deleteRoomRequest(id);
-                    refreshRequestList();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-            return true;
-        });
-
-        View line = new View(this);
-        line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2));
-        line.setBackgroundColor(Color.LTGRAY);
-
-        container.addView(itemLayout);
-        container.addView(line);
     }
 
     private void setupNavigation() {

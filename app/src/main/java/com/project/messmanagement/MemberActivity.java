@@ -48,7 +48,7 @@ public class MemberActivity extends AppCompatActivity {
         RecyclerView rvMembers = findViewById(R.id.rvMembers);
         rvMembers.setLayoutManager(new LinearLayoutManager(this));
         
-        adapter = new MemberAdapter(memberList,
+        adapter = new MemberAdapter(memberList, isAdmin,
                 isAdmin ? new MemberAdapter.OnMemberLongClickListener() {
                     @Override
                     public void onItemLongClick(int position, Member member) {
@@ -101,6 +101,18 @@ public class MemberActivity extends AppCompatActivity {
         int idxEmail  = c.getColumnIndexOrThrow("email");
         int idxPhone  = c.getColumnIndexOrThrow("phone");
         int idxDate   = c.getColumnIndexOrThrow("join_date");
+        int idxPaid   = c.getColumnIndexOrThrow("paid_amount");
+        int idxPass   = c.getColumnIndexOrThrow("password");
+
+        // Fetch shared values ONCE for efficiency
+        int residentCount = dbHelper.getResidentCount();
+        double utilities = dbHelper.getUtilitiesTotal();
+        double buaSalary = dbHelper.getBuaSalary();
+        double houseRent = dbHelper.getHouseRent();
+        double sharedCost = residentCount > 0 ? (utilities + buaSalary + houseRent) / residentCount : 0; 
+        
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        double fixedRate = sp.getFloat("fixed_meal_rate", 0.0f);
 
         while (c.moveToNext()) {
             int id        = c.getInt(idxId);
@@ -110,9 +122,18 @@ public class MemberActivity extends AppCompatActivity {
             String email  = c.getString(idxEmail);
             String phone  = c.getString(idxPhone);
             String date   = c.getString(idxDate);
+            double paid   = c.getDouble(idxPaid);
+            String pass   = c.getString(idxPass);
+
+            // Fetch actual meals from DB (using direct name for guest meals)
+            int userMeals = dbHelper.getUserTotalMeals(email, name);
+            
+            double mealShare = userMeals * fixedRate;
+            double totalShare = mealShare + sharedCost;
+            double finalDue = totalShare - paid;
 
             memberList.add(new Member(id, name, initialsOf(name), room, 
-                    phone != null ? phone : "N/A", 0, "৳0", status, email, date));
+                    phone != null ? phone : "N/A", userMeals, "৳" + (int)finalDue, status, email, date, paid, pass, "৳" + (int)mealShare));
         }
         c.close();
 
@@ -196,7 +217,7 @@ public class MemberActivity extends AppCompatActivity {
         view.findViewById(R.id.btnAddMember).setOnClickListener(v -> {
             String name = etFullName.getText().toString().trim();
             String room = etRoomNumber.getText().toString().trim();
-            String email = etEmail.getText().toString().trim();
+            String email = etEmail.getText().toString().trim().toLowerCase();
             String phone = etPhone.getText().toString().trim();
             String date = etJoinDate.getText().toString().trim();
             String status = spinnerStatus.getSelectedItem() != null
@@ -208,10 +229,10 @@ public class MemberActivity extends AppCompatActivity {
             }
 
             if (isEdit) {
-                dbHelper.updateMember(existingMember.id, name, room, status, email, phone, date);
+                dbHelper.updateMember(existingMember.id, name, room, status, email, phone, date, existingMember.password, existingMember.paidAmount);
                 Toast.makeText(this, "Member updated", Toast.LENGTH_SHORT).show();
             } else {
-                dbHelper.addMember(name, room, status, email, phone, date);
+                dbHelper.addMember(name, room, status, email, phone, date, "1234", 0.0);
             }
 
             etSearch.setText("");

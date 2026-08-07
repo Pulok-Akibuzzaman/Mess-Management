@@ -148,6 +148,10 @@
             android:name=".BTChatActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".UserProfileActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <receiver android:name=".SOSReceiver" android:exported="false" />
     </application>

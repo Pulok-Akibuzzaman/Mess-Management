@@ -40,7 +40,7 @@ public class CashLedgerAdapter extends RecyclerView.Adapter<CashLedgerAdapter.Vi
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivIcon;
-        TextView tvDesc, tvDate, tvAmount;
+        TextView tvDesc, tvDate, tvAmount, tvPerformed;
 
         public ViewHolder(View view) {
             super(view);
@@ -48,6 +48,7 @@ public class CashLedgerAdapter extends RecyclerView.Adapter<CashLedgerAdapter.Vi
             tvDesc   = view.findViewById(R.id.tv_transaction_desc);
             tvDate   = view.findViewById(R.id.tv_transaction_date);
             tvAmount = view.findViewById(R.id.tv_transaction_amount);
+            tvPerformed = view.findViewById(R.id.tv_performed_by);
         }
     }
 
@@ -66,6 +67,7 @@ public class CashLedgerAdapter extends RecyclerView.Adapter<CashLedgerAdapter.Vi
         holder.tvDesc.setText(t.description);
         holder.tvDate.setText(t.date);
         holder.tvAmount.setText(formatAmount(t.amount, isIn));
+        holder.tvPerformed.setText("Recorded by: " + t.performedBy);
 
         if (isIn) {
             holder.ivIcon.setColorFilter(Color.parseColor("#4CAF50"));

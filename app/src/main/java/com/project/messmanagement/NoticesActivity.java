@@ -17,16 +17,22 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class NoticesActivity extends AppCompatActivity {
 
-    private LinearLayout noticeContainer;
+    private RecyclerView rvNotices;
+    private NoticeAdapter adapter;
+    private List<Notice> noticeList = new ArrayList<>();
     private DatabaseHelper db;
     private boolean isAdmin = false;
 
@@ -41,7 +47,23 @@ public class NoticesActivity extends AppCompatActivity {
         String role = pref.getString("role", "Member");
         isAdmin = "Admin".equalsIgnoreCase(role);
         
-        noticeContainer = findViewById(R.id.notice_container);
+        rvNotices = findViewById(R.id.rvNotices);
+        rvNotices.setLayoutManager(new LinearLayoutManager(this));
+        rvNotices.setVisibility(View.VISIBLE);
+        findViewById(R.id.scrollLegacy).setVisibility(View.GONE);
+        
+        adapter = new NoticeAdapter(noticeList, new NoticeAdapter.OnNoticeClickListener() {
+            @Override
+            public void onItemClick(Notice notice) {
+                if (isAdmin) showNoticeDialog(notice.id, notice.title, notice.content, notice.priority, notice.audience);
+            }
+
+            @Override
+            public void onItemLongClick(Notice notice) {
+                if (isAdmin) confirmDelete(notice);
+            }
+        });
+        rvNotices.setAdapter(adapter);
 
         // 1. Setup Add Button
         View btnAdd = findViewById(R.id.btnAddNotice);
@@ -61,8 +83,7 @@ public class NoticesActivity extends AppCompatActivity {
     }
 
     private void refreshNoticeList() {
-        if (noticeContainer == null) return;
-        noticeContainer.removeAllViews();
+        noticeList.clear();
 
         Cursor cursor = db.getAllNotices();
         if (cursor != null && cursor.moveToFirst()) {
@@ -74,10 +95,24 @@ public class NoticesActivity extends AppCompatActivity {
                 String audience = cursor.getString(cursor.getColumnIndexOrThrow("audience"));
                 String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
 
-                addNoticeToUI(id, title, content, priority, audience, date);
+                noticeList.add(new Notice(id, title, content, priority, audience, date));
             } while (cursor.moveToNext());
             cursor.close();
         }
+        adapter.notifyDataSetChanged();
+    }
+
+    private void confirmDelete(Notice notice) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Notice")
+                .setMessage("Are you sure you want to delete this notice?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    db.deleteNotice(notice.id);
+                    refreshNoticeList();
+                    Toast.makeText(this, "Notice deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void showNoticeDialog(final int id, String initialTitle, String initialContent, String initialPriority, String initialAudience) {
@@ -134,51 +169,6 @@ public class NoticesActivity extends AppCompatActivity {
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
-    }
-
-    private void addNoticeToUI(final int id, final String title, final String content, final String priority, final String audience, final String date) {
-        final LinearLayout itemLayout = new LinearLayout(this);
-        itemLayout.setOrientation(LinearLayout.VERTICAL);
-        itemLayout.setClickable(true);
-        itemLayout.setFocusable(true);
-        itemLayout.setBackgroundResource(android.R.drawable.list_selector_background);
-
-        TextView tv = new TextView(this);
-        String priorityTag = "[" + priority.toUpperCase() + "]";
-        tv.setText(priorityTag + " " + title + "\n" + content + "\n" + date + " | " + audience);
-        tv.setTextSize(16);
-        tv.setPadding(20, 30, 20, 30);
-        
-        if (priority.equalsIgnoreCase("High")) tv.setTextColor(Color.RED);
-        else if (priority.equalsIgnoreCase("Medium")) tv.setTextColor(Color.BLUE);
-        else tv.setTextColor(Color.BLACK);
-
-        View line = new View(this);
-        line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2));
-        line.setBackgroundColor(Color.LTGRAY);
-
-        itemLayout.addView(tv);
-        itemLayout.addView(line);
-
-        if (isAdmin) {
-            itemLayout.setOnClickListener(v -> showNoticeDialog(id, title, content, priority, audience));
-
-            itemLayout.setOnLongClickListener(v -> {
-                new AlertDialog.Builder(this)
-                        .setTitle("Delete Notice")
-                        .setMessage("Delete this notice?")
-                        .setPositiveButton("Confirm", (dialog, which) -> {
-                            db.deleteNotice(id);
-                            refreshNoticeList();
-                            Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
-                return true;
-            });
-        }
-
-        noticeContainer.addView(itemLayout);
     }
 
     private void setupNavigation() {

@@ -61,6 +61,19 @@
             app:layout_constraintTop_toBottomOf="@id/tv_transaction_desc" />
 
         <TextView
+            android:id="@+id/tv_performed_by"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="By: Admin"
+            android:textColor="@color/text_light_blue"
+            android:textSize="10sp"
+            android:textStyle="italic"
+            app:layout_constraintEnd_toEndOf="@id/tv_transaction_desc"
+            app:layout_constraintStart_toStartOf="@id/tv_transaction_desc"
+            app:layout_constraintTop_toBottomOf="@id/tv_transaction_date" />
+
+        <TextView
             android:id="@+id/tv_transaction_amount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

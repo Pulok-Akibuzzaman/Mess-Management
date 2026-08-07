@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "MessManager.db";
-    private static final int DATABASE_VERSION = 18; 
+    private static final int DATABASE_VERSION = 22; 
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -17,10 +17,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE bazar (id INTEGER PRIMARY KEY AUTOINCREMENT, item_name TEXT, amount REAL, date TEXT)");
+        db.execSQL("CREATE TABLE bazar (id INTEGER PRIMARY KEY AUTOINCREMENT, item_name TEXT, amount REAL, date TEXT, bought_by TEXT)");
         db.execSQL("CREATE TABLE utilities (id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT, amount REAL, date TEXT)");
-        db.execSQL("CREATE TABLE cash (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, amount REAL, type TEXT, date TEXT)");
-        db.execSQL("CREATE TABLE members (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, room TEXT, status TEXT, email TEXT, phone TEXT, join_date TEXT)");
+        db.execSQL("CREATE TABLE cash (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, amount REAL, type TEXT, date TEXT, performed_by TEXT, member_email TEXT)");
+        db.execSQL("CREATE TABLE members (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, room TEXT, status TEXT, email TEXT, phone TEXT, join_date TEXT, password TEXT, paid_amount REAL DEFAULT 0)");
         db.execSQL("CREATE TABLE equipment (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, location TEXT, status TEXT, purchase_date TEXT, price REAL)");
         db.execSQL("CREATE TABLE notices (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT, priority TEXT, audience TEXT, date TEXT)");
         db.execSQL("CREATE TABLE loans (id INTEGER PRIMARY KEY AUTOINCREMENT, lender TEXT, amount REAL, status TEXT, date TEXT)");
@@ -39,7 +39,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private void insertSampleData(SQLiteDatabase db) {
-        // No hardcoded sample data
+        // Create the Default Admin account if it doesn't exist
+        Cursor cursor = db.rawQuery("SELECT id FROM members WHERE email = 'admin@mess.com'", null);
+        if (cursor.getCount() == 0) {
+            ContentValues v = new ContentValues();
+            v.put("name", "Mess Admin");
+            v.put("email", "admin@mess.com");
+            v.put("password", "1234");
+            v.put("status", "Admin");
+            v.put("room", "Office");
+            v.put("phone", "01XXXXXXXXX");
+            v.put("join_date", "System");
+            v.put("paid_amount", 0.0);
+            db.insert("members", null, v);
+        }
+        cursor.close();
     }
 
     @Override
@@ -62,45 +76,129 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (oldVersion < 16) {
             db.execSQL("CREATE TABLE IF NOT EXISTS occasions (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, type TEXT, total_cost REAL, member_count INTEGER, date TEXT)");
         }
-        if (oldVersion < 18) {
+        if (oldVersion < 21) {
             try {
-                db.execSQL("ALTER TABLE members ADD COLUMN phone TEXT");
-                db.execSQL("ALTER TABLE members ADD COLUMN join_date TEXT");
+                db.execSQL("ALTER TABLE cash ADD COLUMN performed_by TEXT");
+                db.execSQL("ALTER TABLE cash ADD COLUMN member_email TEXT");
             } catch (Exception ignored) {}
         }
+        if (oldVersion < 22) {
+            try {
+                db.execSQL("ALTER TABLE bazar ADD COLUMN bought_by TEXT");
+            } catch (Exception ignored) {}
+        }
+        
+        // Ensure Admin exists on every upgrade
+        insertSampleData(db);
     }
 
     // --- MEMBER METHODS ---
-    public void addMember(String name, String room, String status, String email, String phone, String joinDate) {
+    public long addMember(String name, String room, String status, String email, String phone, String joinDate, String password, double paid) {
         ContentValues v = new ContentValues();
         v.put("name", name); v.put("room", room); v.put("status", status); v.put("email", email);
-        v.put("phone", phone); v.put("join_date", joinDate);
-        this.getWritableDatabase().insert("members", null, v);
+        v.put("phone", phone); v.put("join_date", joinDate); v.put("password", password);
+        v.put("paid_amount", paid);
+        long id = this.getWritableDatabase().insert("members", null, v);
+        
+        if ("Bua".equalsIgnoreCase(status)) {
+            updateBuaProfile(name, phone, "Not Set", 0.0, joinDate);
+        }
+        return id;
     }
-    public void updateMember(int id, String name, String room, String status, String email, String phone, String joinDate) {
+    public void updateMember(int id, String name, String room, String status, String email, String phone, String joinDate, String password, double paid) {
         ContentValues v = new ContentValues();
         v.put("name", name); v.put("room", room); v.put("status", status); v.put("email", email);
-        v.put("phone", phone); v.put("join_date", joinDate);
+        v.put("phone", phone); v.put("join_date", joinDate); v.put("password", password);
+        v.put("paid_amount", paid);
         this.getWritableDatabase().update("members", v, "id=?", new String[]{String.valueOf(id)});
     }
+    public void updateUserProfile(String email, String phone, String password) {
+        ContentValues v = new ContentValues();
+        v.put("phone", phone);
+        v.put("password", password);
+        this.getWritableDatabase().update("members", v, "email=?", new String[]{email});
+    }
+    public Cursor checkLogin(String email, String password) {
+        return this.getReadableDatabase().rawQuery("SELECT * FROM members WHERE email=? AND password=?", new String[]{email, password});
+    }
     public void deleteMember(int id) {
-        this.getWritableDatabase().delete("members", "id=?", new String[]{String.valueOf(id)});
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT name, email FROM members WHERE id = ?", new String[]{String.valueOf(id)});
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+            String email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
+            cursor.close();
+
+            db.beginTransaction();
+            try {
+                // 1. Delete Meal Tracking
+                if (email != null) {
+                    db.delete("meal_tracking", "user_email = ?", new String[]{email});
+                    // 2. Delete Poll Votes
+                    db.delete("poll_votes", "user_email = ?", new String[]{email});
+                }
+                
+                // 3. Delete Guest Meals (Linked by Name)
+                if (name != null) {
+                    db.delete("guest_meals", "member_name = ?", new String[]{name});
+                    // 4. Delete Room Requests (Linked by Name)
+                    db.delete("room_requests", "member_name = ?", new String[]{name});
+                }
+
+                // 5. Finally, Delete the Member
+                db.delete("members", "id = ?", new String[]{String.valueOf(id)});
+                
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        } else if (cursor != null) {
+            cursor.close();
+        }
     }
     public Cursor getAllMembers() {
-        return this.getReadableDatabase().rawQuery("SELECT * FROM members", null);
+        return this.getReadableDatabase().rawQuery("SELECT * FROM members WHERE status != 'Bua'", null);
+    }
+    public Cursor getMemberByEmail(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM members WHERE email=?", new String[]{email});
+        
+        // Robustness: If Admin is missing, insert it immediately and re-fetch
+        if (c.getCount() == 0 && "admin@mess.com".equalsIgnoreCase(email)) {
+            c.close();
+            insertSampleData(this.getWritableDatabase());
+            return this.getReadableDatabase().rawQuery("SELECT * FROM members WHERE email=?", new String[]{email});
+        }
+        return c;
     }
     public Cursor searchMembers(String query) {
-        return this.getReadableDatabase().rawQuery("SELECT * FROM members WHERE name LIKE ?", new String[]{"%" + query + "%"});
+        return this.getReadableDatabase().rawQuery("SELECT * FROM members WHERE name LIKE ? AND status != 'Bua'", new String[]{"%" + query + "%"});
     }
-    public int getActiveMembersCount() {
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM members WHERE status='Active'", null);
-        int count = 0; if (c.moveToFirst()) count = c.getInt(0); c.close(); return count;
+    public int getResidentCount() {
+        // Everyone except Bua should share the fixed costs (Active, Away, Member)
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM members WHERE status != 'Bua'", null);
+        int count = 0; if (c.moveToFirst()) count = c.getInt(0); c.close(); 
+        return (count > 0) ? count : 1; // Prevent division by zero
+    }
+    public void addMemberPayment(int id, double amount) {
+        this.getWritableDatabase().execSQL("UPDATE members SET paid_amount = paid_amount + ? WHERE id = ?", new Object[]{amount, id});
+    }
+    public int getMemberIdByEmail(String email) {
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT id FROM members WHERE email=?", new String[]{email});
+        int id = -1; if (c.moveToFirst()) id = c.getInt(0); c.close(); return id;
+    }
+    public double getMemberPaidAmount(String email) {
+        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE member_email=? AND type='IN' AND date LIKE ?", new String[]{email, "%" + month});
+        double paid = 0; if (c.moveToFirst()) paid = c.getDouble(0); c.close(); return paid;
     }
 
     // --- BAZAR METHODS ---
-    public void addBazarItem(String name, double amount, String date) {
+    public void addBazarItem(String name, double amount, String date, String boughtBy) {
         ContentValues v = new ContentValues();
         v.put("item_name", name); v.put("amount", amount); v.put("date", date);
+        v.put("bought_by", boughtBy);
         this.getWritableDatabase().insert("bazar", null, v);
     }
     public void updateBazarItem(int id, String name, double amount, String date) {
@@ -109,13 +207,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.getWritableDatabase().update("bazar", v, "id=?", new String[]{String.valueOf(id)});
     }
     public void deleteBazarItem(int id) {
-        this.getWritableDatabase().delete("bazar", "id=?", new String[]{String.valueOf(id)});
+        SQLiteDatabase db = this.getWritableDatabase();
+        
+        // Find item name to delete from ledger too
+        Cursor c = db.rawQuery("SELECT item_name, date FROM bazar WHERE id = ?", new String[]{String.valueOf(id)});
+        if (c != null && c.moveToFirst()) {
+            String name = c.getString(0);
+            String date = c.getString(1);
+            c.close();
+            // Delete corresponding ledger entry
+            db.delete("cash", "description = ? AND date = ? AND type = 'OUT'", new String[]{"Bazar: " + name, date});
+        }
+        
+        db.delete("bazar", "id=?", new String[]{String.valueOf(id)});
     }
     public Cursor getAllBazarItems() {
         return this.getReadableDatabase().rawQuery("SELECT * FROM bazar ORDER BY date DESC", null);
     }
     public double getTotalBazar() {
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM bazar", null);
+        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM bazar WHERE date LIKE ?", new String[]{"%" + month});
         double total = 0; if (c.moveToFirst()) total = c.getDouble(0); c.close(); return total;
     }
     public int getBazarCount() {
@@ -124,9 +235,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // --- CASH METHODS ---
-    public void addCashTransaction(String desc, double amount, String type, String date) {
+    public void addCashTransaction(String desc, double amount, String type, String date, String performedBy, String memberEmail) {
         ContentValues v = new ContentValues();
         v.put("description", desc); v.put("amount", amount); v.put("type", type); v.put("date", date);
+        v.put("performed_by", performedBy); v.put("member_email", memberEmail);
         this.getWritableDatabase().insert("cash", null, v);
     }
     public void updateCashTransaction(int id, String desc, double amount, String type, String date) {
@@ -135,13 +247,39 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.getWritableDatabase().update("cash", v, "id=?", new String[]{String.valueOf(id)});
     }
     public void deleteCashTransaction(int id) {
-        this.getWritableDatabase().delete("cash", "id=?", new String[]{String.valueOf(id)});
+        SQLiteDatabase db = this.getWritableDatabase();
+        
+        // Find if this was an 'IN' transaction for a member before deleting
+        Cursor c = db.rawQuery("SELECT type, amount, member_email FROM cash WHERE id = ?", new String[]{String.valueOf(id)});
+        if (c != null && c.moveToFirst()) {
+            String type = c.getString(0);
+            double amount = c.getDouble(1);
+            String email = c.getString(2);
+            c.close();
+
+            if ("IN".equalsIgnoreCase(type) && email != null && !email.isEmpty()) {
+                // REVERT: Subtract the amount from member's paid total
+                db.execSQL("UPDATE members SET paid_amount = paid_amount - ? WHERE email = ?", new Object[]{amount, email});
+            }
+        }
+        
+        db.delete("cash", "id=?", new String[]{String.valueOf(id)});
     }
     public Cursor getAllCashTransactions() {
         return this.getReadableDatabase().rawQuery("SELECT * FROM cash ORDER BY id DESC", null);
     }
+    public Cursor getFilteredCashTransactions(String userEmail, String role) {
+        if ("Admin".equalsIgnoreCase(role)) {
+            return getAllCashTransactions();
+        }
+        // Members see their own payments (IN) and all mess expenses (OUT)
+        return this.getReadableDatabase().rawQuery(
+                "SELECT * FROM cash WHERE type='OUT' OR (type='IN' AND member_email=?) ORDER BY id DESC",
+                new String[]{userEmail});
+    }
     public double getTotalIn() {
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE type='IN'", null);
+        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE type='IN' AND date LIKE ?", new String[]{"%" + month});
         double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
     }
     public double getTotalOut() {
@@ -150,23 +288,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
     public double getCashBalance() { return getTotalIn() - getTotalOut(); }
 
+    public double getBuaSalary() {
+        double salary = 0;
+        Cursor c = getBuaProfile();
+        if (c != null) {
+            if (c.moveToFirst()) salary = c.getDouble(c.getColumnIndexOrThrow("salary"));
+            c.close();
+        }
+        return salary;
+    }
+
     // --- UTILITIES METHODS ---
     public void addUtility(String type, double amount, String date) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        // Delete existing entry for this type to "Replace" it
+        db.delete("utilities", "type = ?", new String[]{type});
+        
         ContentValues v = new ContentValues();
         v.put("type", type); v.put("amount", amount); v.put("date", date);
-        this.getWritableDatabase().insert("utilities", null, v);
+        db.insert("utilities", null, v);
     }
     public double getUtilityTotalByType(String type) {
         Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM utilities WHERE type=?", new String[]{type});
         double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
     }
     public double getUtilitiesTotal() {
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM utilities", null);
+        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
+        // Exclude Bua Salary and House Rent to avoid double counting in shared costs
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM utilities WHERE type NOT IN ('Bua Salary', 'House Rent') AND date LIKE ?", new String[]{"%" + month});
         double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
+    }
+    public double getHouseRent() {
+        return getUtilityTotalByType("House Rent");
     }
     public int getUtilitiesCount() {
         Cursor c = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM utilities", null);
         int n = 0; if (c.moveToFirst()) n = c.getInt(0); c.close(); return n;
+    }
+    public double getUtilityCollected(String type) {
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE type='IN' AND description LIKE ?", new String[]{"%Bill Payment: " + type + "%"});
+        double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
     }
 
     // --- EQUIPMENT METHODS ---
@@ -342,26 +503,79 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Cursor getMealStatus(String email, String date) {
         return this.getReadableDatabase().rawQuery("SELECT * FROM meal_tracking WHERE user_email=? AND date=?", new String[]{email, date});
     }
-    public int getTotalMeals() {
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(breakfast + lunch + dinner) FROM meal_tracking", null);
-        int total = 0; if (c.moveToFirst()) total = c.getInt(0); c.close(); return total;
+    public Cursor getUserMealHistory(String email, String name) {
+        String query = "SELECT date, SUM(b), SUM(l), SUM(d) FROM (" +
+                "SELECT date, breakfast as b, lunch as l, dinner as d FROM meal_tracking WHERE user_email = ? " +
+                "UNION ALL " +
+                "SELECT date, " +
+                "CASE WHEN meal_type = 'Breakfast' THEN meal_count ELSE 0 END as b, " +
+                "CASE WHEN meal_type = 'Lunch' THEN meal_count ELSE 0 END as l, " +
+                "CASE WHEN meal_type = 'Dinner' THEN meal_count ELSE 0 END as d " +
+                "FROM guest_meals WHERE member_name = ?" +
+                ") GROUP BY date ORDER BY date DESC LIMIT 30";
+        
+        return this.getReadableDatabase().rawQuery(query, new String[]{email, name});
     }
-    public int getUserTotalMeals(String email) {
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(breakfast + lunch + dinner) FROM meal_tracking WHERE user_email=?", new String[]{email});
-        int total = 0; if (c.moveToFirst()) total = c.getInt(0); c.close(); return total;
+    public int getTotalMeals() {
+        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
+        int regular = 0;
+        Cursor c1 = this.getReadableDatabase().rawQuery("SELECT SUM(breakfast + lunch + dinner) FROM meal_tracking WHERE date LIKE ?", new String[]{"%" + month + "%"});
+        if (c1.moveToFirst()) regular = c1.getInt(0);
+        c1.close();
+
+        int guest = 0;
+        Cursor c2 = this.getReadableDatabase().rawQuery("SELECT SUM(meal_count) FROM guest_meals WHERE date LIKE ?", new String[]{"%" + month});
+        if (c2.moveToFirst()) guest = c2.getInt(0);
+        c2.close();
+
+        return regular + guest;
+    }
+    public int getUserTotalMeals(String email, String name) {
+        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
+        int regular = 0;
+        Cursor c1 = this.getReadableDatabase().rawQuery("SELECT SUM(breakfast + lunch + dinner) FROM meal_tracking WHERE user_email=? AND date LIKE ?", new String[]{email, "%" + month + "%"});
+        if (c1.moveToFirst()) regular = c1.getInt(0);
+        c1.close();
+
+        int guest = 0;
+        if (name != null && !name.isEmpty()) {
+            Cursor c2 = this.getReadableDatabase().rawQuery("SELECT SUM(meal_count) FROM guest_meals WHERE member_name=? AND date LIKE ?", new String[]{name, "%" + month});
+            if (c2.moveToFirst()) guest = c2.getInt(0);
+            c2.close();
+        }
+
+        return regular + guest;
     }
 
     public int[] getTodaysMealCounts(String date) {
-        Cursor c = this.getReadableDatabase().rawQuery(
+        int[] counts = new int[]{0, 0, 0};
+        
+        // Regular Meals
+        Cursor c1 = this.getReadableDatabase().rawQuery(
                 "SELECT SUM(breakfast), SUM(lunch), SUM(dinner) FROM meal_tracking WHERE date=?", 
                 new String[]{date});
-        int[] counts = new int[]{0, 0, 0};
-        if (c.moveToFirst()) {
-            counts[0] = c.getInt(0);
-            counts[1] = c.getInt(1);
-            counts[2] = c.getInt(2);
+        if (c1.moveToFirst()) {
+            counts[0] += c1.getInt(0);
+            counts[1] += c1.getInt(1);
+            counts[2] += c1.getInt(2);
         }
-        c.close();
+        c1.close();
+
+        // Guest Meals
+        Cursor c2 = this.getReadableDatabase().rawQuery(
+                "SELECT meal_type, SUM(meal_count) FROM guest_meals WHERE date=? GROUP BY meal_type",
+                new String[]{date});
+        if (c2 != null) {
+            while (c2.moveToNext()) {
+                String type = c2.getString(0);
+                int count = c2.getInt(1);
+                if ("Breakfast".equalsIgnoreCase(type)) counts[0] += count;
+                else if ("Lunch".equalsIgnoreCase(type)) counts[1] += count;
+                else if ("Dinner".equalsIgnoreCase(type)) counts[2] += count;
+            }
+            c2.close();
+        }
+
         return counts;
     }
 
@@ -399,13 +613,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.getWritableDatabase().update("occasions", v, "id=?", new String[]{String.valueOf(id)});
     }
     public void deleteOccasion(int id) {
-        this.getWritableDatabase().delete("occasions", "id=?", new String[]{String.valueOf(id)});
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor c = db.rawQuery("SELECT title, date FROM occasions WHERE id = ?", new String[]{String.valueOf(id)});
+        if (c != null && c.moveToFirst()) {
+            String title = c.getString(0);
+            String date = c.getString(1);
+            c.close();
+            db.delete("cash", "description = ? AND date = ? AND type = 'OUT'", new String[]{"Occasion: " + title, date});
+        }
+        db.delete("occasions", "id=?", new String[]{String.valueOf(id)});
     }
     public Cursor getAllOccasions() {
         return this.getReadableDatabase().rawQuery("SELECT * FROM occasions ORDER BY id DESC", null);
     }
     public double getTotalOccasionCost() {
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(total_cost) FROM occasions", null);
+        String month = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(total_cost) FROM occasions WHERE date LIKE ?", new String[]{"%" + month});
         double total = 0; if (c.moveToFirst()) total = c.getDouble(0); c.close(); return total;
     }
 

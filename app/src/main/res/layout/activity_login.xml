@@ -150,89 +150,17 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <TextView
-                    android:id="@+id/login_as_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/login_as"
-                    android:textColor="@color/white"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/options_container" />
-
-                <LinearLayout
-                    android:id="@+id/role_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:baselineAligned="false"
-                    android:orientation="horizontal"
-                    app:layout_constraintTop_toBottomOf="@id/login_as_label">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_admin"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="0dp"
-                        android:layout_height="48dp"
-                        android:layout_weight="1"
-                        android:text="@string/role_admin"
-                        android:textAllCaps="false"
-                        android:textColor="@color/text_white"
-                        android:textSize="12sp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:paddingHorizontal="4dp"
-                        app:backgroundTint="@color/nav_active"
-                        app:cornerRadius="12dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_member"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="0dp"
-                        android:layout_height="48dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:text="@string/role_member"
-                        android:textAllCaps="false"
-                        android:textColor="@color/text_light_blue"
-                        android:textSize="12sp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:paddingHorizontal="4dp"
-                        app:backgroundTint="@color/input_bg"
-                        app:cornerRadius="12dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_bus"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="0dp"
-                        android:layout_height="48dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:text="@string/role_bus"
-                        android:textAllCaps="false"
-                        android:textColor="@color/text_light_blue"
-                        android:textSize="12sp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:paddingHorizontal="4dp"
-                        app:backgroundTint="@color/input_bg"
-                        app:cornerRadius="12dp" />
-                </LinearLayout>
-
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_signin"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="32dp"
                     android:text="@string/btn_sign_in"
                     android:textColor="@color/text_white"
                     android:textStyle="bold"
                     app:backgroundTint="@color/button_primary"
                     app:cornerRadius="16dp"
-                    app:layout_constraintTop_toBottomOf="@id/role_container" />
+                    app:layout_constraintTop_toBottomOf="@id/options_container" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>

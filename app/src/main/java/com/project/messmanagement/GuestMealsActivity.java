@@ -121,7 +121,7 @@ public class GuestMealsActivity extends AppCompatActivity {
             new DatePickerDialog(this, (view1, year, month, dayOfMonth) -> {
                 Calendar picked = Calendar.getInstance();
                 picked.set(year, month, dayOfMonth);
-                etDate.setText(new SimpleDateFormat("dd MMM yyyy", Locale.US).format(picked.getTime()));
+                etDate.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(picked.getTime()));
             }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
         });
 

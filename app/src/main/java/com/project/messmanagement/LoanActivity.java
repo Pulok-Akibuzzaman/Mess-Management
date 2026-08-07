@@ -17,16 +17,22 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class LoanActivity extends AppCompatActivity {
 
-    private LinearLayout container;
+    private RecyclerView rvLoans;
+    private LoanAdapter adapter;
+    private List<Loan> loanList = new ArrayList<>();
     private DatabaseHelper db;
 
     @Override
@@ -35,7 +41,23 @@ public class LoanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_notices); // Reusing layout for list
 
         db = new DatabaseHelper(this);
-        container = findViewById(R.id.notice_container);
+        rvLoans = findViewById(R.id.rvNotices); // Reusing ID from layout
+        rvLoans.setLayoutManager(new LinearLayoutManager(this));
+        rvLoans.setVisibility(View.VISIBLE);
+        findViewById(R.id.scrollLegacy).setVisibility(View.GONE);
+        
+        adapter = new LoanAdapter(loanList, new LoanAdapter.OnLoanClickListener() {
+            @Override
+            public void onItemClick(Loan loan) {
+                showLoanDialog(loan.id, loan.lender, loan.amount, loan.status, loan.date);
+            }
+
+            @Override
+            public void onItemLongClick(Loan loan) {
+                confirmDelete(loan);
+            }
+        });
+        rvLoans.setAdapter(adapter);
         
         TextView tvTitle = findViewById(R.id.tvActivityTitle);
         if (tvTitle != null) tvTitle.setText("Loans");
@@ -53,8 +75,7 @@ public class LoanActivity extends AppCompatActivity {
     }
 
     private void refreshLoanList() {
-        if (container == null) return;
-        container.removeAllViews();
+        loanList.clear();
 
         Cursor cursor = db.getAllLoans();
         if (cursor != null && cursor.moveToFirst()) {
@@ -65,10 +86,24 @@ public class LoanActivity extends AppCompatActivity {
                 String status = cursor.getString(cursor.getColumnIndexOrThrow("status"));
                 String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
 
-                addLoanToUI(id, lender, amount, status, date);
+                loanList.add(new Loan(id, lender, amount, status, date));
             } while (cursor.moveToNext());
             cursor.close();
         }
+        adapter.notifyDataSetChanged();
+    }
+
+    private void confirmDelete(Loan loan) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Loan")
+                .setMessage("Delete this loan entry?")
+                .setPositiveButton("Confirm", (dialog, which) -> {
+                    db.deleteLoan(loan.id);
+                    refreshLoanList();
+                    Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void showLoanDialog(final int id, String initialLender, double initialAmount, String initialStatus, String initialDate) {
@@ -136,50 +171,6 @@ public class LoanActivity extends AppCompatActivity {
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
-    }
-
-    private void addLoanToUI(final int id, final String lender, final double amount, final String status, final String date) {
-        final LinearLayout itemLayout = new LinearLayout(this);
-        itemLayout.setOrientation(LinearLayout.VERTICAL);
-        itemLayout.setClickable(true);
-        itemLayout.setFocusable(true);
-        itemLayout.setBackgroundResource(android.R.drawable.list_selector_background);
-
-        TextView tv = new TextView(this);
-        tv.setText(lender + "\n" + date + " | ৳" + (int) amount + "\nStatus: " + status);
-        tv.setTextSize(16);
-        tv.setPadding(20, 30, 20, 30);
-        
-        if (status.equalsIgnoreCase("Urgent")) tv.setTextColor(Color.RED);
-        else if (status.equalsIgnoreCase("Paid")) tv.setTextColor(Color.parseColor("#4CAF50"));
-        else tv.setTextColor(Color.BLACK);
-
-        View line = new View(this);
-        line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2));
-        line.setBackgroundColor(Color.LTGRAY);
-
-        itemLayout.addView(tv);
-        itemLayout.addView(line);
-
-        // Edit on Click
-        itemLayout.setOnClickListener(v -> showLoanDialog(id, lender, amount, status, date));
-
-        // Long Press to Delete
-        itemLayout.setOnLongClickListener(v -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Delete Loan")
-                    .setMessage("Delete this loan entry?")
-                    .setPositiveButton("Confirm", (dialog, which) -> {
-                        db.deleteLoan(id);
-                        refreshLoanList();
-                        Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-            return true;
-        });
-
-        container.addView(itemLayout);
     }
 
     private void setupNavigation() {

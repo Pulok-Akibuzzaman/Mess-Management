@@ -23,7 +23,7 @@ public class MealRoutineActivity extends AppCompatActivity {
     private int b = 0, l = 0, d = 0;
 
     private TextView tvB, tvL, tvD;
-    private TextView tvTodayDate, tvMyTotal;
+    private TextView tvTodayDate, tvMyTotal, tvMyTotalCost;
     private LinearLayout routineContainer;
 
     @Override
@@ -39,7 +39,7 @@ public class MealRoutineActivity extends AppCompatActivity {
 
         initViews();
         loadTodayStatus();
-        loadWeeklyRoutine();
+        loadMealHistory();
         updateSummary();
         setupNavigation();
     }
@@ -51,6 +51,7 @@ public class MealRoutineActivity extends AppCompatActivity {
         tvTodayDate = findViewById(R.id.tv_today_date);
         
         tvMyTotal = findViewById(R.id.tv_my_total_meals);
+        tvMyTotalCost = findViewById(R.id.tv_my_total_cost);
         
         routineContainer = findViewById(R.id.routine_container);
 
@@ -83,6 +84,7 @@ public class MealRoutineActivity extends AppCompatActivity {
         db.updateDailyMeals(currentUserEmail, todayDate, b, l, d);
         updateCounts();
         updateSummary();
+        loadMealHistory(); // Refresh history list
     }
 
     private void updateCounts() {
@@ -92,16 +94,52 @@ public class MealRoutineActivity extends AppCompatActivity {
     }
 
     private void updateSummary() {
-        int myTotal = db.getUserTotalMeals(currentUserEmail);
+        SharedPreferences sharedPref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String currentName = sharedPref.getString("name", "User");
+        int myTotal = db.getUserTotalMeals(currentUserEmail, currentName);
         tvMyTotal.setText(String.valueOf(myTotal));
+
+        double fixedRate = sharedPref.getFloat("fixed_meal_rate", 0.0f);
+        double totalCost = myTotal * fixedRate;
+        tvMyTotalCost.setText("৳" + (int) totalCost);
     }
 
-    private void loadWeeklyRoutine() {
-        String[] days = {"Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
-        String[] menu = { "Chicken", "Beef", "Fish", "Egg", "Roast", "Khichuri", "Vortas" };
+    private void loadMealHistory() {
         routineContainer.removeAllViews();
-        for (int i = 0; i < days.length; i++) {
-            addRoutineRow(days[i], menu[i]);
+        
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String currentName = pref.getString("name", "User");
+        
+        Cursor cursor = db.getUserMealHistory(currentUserEmail, currentName);
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                String date = cursor.getString(0);
+                int bVal = cursor.getInt(1);
+                int lVal = cursor.getInt(2);
+                int dVal = cursor.getInt(3);
+
+                // Format: B:1 | L:1 | D:1
+                String mealStr = "B:" + bVal + " | L:" + lVal + " | D:" + dVal;
+                
+                // Prettier date
+                String formattedDate = date;
+                try {
+                    java.util.Date dObj = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(date);
+                    if (dObj != null) formattedDate = new SimpleDateFormat("dd MMM, EEEE", Locale.US).format(dObj);
+                } catch (Exception ignored) {}
+
+                addRoutineRow(formattedDate, mealStr);
+            }
+            cursor.close();
+        }
+        
+        if (routineContainer.getChildCount() == 0) {
+            TextView empty = new TextView(this);
+            empty.setText("No history found for the last 30 days.");
+            empty.setTextColor(Color.GRAY);
+            empty.setGravity(android.view.Gravity.CENTER);
+            empty.setPadding(0, 40, 0, 40);
+            routineContainer.addView(empty);
         }
     }
 

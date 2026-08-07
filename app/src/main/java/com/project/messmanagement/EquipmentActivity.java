@@ -18,16 +18,22 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class EquipmentActivity extends AppCompatActivity {
 
-    private LinearLayout container;
+    private RecyclerView rvEquipment;
+    private EquipmentAdapter adapter;
+    private List<Equipment> equipmentList = new ArrayList<>();
     private DatabaseHelper db;
     private boolean isAdmin = false;
 
@@ -42,7 +48,21 @@ public class EquipmentActivity extends AppCompatActivity {
         String role = pref.getString("role", "Member");
         isAdmin = "Admin".equalsIgnoreCase(role);
         
-        container = findViewById(R.id.item_container);
+        rvEquipment = findViewById(R.id.rvEquipment);
+        rvEquipment.setLayoutManager(new LinearLayoutManager(this));
+        
+        adapter = new EquipmentAdapter(equipmentList, new EquipmentAdapter.OnEquipmentClickListener() {
+            @Override
+            public void onItemClick(Equipment equipment) {
+                if (isAdmin) showEquipmentDialog(equipment.id, equipment.name, equipment.location, equipment.status, equipment.date, equipment.price);
+            }
+
+            @Override
+            public void onItemLongClick(Equipment equipment) {
+                if (isAdmin) confirmDelete(equipment);
+            }
+        });
+        rvEquipment.setAdapter(adapter);
 
         // 1. Setup Add Button
         View btnAdd = findViewById(R.id.btnAddEquipment);
@@ -62,8 +82,7 @@ public class EquipmentActivity extends AppCompatActivity {
     }
 
     private void refreshEquipmentList() {
-        if (container == null) return;
-        container.removeAllViews();
+        equipmentList.clear();
 
         Cursor cursor = db.getAllEquipment();
         if (cursor != null && cursor.moveToFirst()) {
@@ -75,10 +94,24 @@ public class EquipmentActivity extends AppCompatActivity {
                 String date = cursor.getString(cursor.getColumnIndexOrThrow("purchase_date"));
                 double price = cursor.getDouble(cursor.getColumnIndexOrThrow("price"));
 
-                addEquipmentToUI(id, name, location, status, date, price);
+                equipmentList.add(new Equipment(id, name, location, status, date, price));
             } while (cursor.moveToNext());
             cursor.close();
         }
+        adapter.notifyDataSetChanged();
+    }
+
+    private void confirmDelete(Equipment item) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Equipment")
+                .setMessage("Delete " + item.name + "?")
+                .setPositiveButton("Confirm", (dialog, which) -> {
+                    db.deleteEquipment(item.id);
+                    refreshEquipmentList();
+                    Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void showEquipmentDialog(final int id, String initialName, String initialLocation, String initialStatus, String initialDate, double initialPrice) {
@@ -153,47 +186,6 @@ public class EquipmentActivity extends AppCompatActivity {
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
-    }
-
-    private void addEquipmentToUI(final int id, final String name, final String location, final String status, final String date, final double price) {
-        final LinearLayout itemLayout = new LinearLayout(this);
-        itemLayout.setOrientation(LinearLayout.VERTICAL);
-        itemLayout.setClickable(true);
-        itemLayout.setFocusable(true);
-        itemLayout.setBackgroundResource(android.R.drawable.list_selector_background);
-
-        TextView tv = new TextView(this);
-        tv.setText(name + " (" + location + ")\n" + status + " | ৳" + (int) price);
-        tv.setTextSize(16);
-        tv.setPadding(20, 30, 20, 30);
-        tv.setTextColor(getResources().getColor(R.color.admin_text_dark));
-
-        View line = new View(this);
-        line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2));
-        line.setBackgroundColor(Color.LTGRAY);
-
-        itemLayout.addView(tv);
-        itemLayout.addView(line);
-
-        if (isAdmin) {
-            itemLayout.setOnClickListener(v -> showEquipmentDialog(id, name, location, status, date, price));
-
-            itemLayout.setOnLongClickListener(v -> {
-                new AlertDialog.Builder(this)
-                        .setTitle("Delete Equipment")
-                        .setMessage("Delete " + name + "?")
-                        .setPositiveButton("Confirm", (dialog, which) -> {
-                            db.deleteEquipment(id);
-                            refreshEquipmentList();
-                            Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
-                return true;
-            });
-        }
-
-        container.addView(itemLayout);
     }
 
     private void setupNavigation() {

@@ -128,32 +128,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:orientation="horizontal"
-                    android:weightSum="3"
+                    android:weightSum="2"
                     app:layout_constraintTop_toBottomOf="@id/divider_stats">
 
                     <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Meal rate / person"
-                            android:textColor="@color/admin_text_white"
-                            android:textSize="10sp"
-                            android:alpha="0.8" />
-                        <TextView
-                            android:id="@+id/tv_meal_rate"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/admin_text_white"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            tools:text="৳0.0" />
-                    </LinearLayout>
-
-                    <LinearLayout
+                        android:id="@+id/layout_active_members"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -176,6 +155,7 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/layout_cash_balance"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"

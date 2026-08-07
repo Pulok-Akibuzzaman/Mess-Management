@@ -46,16 +46,16 @@ public class CashLedgerActivity extends AppCompatActivity {
         SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         String role = pref.getString("role", "Member");
         isAdmin = "Admin".equalsIgnoreCase(role);
-        isMember = "Member".equalsIgnoreCase(role);
+        isMember = !"Admin".equalsIgnoreCase(role) && !"Bua".equalsIgnoreCase(role);
 
         RecyclerView rvTransactions = findViewById(R.id.transaction_container);
         rvTransactions.setLayoutManager(new LinearLayoutManager(this));
         
         adapter = new CashLedgerAdapter(transactionList,
-                isAdmin ? (position, transaction) -> showCashDialog(
+                (isAdmin || isMember) ? (position, transaction) -> showCashDialog(
                         transaction.id, transaction.description, transaction.amount,
                         transaction.type, transaction.date) : null,
-                isAdmin ? (position, transaction) -> confirmDeleteTransaction(transaction) : null);
+                (isAdmin || isMember) ? (position, transaction) -> confirmDeleteTransaction(transaction) : null);
         rvTransactions.setAdapter(adapter);
 
         tvBalance = findViewById(R.id.tv_balance_amount);
@@ -81,13 +81,19 @@ public class CashLedgerActivity extends AppCompatActivity {
     private void refreshCashList() {
         transactionList.clear();
 
-        Cursor cursor = db.getAllCashTransactions();
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String userEmail = pref.getString("email", "");
+        String role = pref.getString("role", "Member");
+
+        Cursor cursor = db.getFilteredCashTransactions(userEmail, role);
         if (cursor != null) {
             int idxId = cursor.getColumnIndexOrThrow("id");
             int idxDesc = cursor.getColumnIndexOrThrow("description");
             int idxAmount = cursor.getColumnIndexOrThrow("amount");
             int idxType = cursor.getColumnIndexOrThrow("type");
             int idxDate = cursor.getColumnIndex("date");
+            int idxPerformed = cursor.getColumnIndex("performed_by");
+            int idxMemberEmail = cursor.getColumnIndex("member_email");
 
             while (cursor.moveToNext()) {
                 int id = cursor.getInt(idxId);
@@ -95,16 +101,25 @@ public class CashLedgerActivity extends AppCompatActivity {
                 double amount = cursor.getDouble(idxAmount);
                 String type = cursor.getString(idxType);
                 String date = idxDate != -1 ? cursor.getString(idxDate) : "N/A";
+                String performedBy = idxPerformed != -1 ? cursor.getString(idxPerformed) : "System";
+                String memberEmail = idxMemberEmail != -1 ? cursor.getString(idxMemberEmail) : "";
 
-                transactionList.add(new CashTransaction(id, desc, amount, type, date));
+                transactionList.add(new CashTransaction(id, desc, amount, type, date, performedBy, memberEmail));
             }
             cursor.close();
         }
 
         adapter.notifyDataSetChanged();
 
-        tvBalance.setText("৳" + (int) db.getCashBalance());
-        tvIncoming.setText("↗ ৳" + (int) db.getTotalIn() + " in");
+        if (isAdmin) {
+            tvBalance.setText("৳" + (int) db.getCashBalance());
+            tvIncoming.setText("↗ ৳" + (int) db.getTotalIn() + " in");
+        } else {
+            double myPaid = db.getMemberPaidAmount(userEmail);
+            tvBalance.setText("৳" + (int) myPaid);
+            tvIncoming.setText("↗ ৳" + (int) myPaid + " in");
+            ((TextView)findViewById(R.id.tv_balance_label)).setText("My Payments");
+        }
         tvOutgoing.setText("↘ ৳" + (int) db.getTotalOut() + " out");
     }
 
@@ -129,6 +144,8 @@ public class CashLedgerActivity extends AppCompatActivity {
 
         TextView tvTitle = view.findViewById(R.id.tvTitle);
         final Spinner spinnerType = view.findViewById(R.id.spinnerType);
+        final Spinner spinnerMember = view.findViewById(R.id.spinnerMember);
+        final View layoutMemberSelect = view.findViewById(R.id.layout_member_select);
         final EditText etDesc = view.findViewById(R.id.etDescription);
         final EditText etAmount = view.findViewById(R.id.etAmount);
         final EditText etDate = view.findViewById(R.id.etDate);
@@ -139,6 +156,40 @@ public class CashLedgerActivity extends AppCompatActivity {
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerType.setAdapter(spinnerAdapter);
 
+        final List<String> memberNames = new ArrayList<>();
+        final List<Integer> memberIds = new ArrayList<>();
+        final List<String> memberEmails = new ArrayList<>();
+        memberNames.add("None / Other");
+        memberIds.add(-1);
+        memberEmails.add("");
+
+        Cursor memberCursor = db.getAllMembers();
+        if (memberCursor != null) {
+            while (memberCursor.moveToNext()) {
+                memberNames.add(memberCursor.getString(memberCursor.getColumnIndexOrThrow("name")));
+                memberIds.add(memberCursor.getInt(memberCursor.getColumnIndexOrThrow("id")));
+                memberEmails.add(memberCursor.getString(memberCursor.getColumnIndexOrThrow("email")));
+            }
+            memberCursor.close();
+        }
+
+        ArrayAdapter<String> memberAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, memberNames);
+        memberAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerMember.setAdapter(memberAdapter);
+
+        spinnerType.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id_view) {
+                // ONLY ADMIN can see the member selector, and only for IN transactions
+                if (isAdmin && position == 0 && id == -1) { 
+                    layoutMemberSelect.setVisibility(View.VISIBLE);
+                } else {
+                    layoutMemberSelect.setVisibility(View.GONE);
+                }
+            }
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+
         final Calendar calendar = Calendar.getInstance();
         final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.US);
 
@@ -148,6 +199,7 @@ public class CashLedgerActivity extends AppCompatActivity {
             etAmount.setText(String.valueOf(initialAmount));
             etDate.setText(initialDate);
             spinnerType.setSelection(initialType.equals("IN") ? 0 : 1);
+            layoutMemberSelect.setVisibility(View.GONE);
         } else {
             etDate.setText(sdf.format(calendar.getTime()));
         }
@@ -179,7 +231,36 @@ public class CashLedgerActivity extends AppCompatActivity {
             }
 
             if (id == -1) {
-                db.addCashTransaction(desc, amount, type, date);
+                SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                String currentUserName = pref.getString("name", "User");
+                String currentUserEmail = pref.getString("email", "");
+                
+                String targetMemberEmail;
+
+                if (isAdmin) {
+                    int selectedPos = spinnerMember.getSelectedItemPosition();
+                    targetMemberEmail = memberEmails.get(selectedPos);
+                } else {
+                    targetMemberEmail = currentUserEmail;
+                }
+
+                String finalDesc = desc.isEmpty() ? "Payment from " + currentUserName : desc;
+
+                db.addCashTransaction(finalDesc, amount, type, date, currentUserName, targetMemberEmail);
+                
+                if (type.equals("IN")) {
+                    int memberId;
+                    if (isAdmin) {
+                        memberId = memberIds.get(spinnerMember.getSelectedItemPosition());
+                    } else {
+                        memberId = db.getMemberIdByEmail(currentUserEmail);
+                    }
+                    
+                    if (memberId != -1) {
+                        db.addMemberPayment(memberId, amount);
+                    }
+                }
+                
                 Toast.makeText(this, "Transaction added", Toast.LENGTH_SHORT).show();
             } else {
                 db.updateCashTransaction(id, desc, amount, type, date);

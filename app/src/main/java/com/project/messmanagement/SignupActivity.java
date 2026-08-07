@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.database.sqlite.SQLiteDatabase;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SignupActivity extends AppCompatActivity {
@@ -17,11 +18,14 @@ public class SignupActivity extends AppCompatActivity {
     Button btnSignup, btnRoleMember, btnRoleBua;
     TextView tvLogin;
     String selectedRole = "Member"; // Default role for signup
+    DatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
+
+        db = new DatabaseHelper(this);
 
         // Initialize UI elements
         etName = findViewById(R.id.et_full_name);
@@ -53,10 +57,11 @@ public class SignupActivity extends AppCompatActivity {
         btnSignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String name = etName.getText().toString();
-                String email = etEmail.getText().toString();
-                String password = etPassword.getText().toString();
-                String confirmPassword = etConfirmPassword.getText().toString();
+                String name = etName.getText().toString().trim();
+                String email = etEmail.getText().toString().trim().toLowerCase();
+                String phone = etPhone.getText().toString().trim();
+                String password = etPassword.getText().toString().trim();
+                String confirmPassword = etConfirmPassword.getText().toString().trim();
 
                 if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
                     Toast.makeText(SignupActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
@@ -65,11 +70,18 @@ public class SignupActivity extends AppCompatActivity {
                 } else if (!password.equals(confirmPassword)) {
                     Toast.makeText(SignupActivity.this, "Passwords do not match", Toast.LENGTH_SHORT).show();
                 } else {
-                    // 1. Save data to SharedPreferences (Simple Database for Beginners)
+                    // 1. Save to SQLite Database
+                    long result = db.addMember(name, "N/A", selectedRole, email, phone, "Just Now", password, 0.0);
+
+                    if (result == -1) {
+                        Toast.makeText(SignupActivity.this, "Signup Failed: Email might be taken or database error", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // 2. Save session to SharedPreferences
                     SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                     SharedPreferences.Editor editor = pref.edit();
                     editor.putString("email", email);
-                    editor.putString("password", password);
                     editor.putString("name", name);
                     editor.putString("role", selectedRole);
                     editor.putBoolean("isLoggedIn", true);

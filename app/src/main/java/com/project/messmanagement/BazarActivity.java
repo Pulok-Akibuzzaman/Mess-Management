@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,6 +33,7 @@ public class BazarActivity extends AppCompatActivity {
     private DatabaseHelper dbHelper;
     private boolean isAdmin = false;
     private boolean isMember = false;
+    private TextView tvTotalAmount, tvPurchasesCount, tvMonthLabel;
 
     private LinearLayout btn_home, btn_member, btn_meals, btn_bazar, btn_cash, btn_more;
 
@@ -45,14 +47,24 @@ public class BazarActivity extends AppCompatActivity {
         SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         String role = pref.getString("role", "Member");
         isAdmin = "Admin".equalsIgnoreCase(role);
-        isMember = "Member".equalsIgnoreCase(role);
+        isMember = !"Admin".equalsIgnoreCase(role) && !"Bua".equalsIgnoreCase(role);
+
+        tvTotalAmount = findViewById(R.id.tv_total_amount);
+        tvPurchasesCount = findViewById(R.id.tv_purchases_subtitle);
+        tvMonthLabel = findViewById(R.id.tv_total_label);
+
+        // Update Month Label dynamically
+        Calendar cal = Calendar.getInstance();
+        String month = cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault());
+        int year = cal.get(Calendar.YEAR);
+        if (tvMonthLabel != null) tvMonthLabel.setText(month.toUpperCase() + " " + year + " TOTAL BAZAR");
 
         rvHistory = findViewById(R.id.rv_purchase_history);
         rvHistory.setLayoutManager(new LinearLayoutManager(this));
         
         adapter = new BazarAdapter(historyList, 
-                isAdmin ? this::confirmDeleteItem : null, 
-                isAdmin ? this::showEditBazarDialog : null);
+                (isAdmin || isMember) ? this::confirmDeleteItem : null, 
+                (isAdmin || isMember) ? this::showEditBazarDialog : null);
         rvHistory.setAdapter(adapter);
 
         loadHistoryData();
@@ -78,17 +90,29 @@ public class BazarActivity extends AppCompatActivity {
         int idxName   = c.getColumnIndexOrThrow("item_name");
         int idxAmount = c.getColumnIndexOrThrow("amount");
         int idxDate   = c.getColumnIndexOrThrow("date");
+        int idxBy     = c.getColumnIndex("bought_by");
 
         while (c.moveToNext()) {
             int id = c.getInt(idxId);
             String name = c.getString(idxName);
             double amount = c.getDouble(idxAmount);
             String date = c.getString(idxDate);
-            historyList.add(new Bazar(id, name, date, amount));
+            String boughtBy = (idxBy != -1) ? c.getString(idxBy) : "Admin";
+            historyList.add(new Bazar(id, name, date, amount, boughtBy));
         }
         c.close();
 
         adapter.notifyDataSetChanged();
+
+        updateBazarSummary();
+    }
+
+    private void updateBazarSummary() {
+        double total = dbHelper.getTotalBazar();
+        int count = dbHelper.getBazarCount();
+        
+        if (tvTotalAmount != null) tvTotalAmount.setText("৳" + String.format(Locale.getDefault(), "%,.0f", total));
+        if (tvPurchasesCount != null) tvPurchasesCount.setText(count + " purchases this month");
     }
 
     /** Shown on long-press of a bazar item card. */
@@ -163,7 +187,11 @@ public class BazarActivity extends AppCompatActivity {
                 dbHelper.updateBazarItem(existingItem.id, name, amount, date);
                 Toast.makeText(this, "Item updated", Toast.LENGTH_SHORT).show();
             } else {
-                dbHelper.addBazarItem(name, amount, date);
+                SharedPreferences userPref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                String currentUserName = userPref.getString("name", "Admin");
+                dbHelper.addBazarItem(name, amount, date, currentUserName);
+                // Automatically record in Cash Ledger
+                dbHelper.addCashTransaction("Bazar: " + name, amount, "OUT", date, currentUserName, "");
             }
 
             loadHistoryData();

@@ -69,6 +69,7 @@ public class AllFeaturesActivity extends AppCompatActivity {
         setupFeature(R.id.card_occasions, OccasionActivity.class);
         setupFeature(R.id.card_reports, MonthlyReportActivity.class);
         setupFeature(R.id.card_guest_meals, GuestMealsActivity.class);
+        setupFeature(R.id.card_profile, UserProfileActivity.class);
 
         if (isBua) {
             // Hide navbar items she doesn't need
@@ -92,8 +93,6 @@ public class AllFeaturesActivity extends AppCompatActivity {
             View grid = findViewById(R.id.grid_features);
             if (grid != null) grid.setVisibility(View.GONE);
             findViewById(R.id.card_bt_chat).setVisibility(View.GONE);
-            findViewById(R.id.tv_stats_header).setVisibility(View.GONE);
-            findViewById(R.id.rv_quick_stats).setVisibility(View.GONE);
 
             // Create a clean container for Bua's allowed features
             LinearLayout buaBox = new LinearLayout(this);
@@ -105,32 +104,25 @@ public class AllFeaturesActivity extends AppCompatActivity {
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setGravity(android.view.Gravity.CENTER);
 
-            // Fetch the 3 cards she needs
-            View cardBua = findViewById(R.id.card_bua);
+            // Fetch the card she needs (ONLY SOS)
             View cardSos = findViewById(R.id.card_sos);
+            View cardBua = findViewById(R.id.card_bua);
             View cardBt = findViewById(R.id.card_bt_chat);
 
-            if (cardBua != null && cardSos != null && cardBt != null) {
-                // Ensure they are removed from their old parent before adding to new layout
-                ((android.view.ViewGroup) cardBua.getParent()).removeView(cardBua);
+            if (cardSos != null) {
+                // Remove from old parent
                 ((android.view.ViewGroup) cardSos.getParent()).removeView(cardSos);
-                ((android.view.ViewGroup) cardBt.getParent()).removeView(cardBt);
+                if (cardBua != null) ((android.view.ViewGroup) cardBua.getParent()).removeView(cardBua);
+                if (cardBt != null) ((android.view.ViewGroup) cardBt.getParent()).removeView(cardBt);
 
-                cardBua.setVisibility(View.VISIBLE);
                 cardSos.setVisibility(View.VISIBLE);
-                cardBt.setVisibility(View.VISIBLE);
-
-                row.addView(cardBua);
                 row.addView(cardSos);
-                row.addView(cardBt);
 
-                // Make them look like uniform square cards with labels
+                // Make it look like a uniform square card with labels
                 int width = (int) (110 * getResources().getDisplayMetrics().density);
-                for (View v : new View[]{cardBua, cardSos, cardBt}) {
-                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    lp.setMargins(10, 10, 10, 10);
-                    v.setLayoutParams(lp);
-                }
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width, LinearLayout.LayoutParams.WRAP_CONTENT);
+                lp.setMargins(10, 10, 10, 10);
+                cardSos.setLayoutParams(lp);
 
                 buaBox.addView(row);
                 // Add this new section into the layout

@@ -398,7 +398,13 @@ public class BuaManagementActivity extends AppCompatActivity {
             }
             String today = new SimpleDateFormat("dd MMM", Locale.US).format(java.util.Calendar.getInstance().getTime());
             db.addBuaSalaryPayment(currentMonth, amount, today);
-            Toast.makeText(this, "Salary Marked as Paid", Toast.LENGTH_SHORT).show();
+            
+            // Sync with Ledger
+            SharedPreferences prefUser = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            String adminName = prefUser.getString("name", "Admin");
+            db.addCashTransaction("Bua Salary: " + currentMonth, amount, "OUT", today, adminName, "");
+            
+            Toast.makeText(this, "Salary Marked as Paid & Recorded in Ledger", Toast.LENGTH_SHORT).show();
             showSalary(); // Refresh
         });
 

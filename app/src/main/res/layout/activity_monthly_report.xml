@@ -50,7 +50,7 @@
                         android:id="@+id/tvReportMonth"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="JULY 2025 — GRAND TOTAL"
+                        android:text="MONTHLY SUMMARY — GRAND TOTAL"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:textColor="#FFFFFF"

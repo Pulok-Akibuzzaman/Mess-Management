@@ -58,7 +58,7 @@ public class BazarAdapter extends RecyclerView.Adapter<BazarAdapter.ViewHolder> 
         Bazar item = items.get(position);
 
         holder.tvItemName.setText(item.name);
-        holder.tvItemDetails.setText(item.date);
+        holder.tvItemDetails.setText(item.date + " · by " + item.boughtBy);
         holder.tvPrice.setText(formatAmount(item.amount));
 
         holder.itemView.setOnClickListener(v -> {

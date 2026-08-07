@@ -55,6 +55,25 @@
             android:background="@drawable/bg_input_field"
             android:paddingHorizontal="16dp" />
 
+        <LinearLayout
+            android:id="@+id/layout_member_select"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/LabelStyle"
+                android:text="SELECT MEMBER (OPTIONAL)" />
+
+            <Spinner
+                android:id="@+id/spinnerMember"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="16dp" />
+        </LinearLayout>
+
         <TextView
             style="@style/LabelStyle"
             android:text="DESCRIPTION" />

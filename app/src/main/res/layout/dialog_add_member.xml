@@ -51,7 +51,7 @@
         <EditText
             android:id="@+id/etFullName"
             style="@style/InputStyle"
-            android:hint="e.g. Arif Hossain"
+            android:hint="e.g. Lionel Messi"
             android:inputType="textPersonName" />
 
         <!-- ROOM NUMBER -->
@@ -73,7 +73,7 @@
         <EditText
             android:id="@+id/etContact"
             style="@style/InputStyle"
-            android:hint="017XXXXXXXX"
+            android:hint="01XXXXXXXXX"
             android:inputType="phone" />
 
         <!-- EMAIL -->
@@ -105,7 +105,6 @@
             style="@style/LabelStyle"
             android:text="JOIN DATE" />
 
-        <!-- Add Member Button -->
         <EditText
             android:id="@+id/etJoinDate"
             style="@style/InputStyle"
@@ -114,6 +113,8 @@
             android:focusable="false"
             android:hint="26 Jul 2025"
             android:inputType="none" />
+
+        <!-- Add Member Button -->
 
         <Button
             android:id="@+id/btnAddMember"

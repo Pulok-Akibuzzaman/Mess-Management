@@ -4,9 +4,9 @@
     <!-- MessMate Strings -->
     <string name="logo_text">49</string>
     <string name="title_messmate">MessMate</string>
-    <string name="subtitle_messmate">Hostel mess management</string>
+    <string name="subtitle_messmate">Hostel Mess Management</string>
     <string name="email_placeholder">Email</string>
-    <string name="password_placeholder">••••••••</string>
+    <string name="password_placeholder">Password</string>
     <string name="login_as">LOGIN AS</string>
     <string name="role_admin">Admin</string>
     <string name="role_member">Member</string>
@@ -25,18 +25,18 @@
     <string name="label_phone">PHONE</string>
     <string name="placeholder_full_name">Full Name</string>
     <string name="placeholder_email">Email</string>
-    <string name="placeholder_phone">017XXXXXXXX</string>
+    <string name="placeholder_phone">01XXXXXXXXX</string>
     <string name="placeholder_password">Enter Password (min 6)</string>
     <string name="placeholder_confirm_password">Confirm Password</string>
     <string name="btn_continue">Sign Up</string>
     <string name="already_have_account">Already have an account? </string>
     <string name="sign_in_link">Sign In</string>
     <string name="chevron_right">&gt;</string>
-    <string name="dont_have_account">Don\'t have an account? </string>
+    <string name="dont_have_account">Don\'t have an account?  </string>
     <string name="sign_up_link">Sign Up</string>
     <!-- Bazar Strings -->
     <string name="title_bazar">Bazar</string>
-    <string name="label_july_total">JULY TOTAL BAZAR</string>
+    <string name="label_july_total">MONTH TOTAL BAZAR</string>
     <string name="total_amount">৳4,900</string>
     <string name="purchases_count">5 purchases this month</string>
     <string name="header_history">PURCHASE HISTORY</string>
@@ -57,7 +57,7 @@
 
     <!-- Meal Routine Strings -->
     <string name="title_meal_routine">Meal Routine</string>
-    <string name="btn_july_2025">July 2025</string>
+    <string name="btn_july_2025">Current Month</string>
     <string name="alert_cutoff_title">Tonight\'s cut-off: 8:00 PM</string>
     <string name="alert_cutoff_subtitle">Confirm your dinner before the cut-off time.</string>
     <string name="section_today">TODAY — SATURDAY</string>

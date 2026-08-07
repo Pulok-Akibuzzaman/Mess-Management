@@ -159,7 +159,13 @@ public class OccasionActivity extends AppCompatActivity {
                 Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show();
             } else {
                 db.addOccasion(title, type, cost, members, date);
-                Toast.makeText(this, "Added", Toast.LENGTH_SHORT).show();
+
+                // Automatically record in Cash Ledger
+                SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                String name = pref.getString("name", "Admin");
+                db.addCashTransaction("Occasion: " + title, cost, "OUT", date, name, "");
+
+                Toast.makeText(this, "Added & Recorded in Ledger", Toast.LENGTH_SHORT).show();
             }
             loadOccasions();
             dialog.dismiss();
