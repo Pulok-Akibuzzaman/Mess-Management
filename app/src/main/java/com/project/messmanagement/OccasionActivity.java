@@ -3,6 +3,7 @@ package com.project.messmanagement;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
@@ -30,6 +31,7 @@ public class OccasionActivity extends AppCompatActivity {
     private OccasionAdapter adapter;
     private List<Occasion> occasionList = new ArrayList<>();
     private TextView tvTotalSpent, tvEventCount;
+    private boolean isAdmin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +39,22 @@ public class OccasionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_occasion);
 
         db = new DatabaseHelper(this);
+
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = pref.getString("role", "Member");
+        isAdmin = "Admin".equalsIgnoreCase(role);
+
         initViews();
         setupRecyclerView();
         setupNavigation();
         loadOccasions();
 
-        findViewById(R.id.fab_add_occasion).setOnClickListener(v -> showOccasionDialog(null));
+        View fabAdd = findViewById(R.id.fab_add_occasion);
+        if (isAdmin) {
+            fabAdd.setOnClickListener(v -> showOccasionDialog(null));
+        } else {
+            fabAdd.setVisibility(View.GONE);
+        }
     }
 
     private void initViews() {
@@ -56,12 +68,12 @@ public class OccasionActivity extends AppCompatActivity {
         adapter = new OccasionAdapter(occasionList, new OccasionAdapter.OnOccasionClickListener() {
             @Override
             public void onItemClick(Occasion item) {
-                showOccasionDialog(item);
+                if (isAdmin) showOccasionDialog(item);
             }
 
             @Override
             public void onLongClick(Occasion item) {
-                confirmDelete(item);
+                if (isAdmin) confirmDelete(item);
             }
         });
         rvOccasions.setAdapter(adapter);

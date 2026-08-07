@@ -1,6 +1,7 @@
 package com.project.messmanagement;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -18,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.text.SimpleDateFormat;
+import android.widget.LinearLayout;
+import android.widget.ImageView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -30,6 +33,7 @@ public class BuaManagementActivity extends AppCompatActivity {
     private Button btnProfile, btnSalary, btnSchedule;
     private FrameLayout tabContent;
     private DatabaseHelper db;
+    private boolean isAdmin = false;
 
     private TextView tvNameHeader, tvPhoneHeader, tvAddressHeader, tvSalaryStat;
     private TextView tvServiceStat, tvJoinedStat;
@@ -40,6 +44,11 @@ public class BuaManagementActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bua_management);
 
         db = new DatabaseHelper(this);
+        
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = pref.getString("role", "Member");
+        isAdmin = "Admin".equalsIgnoreCase(role);
+        
         initViews();
         loadBuaData();
         setupNavigation();
@@ -48,7 +57,12 @@ public class BuaManagementActivity extends AppCompatActivity {
         btnSalary.setOnClickListener(v -> { setActiveTab(btnSalary); showSalary(); });
         btnSchedule.setOnClickListener(v -> { setActiveTab(btnSchedule); showSchedule(); });
 
-        findViewById(R.id.btnEditBua).setOnClickListener(v -> showEditBuaDialog());
+        View btnEdit = findViewById(R.id.btnEditBua);
+        if (isAdmin) {
+            btnEdit.setOnClickListener(v -> showEditBuaDialog());
+        } else {
+            btnEdit.setVisibility(View.GONE);
+        }
     }
 
     private void initViews() {
@@ -84,8 +98,14 @@ public class BuaManagementActivity extends AppCompatActivity {
             // Update stats cards
             tvServiceStat.setText(calculateShortTenure(joinDateStr));
             tvJoinedStat.setText(formatShortJoinDate(joinDateStr));
-            
             cursor.close();
+        } else {
+            tvNameHeader.setText("No Bua Assigned");
+            tvPhoneHeader.setText("N/A");
+            tvAddressHeader.setText("N/A");
+            tvSalaryStat.setText("৳0");
+            tvServiceStat.setText("0y 0m");
+            tvJoinedStat.setText("N/A");
         }
     }
 
@@ -100,7 +120,26 @@ public class BuaManagementActivity extends AppCompatActivity {
         final EditText etSalary = view.findViewById(R.id.etBuaSalary);
         final EditText etJoinDate = view.findViewById(R.id.etBuaJoinDate);
         Button btnSave = view.findViewById(R.id.btnSave);
+        Button btnDelete = view.findViewById(R.id.btnDeleteBuaProfile); // New delete button
         ImageButton btnClose = view.findViewById(R.id.btnClose);
+
+        if (btnDelete != null) {
+            btnDelete.setVisibility(View.VISIBLE);
+            btnDelete.setOnClickListener(v -> {
+                new android.app.AlertDialog.Builder(this)
+                    .setTitle("Remove Bua")
+                    .setMessage("Are you sure you want to remove all Bua information?")
+                    .setPositiveButton("Remove", (d, w) -> {
+                        db.deleteBuaProfile();
+                        dialog.dismiss();
+                        loadBuaData();
+                        showProfile();
+                        Toast.makeText(this, "Bua Information Removed", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            });
+        }
 
         // Pre-fill
         Cursor cursor = db.getBuaProfile();
@@ -173,6 +212,13 @@ public class BuaManagementActivity extends AppCompatActivity {
             
             setRow(view, R.id.rowEmergency, "Emergency", "018XXXXXXXX");
             cursor.close();
+        } else {
+            setRow(view, R.id.rowFullName,  "Full Name", "Not Assigned");
+            setRow(view, R.id.rowPhone,     "Phone",     "N/A");
+            setRow(view, R.id.rowAddress,   "Address",   "N/A");
+            setRow(view, R.id.rowJoinDate,  "Join Date", "N/A");
+            setRow(view, R.id.rowTenure,    "Service Time", "0 days");
+            setRow(view, R.id.rowEmergency, "Emergency", "N/A");
         }
         tabContent.addView(view);
     }
@@ -334,7 +380,13 @@ public class BuaManagementActivity extends AppCompatActivity {
             btnMarkPaid.setVisibility(View.GONE);
             warningCard.setVisibility(View.GONE);
         } else {
-            btnMarkPaid.setText("Mark " + currentMonth + " as Paid");
+            if (isAdmin) {
+                btnMarkPaid.setText("Mark " + currentMonth + " as Paid");
+            } else {
+                btnMarkPaid.setVisibility(View.GONE);
+                // Keep the warning card but remove the button for members
+                tvWarning.setText(currentMonth + " salary is not paid yet.");
+            }
         }
 
         btnMarkPaid.setOnClickListener(v -> {
@@ -356,12 +408,53 @@ public class BuaManagementActivity extends AppCompatActivity {
     private void showSchedule() {
         tabContent.removeAllViews();
         View view = LayoutInflater.from(this).inflate(R.layout.layout_tab_schedule, tabContent, false);
+        
+        TextView tvB = view.findViewById(R.id.tvCookB);
+        TextView tvL = view.findViewById(R.id.tvCookL);
+        TextView tvD = view.findViewById(R.id.tvCookD);
+        TextView tvDate = view.findViewById(R.id.tvTodayDate);
+
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(java.util.Calendar.getInstance().getTime());
+        String displayDate = new SimpleDateFormat("EEEE, dd MMM", Locale.US).format(java.util.Calendar.getInstance().getTime());
+        
+        if (tvDate != null) tvDate.setText(displayDate);
+        
+        int[] counts = db.getTodaysMealCounts(today);
+        if (tvB != null) tvB.setText(String.valueOf(counts[0]));
+        if (tvL != null) tvL.setText(String.valueOf(counts[1]));
+        if (tvD != null) tvD.setText(String.valueOf(counts[2]));
+
         tabContent.addView(view);
     }
 
     private void setupNavigation() {
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = pref.getString("role", "Member");
+        boolean isBuaRole = "Bua".equalsIgnoreCase(role);
+
+        if (isBuaRole) {
+            findViewById(R.id.btn_bazar_layout).setVisibility(View.GONE);
+            findViewById(R.id.btn_cash_layout).setVisibility(View.GONE);
+            findViewById(R.id.btn_meals_layout).setVisibility(View.GONE);
+            
+            LinearLayout btnSalaryNav = findViewById(R.id.btn_member_layout);
+            if (btnSalaryNav != null) {
+                ((TextView) btnSalaryNav.getChildAt(1)).setText("Salary");
+                ((ImageView) btnSalaryNav.getChildAt(0)).setImageResource(R.drawable.ic_briefcase);
+            }
+        }
+
         findViewById(R.id.btn_home_layout).setOnClickListener(v -> { startActivity(new Intent(this, MainActivity.class)); finish(); });
-        findViewById(R.id.btn_member_layout).setOnClickListener(v -> { startActivity(new Intent(this, MemberActivity.class)); finish(); });
+        
+        findViewById(R.id.btn_member_layout).setOnClickListener(v -> { 
+            if (isBuaRole) {
+                // Already here, maybe refresh
+            } else {
+                startActivity(new Intent(this, MemberActivity.class)); 
+                finish();
+            }
+        });
+
         findViewById(R.id.btn_meals_layout).setOnClickListener(v -> { startActivity(new Intent(this, MealRoutineActivity.class)); finish(); });
         findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> { startActivity(new Intent(this, BazarActivity.class)); finish(); });
         findViewById(R.id.btn_cash_layout).setOnClickListener(v -> { startActivity(new Intent(this, CashLedgerActivity.class)); finish(); });

@@ -93,6 +93,9 @@ public class LoginActivity extends AppCompatActivity {
                     // Save Login State
                     SharedPreferences.Editor editor = pref.edit();
                     editor.putBoolean("isLoggedIn", true);
+                    editor.putString("email", email);
+                    editor.putString("name", nameToPass);
+                    editor.putString("role", roleToPass);
                     editor.apply();
 
                     Toast.makeText(LoginActivity.this, "Login Successful as " + roleToPass, Toast.LENGTH_SHORT).show();

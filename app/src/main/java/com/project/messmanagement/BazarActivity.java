@@ -3,6 +3,7 @@ package com.project.messmanagement;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
@@ -29,6 +30,8 @@ public class BazarActivity extends AppCompatActivity {
     private BazarAdapter adapter;
     private final List<Bazar> historyList = new ArrayList<>();
     private DatabaseHelper dbHelper;
+    private boolean isAdmin = false;
+    private boolean isMember = false;
 
     private LinearLayout btn_home, btn_member, btn_meals, btn_bazar, btn_cash, btn_more;
 
@@ -39,16 +42,28 @@ public class BazarActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = pref.getString("role", "Member");
+        isAdmin = "Admin".equalsIgnoreCase(role);
+        isMember = "Member".equalsIgnoreCase(role);
+
         rvHistory = findViewById(R.id.rv_purchase_history);
         rvHistory.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new BazarAdapter(historyList, this::confirmDeleteItem, this::showEditBazarDialog);
+        
+        adapter = new BazarAdapter(historyList, 
+                isAdmin ? this::confirmDeleteItem : null, 
+                isAdmin ? this::showEditBazarDialog : null);
         rvHistory.setAdapter(adapter);
 
         loadHistoryData();
 
         ImageButton btnAdd = findViewById(R.id.btn_add_bazar);
         if (btnAdd != null) {
-            btnAdd.setOnClickListener(v -> showBazarDialog(null));
+            if (isAdmin || isMember) {
+                btnAdd.setOnClickListener(v -> showBazarDialog(null));
+            } else {
+                btnAdd.setVisibility(View.GONE);
+            }
         }
 
         setupNavigation();

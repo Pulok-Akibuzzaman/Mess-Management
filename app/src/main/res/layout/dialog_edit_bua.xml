@@ -65,6 +65,16 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
+        <Button
+            android:id="@+id/btnDeleteBuaProfile"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
+            android:background="@android:color/transparent"
+            android:text="Remove Profile"
+            android:textColor="#EF4444"
+            android:textSize="14sp" />
+
     </LinearLayout>
 
 </ScrollView>

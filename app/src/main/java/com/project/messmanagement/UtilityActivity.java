@@ -11,12 +11,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import java.util.Locale;
 
 public class UtilityActivity extends AppCompatActivity {
 
     private DatabaseHelper db;
+    private boolean isAdmin = false;
     private TextView tvTotalAmount, tvElectricity, tvWater, tvInternet, tvGas;
     private TextView tvPerMember, tvElectricityHead, tvWaterHead, tvInternetHead, tvGasHead;
 
@@ -26,17 +28,26 @@ public class UtilityActivity extends AppCompatActivity {
         setContentView(R.layout.activity_utility);
 
         db = new DatabaseHelper(this);
+
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = pref.getString("role", "Member");
+        isAdmin = "Admin".equalsIgnoreCase(role);
+
         initViews();
         loadUtilityData();
         setupNavigation();
 
         ImageButton btnAddUtility = findViewById(R.id.btnAddUtility);
-        btnAddUtility.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAddUtilityDialog();
-            }
-        });
+        if (isAdmin) {
+            btnAddUtility.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showAddUtilityDialog();
+                }
+            });
+        } else {
+            btnAddUtility.setVisibility(View.GONE);
+        }
     }
 
     private void initViews() {

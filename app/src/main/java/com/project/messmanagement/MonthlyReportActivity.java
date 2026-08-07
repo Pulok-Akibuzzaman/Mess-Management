@@ -61,8 +61,10 @@ public class MonthlyReportActivity extends AppCompatActivity {
         
         double buaSalary = 0;
         Cursor buaCursor = db.getBuaProfile();
-        if (buaCursor != null && buaCursor.moveToFirst()) {
-            buaSalary = buaCursor.getDouble(buaCursor.getColumnIndexOrThrow("salary"));
+        if (buaCursor != null) {
+            if (buaCursor.moveToFirst()) {
+                buaSalary = buaCursor.getDouble(buaCursor.getColumnIndexOrThrow("salary"));
+            }
             buaCursor.close();
         }
 

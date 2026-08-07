@@ -27,6 +27,8 @@ public class PollsActivity extends AppCompatActivity {
     private LinearLayout container;
     private DatabaseHelper db;
     private String currentUserEmail;
+    private boolean isAdmin = false;
+    private boolean isMember = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,11 +40,19 @@ public class PollsActivity extends AppCompatActivity {
         
         SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         currentUserEmail = pref.getString("email", "anonymous");
+        String role = pref.getString("role", "Member");
+        isAdmin = "Admin".equalsIgnoreCase(role);
+        isMember = "Member".equalsIgnoreCase(role);
 
         TextView tvTitle = findViewById(R.id.tvActivityTitle);
         if (tvTitle != null) tvTitle.setText("Polls");
 
-        findViewById(R.id.btnAddNotice).setOnClickListener(v -> showPollDialog(-1, "", "", ""));
+        View btnAdd = findViewById(R.id.btnAddNotice);
+        if (isAdmin || isMember) {
+            btnAdd.setOnClickListener(v -> showPollDialog(-1, "", "", ""));
+        } else {
+            btnAdd.setVisibility(View.GONE);
+        }
 
         setupNavigation();
     }
@@ -168,20 +178,22 @@ public class PollsActivity extends AppCompatActivity {
         btn2.setLayoutParams(params);
         itemLayout.addView(btn2);
 
-        itemLayout.setOnLongClickListener(v -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Manage Poll")
-                    .setItems(new String[]{"Edit Poll", "Delete Poll"}, (dialog, which) -> {
-                        if (which == 0) showPollDialog(id, q, o1, o2);
-                        else {
-                            db.deletePoll(id);
-                            refreshPollList();
-                            Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .show();
-            return true;
-        });
+        if (isAdmin) {
+            itemLayout.setOnLongClickListener(v -> {
+                new AlertDialog.Builder(this)
+                        .setTitle("Manage Poll")
+                        .setItems(new String[]{"Edit Poll", "Delete Poll"}, (dialog, which) -> {
+                            if (which == 0) showPollDialog(id, q, o1, o2);
+                            else {
+                                db.deletePoll(id);
+                                refreshPollList();
+                                Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .show();
+                return true;
+            });
+        }
 
         View line = new View(this);
         line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2));

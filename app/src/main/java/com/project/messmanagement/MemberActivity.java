@@ -1,7 +1,9 @@
 package com.project.messmanagement;
 
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
@@ -20,7 +22,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 public class MemberActivity extends AppCompatActivity {
 
@@ -28,6 +32,7 @@ public class MemberActivity extends AppCompatActivity {
     private MemberAdapter adapter;
     private final List<Member> memberList = new ArrayList<>();
     private EditText etSearch;
+    private boolean isAdmin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,21 +41,26 @@ public class MemberActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = pref.getString("role", "Member");
+        isAdmin = "Admin".equalsIgnoreCase(role);
+
         RecyclerView rvMembers = findViewById(R.id.rvMembers);
         rvMembers.setLayoutManager(new LinearLayoutManager(this));
+        
         adapter = new MemberAdapter(memberList,
-                new MemberAdapter.OnMemberLongClickListener() {
+                isAdmin ? new MemberAdapter.OnMemberLongClickListener() {
                     @Override
                     public void onItemLongClick(int position, Member member) {
                         showConsentDialog(position);
                     }
-                },
-                new MemberAdapter.OnMemberClickListener() {
+                } : null,
+                isAdmin ? new MemberAdapter.OnMemberClickListener() {
                     @Override
                     public void onItemClick(int position, Member member) {
                         showEditMemberDialog(member);
                     }
-                });
+                } : null);
         rvMembers.setAdapter(adapter);
 
         loadMembers(null);
@@ -69,7 +79,11 @@ public class MemberActivity extends AppCompatActivity {
         setupNavigation();
 
         ImageButton btnAdd = findViewById(R.id.btnAdd);
-        btnAdd.setOnClickListener(v -> showMemberDialog(null));
+        if (isAdmin) {
+            btnAdd.setOnClickListener(v -> showMemberDialog(null));
+        } else {
+            btnAdd.setVisibility(View.GONE);
+        }
     }
 
     /** Reloads memberList from the database (optionally filtered) and refreshes the adapter. */
@@ -85,6 +99,8 @@ public class MemberActivity extends AppCompatActivity {
         int idxRoom   = c.getColumnIndexOrThrow("room");
         int idxStatus = c.getColumnIndexOrThrow("status");
         int idxEmail  = c.getColumnIndexOrThrow("email");
+        int idxPhone  = c.getColumnIndexOrThrow("phone");
+        int idxDate   = c.getColumnIndexOrThrow("join_date");
 
         while (c.moveToNext()) {
             int id        = c.getInt(idxId);
@@ -92,10 +108,11 @@ public class MemberActivity extends AppCompatActivity {
             String room   = c.getString(idxRoom);
             String status = c.getString(idxStatus);
             String email  = c.getString(idxEmail);
+            String phone  = c.getString(idxPhone);
+            String date   = c.getString(idxDate);
 
-            // NOTE: the "members" table only stores name/room/status/email, 
-            // so phone, meals and due amount aren't persisted yet.
-            memberList.add(new Member(id, name, initialsOf(name), room, "N/A", 0, "৳0", status, email));
+            memberList.add(new Member(id, name, initialsOf(name), room, 
+                    phone != null ? phone : "N/A", 0, "৳0", status, email, date));
         }
         c.close();
 
@@ -141,6 +158,8 @@ public class MemberActivity extends AppCompatActivity {
         EditText etFullName   = view.findViewById(R.id.etFullName);
         EditText etRoomNumber = view.findViewById(R.id.etRoomNumber);
         EditText etEmail      = view.findViewById(R.id.etEmail);
+        EditText etPhone      = view.findViewById(R.id.etContact);
+        EditText etJoinDate   = view.findViewById(R.id.etJoinDate);
         Spinner spinnerStatus = view.findViewById(R.id.spinnerStatus);
 
         ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(
@@ -148,13 +167,29 @@ public class MemberActivity extends AppCompatActivity {
                 new String[]{"Active", "Away"});
         spinnerStatus.setAdapter(statusAdapter);
 
+        final Calendar calendar = Calendar.getInstance();
+        final java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+
         if (isEdit) {
             etFullName.setText(existingMember.name);
             etRoomNumber.setText(existingMember.room);
             etEmail.setText(existingMember.email);
+            etPhone.setText(existingMember.phone);
+            etJoinDate.setText(existingMember.joinDate);
             int statusPos = statusAdapter.getPosition(existingMember.status);
             spinnerStatus.setSelection(statusPos >= 0 ? statusPos : 0);
+        } else {
+            etJoinDate.setText(sdf.format(calendar.getTime()));
         }
+
+        etJoinDate.setOnClickListener(v -> {
+            new DatePickerDialog(this, (view1, year, month, day) -> {
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, day);
+                etJoinDate.setText(sdf.format(calendar.getTime()));
+            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
+        });
 
         view.findViewById(R.id.btnClose).setOnClickListener(v -> bottomSheet.dismiss());
 
@@ -162,6 +197,8 @@ public class MemberActivity extends AppCompatActivity {
             String name = etFullName.getText().toString().trim();
             String room = etRoomNumber.getText().toString().trim();
             String email = etEmail.getText().toString().trim();
+            String phone = etPhone.getText().toString().trim();
+            String date = etJoinDate.getText().toString().trim();
             String status = spinnerStatus.getSelectedItem() != null
                     ? spinnerStatus.getSelectedItem().toString() : "Active";
 
@@ -171,10 +208,10 @@ public class MemberActivity extends AppCompatActivity {
             }
 
             if (isEdit) {
-                dbHelper.updateMember(existingMember.id, name, room, status, email);
+                dbHelper.updateMember(existingMember.id, name, room, status, email, phone, date);
                 Toast.makeText(this, "Member updated", Toast.LENGTH_SHORT).show();
             } else {
-                dbHelper.addMember(name, room, status, email);
+                dbHelper.addMember(name, room, status, email, phone, date);
             }
 
             etSearch.setText("");

@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -265,13 +266,33 @@ public class SOSActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = pref.getString("role", "Member");
+        boolean isBuaRole = "Bua".equalsIgnoreCase(role);
+
+        if (isBuaRole) {
+            findViewById(R.id.btn_bazar_layout).setVisibility(View.GONE);
+            findViewById(R.id.btn_cash_layout).setVisibility(View.GONE);
+            findViewById(R.id.btn_meals_layout).setVisibility(View.GONE);
+            
+            LinearLayout btnSalaryNav = findViewById(R.id.btn_member_layout);
+            if (btnSalaryNav != null) {
+                ((TextView) btnSalaryNav.getChildAt(1)).setText("Salary");
+                ((ImageView) btnSalaryNav.getChildAt(0)).setImageResource(R.drawable.ic_briefcase);
+            }
+        }
+
         findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
             startActivity(new Intent(this, MainActivity.class));
             finish();
         });
         if (findViewById(R.id.btn_member_layout) != null) {
             findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-                startActivity(new Intent(this, MemberActivity.class));
+                if (isBuaRole) {
+                    startActivity(new Intent(this, BuaManagementActivity.class));
+                } else {
+                    startActivity(new Intent(this, MemberActivity.class));
+                }
                 finish();
             });
         }

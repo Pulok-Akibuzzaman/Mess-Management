@@ -2,6 +2,7 @@ package com.project.messmanagement;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
@@ -32,6 +33,8 @@ public class CashLedgerActivity extends AppCompatActivity {
     private CashLedgerAdapter adapter;
     private final List<CashTransaction> transactionList = new ArrayList<>();
     private TextView tvBalance, tvIncoming, tvOutgoing;
+    private boolean isAdmin = false;
+    private boolean isMember = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,20 +43,31 @@ public class CashLedgerActivity extends AppCompatActivity {
 
         db = new DatabaseHelper(this);
 
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = pref.getString("role", "Member");
+        isAdmin = "Admin".equalsIgnoreCase(role);
+        isMember = "Member".equalsIgnoreCase(role);
+
         RecyclerView rvTransactions = findViewById(R.id.transaction_container);
         rvTransactions.setLayoutManager(new LinearLayoutManager(this));
+        
         adapter = new CashLedgerAdapter(transactionList,
-                (position, transaction) -> showCashDialog(
+                isAdmin ? (position, transaction) -> showCashDialog(
                         transaction.id, transaction.description, transaction.amount,
-                        transaction.type, transaction.date),
-                (position, transaction) -> confirmDeleteTransaction(transaction));
+                        transaction.type, transaction.date) : null,
+                isAdmin ? (position, transaction) -> confirmDeleteTransaction(transaction) : null);
         rvTransactions.setAdapter(adapter);
 
         tvBalance = findViewById(R.id.tv_balance_amount);
         tvIncoming = findViewById(R.id.tv_incoming);
         tvOutgoing = findViewById(R.id.tv_outgoing);
 
-        findViewById(R.id.fab_add_transaction).setOnClickListener(v -> showCashDialog(-1, "", 0, "IN", ""));
+        View fabAdd = findViewById(R.id.fab_add_transaction);
+        if (isAdmin || isMember) {
+            fabAdd.setOnClickListener(v -> showCashDialog(-1, "", 0, "IN", ""));
+        } else {
+            fabAdd.setVisibility(View.GONE);
+        }
 
         setupNavigation();
     }

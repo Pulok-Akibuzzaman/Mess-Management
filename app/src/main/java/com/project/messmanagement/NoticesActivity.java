@@ -1,6 +1,7 @@
 package com.project.messmanagement;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ public class NoticesActivity extends AppCompatActivity {
 
     private LinearLayout noticeContainer;
     private DatabaseHelper db;
+    private boolean isAdmin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,10 +36,20 @@ public class NoticesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_notices);
 
         db = new DatabaseHelper(this);
+        
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = pref.getString("role", "Member");
+        isAdmin = "Admin".equalsIgnoreCase(role);
+        
         noticeContainer = findViewById(R.id.notice_container);
 
         // 1. Setup Add Button
-        findViewById(R.id.btnAddNotice).setOnClickListener(v -> showNoticeDialog(-1, "", "", "Medium", "All Members"));
+        View btnAdd = findViewById(R.id.btnAddNotice);
+        if (isAdmin) {
+            btnAdd.setOnClickListener(v -> showNoticeDialog(-1, "", "", "Medium", "All Members"));
+        } else {
+            btnAdd.setVisibility(View.GONE);
+        }
 
         setupNavigation();
     }
@@ -148,21 +160,23 @@ public class NoticesActivity extends AppCompatActivity {
         itemLayout.addView(tv);
         itemLayout.addView(line);
 
-        itemLayout.setOnClickListener(v -> showNoticeDialog(id, title, content, priority, audience));
+        if (isAdmin) {
+            itemLayout.setOnClickListener(v -> showNoticeDialog(id, title, content, priority, audience));
 
-        itemLayout.setOnLongClickListener(v -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Delete Notice")
-                    .setMessage("Delete this notice?")
-                    .setPositiveButton("Confirm", (dialog, which) -> {
-                        db.deleteNotice(id);
-                        refreshNoticeList();
-                        Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-            return true;
-        });
+            itemLayout.setOnLongClickListener(v -> {
+                new AlertDialog.Builder(this)
+                        .setTitle("Delete Notice")
+                        .setMessage("Delete this notice?")
+                        .setPositiveButton("Confirm", (dialog, which) -> {
+                            db.deleteNotice(id);
+                            refreshNoticeList();
+                            Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+                return true;
+            });
+        }
 
         noticeContainer.addView(itemLayout);
     }

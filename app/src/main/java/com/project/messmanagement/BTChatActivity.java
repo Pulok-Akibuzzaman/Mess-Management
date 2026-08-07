@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -295,6 +296,22 @@ public class BTChatActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = pref.getString("role", "Member");
+        boolean isBuaRole = "Bua".equalsIgnoreCase(role);
+
+        if (isBuaRole) {
+            findViewById(R.id.btn_bazar_layout).setVisibility(View.GONE);
+            findViewById(R.id.btn_cash_layout).setVisibility(View.GONE);
+            findViewById(R.id.btn_meals_layout).setVisibility(View.GONE);
+            
+            android.widget.LinearLayout btnSalaryNav = findViewById(R.id.btn_member_layout);
+            if (btnSalaryNav != null) {
+                ((TextView) btnSalaryNav.getChildAt(1)).setText("Salary");
+                ((android.widget.ImageView) btnSalaryNav.getChildAt(0)).setImageResource(R.drawable.ic_briefcase);
+            }
+        }
+
         if (findViewById(R.id.btn_home_layout) != null) {
             findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
                 startActivity(new Intent(this, MainActivity.class));
@@ -303,7 +320,11 @@ public class BTChatActivity extends AppCompatActivity {
         }
         if (findViewById(R.id.btn_member_layout) != null) {
             findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-                startActivity(new Intent(this, MemberActivity.class));
+                if (isBuaRole) {
+                    startActivity(new Intent(this, BuaManagementActivity.class));
+                } else {
+                    startActivity(new Intent(this, MemberActivity.class));
+                }
                 finish();
             });
         }

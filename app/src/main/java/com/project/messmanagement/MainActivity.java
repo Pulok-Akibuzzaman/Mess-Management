@@ -24,6 +24,8 @@ import java.util.Calendar;
 import java.util.Locale;
 import android.net.Uri;
 import android.database.Cursor;
+import android.view.View;
+import java.text.SimpleDateFormat;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -109,6 +111,28 @@ public class MainActivity extends AppCompatActivity {
         tvBazarSpentSubtitle = findViewById(R.id.tv_bazar_spent_subtitle);
         tvUtilitiesSubtitle = findViewById(R.id.tv_utilities_subtitle);
 
+        // Role-based UI simplification for Bua
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String userRole = pref.getString("role", "Admin");
+        if ("Bua".equalsIgnoreCase(userRole)) {
+            // 1. Hide unwanted navbar items
+            findViewById(R.id.btn_bazar_layout).setVisibility(View.GONE);
+            findViewById(R.id.btn_cash_layout).setVisibility(View.GONE);
+            findViewById(R.id.btn_meals_layout).setVisibility(View.GONE);
+            
+            // 2. Repurpose Member button as Salary
+            LinearLayout btnMember = findViewById(R.id.btn_member_layout);
+            if (btnMember != null) {
+                TextView tv = (TextView) btnMember.getChildAt(1);
+                tv.setText("Salary");
+                ImageView iv = (ImageView) btnMember.getChildAt(0);
+                iv.setImageResource(R.drawable.ic_briefcase); // Work/Salary icon
+            }
+
+            // 3. Hide specific statistics cards in grid
+            findViewById(R.id.grid_stats).setVisibility(View.GONE);
+        }
+
         // Label values in Breakdown
         tvBazarLabelVal = findViewById(R.id.tv_bazar_label_val);
         tvUtilityLabelVal = findViewById(R.id.tv_utility_label_val);
@@ -147,12 +171,19 @@ public class MainActivity extends AppCompatActivity {
         double cashBalance = db.getCashBalance();
         int myMeals = db.getUserTotalMeals(currentUserEmail);
 
+        double buaSalary = 0;
+        Cursor buaCursor = db.getBuaProfile();
+        if (buaCursor != null && buaCursor.moveToFirst()) {
+            buaSalary = buaCursor.getDouble(buaCursor.getColumnIndexOrThrow("salary"));
+            buaCursor.close();
+        }
+
         // Individual Calculations
         double mealRate = totalMessMeals > 0 ? totalBazar / totalMessMeals : 0;
-        double fixedCostPerHead = activeMembers > 0 ? (utilities + 4000) / activeMembers : 0; // 4000 is Bua
+        double fixedCostPerHead = activeMembers > 0 ? (utilities + buaSalary) / activeMembers : 0; 
         double myTotalBill = (myMeals * mealRate) + fixedCostPerHead;
         
-        double totalMessExpense = totalBazar + utilities + 4000;
+        double totalMessExpense = totalBazar + utilities + buaSalary;
 
         // Update UI
         tvTotalAmount.setText("৳" + (int)totalMessExpense);
@@ -171,10 +202,29 @@ public class MainActivity extends AppCompatActivity {
         if (tvMyTotalBillGrid != null) tvMyTotalBillGrid.setText("৳" + (int)myTotalBill);
         if (tvMyBillSubtitle != null) tvMyBillSubtitle.setText("My share (" + myMeals + " meals)");
 
+        // --- BUA SPECIFIC DASHBOARD ---
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String userRole = pref.getString("role", "Admin");
+        if ("Bua".equalsIgnoreCase(userRole)) {
+            String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Calendar.getInstance().getTime());
+            int[] counts = db.getTodaysMealCounts(today);
+            
+            // Re-purposing Welcome Text to show cooking counts
+            tvWelcome.setText("Cooking for Today: " + 
+                "\nBreakfast: " + counts[0] + " | Lunch: " + counts[1] + " | Dinner: " + counts[2]);
+            
+            // Hide financial breakdown for Bua
+            if (tvTotalAmount != null) tvTotalAmount.setText("Mess Active");
+            findViewById(R.id.card_expense_chart).setVisibility(View.GONE);
+            findViewById(R.id.card_weekly_chart).setVisibility(View.GONE);
+            findViewById(R.id.tv_weekly_meal_title).setVisibility(View.GONE);
+            findViewById(R.id.tv_expense_title).setVisibility(View.GONE);
+        }
+
         // Update Breakdown Labels
         if (tvBazarLabelVal != null) tvBazarLabelVal.setText("৳" + (int)totalBazar);
         if (tvUtilityLabelVal != null) tvUtilityLabelVal.setText("৳" + (int)utilities);
-        if (tvBuaLabelVal != null) tvBuaLabelVal.setText("৳4000");
+        if (tvBuaLabelVal != null) tvBuaLabelVal.setText("৳" + (int)buaSalary);
         if (tvOtherLabelVal != null) tvOtherLabelVal.setText("৳0");
 
         setupCharts(totalMessMeals, totalBazar, utilities);
@@ -184,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<BarEntry> barEntries = new ArrayList<>();
         barEntries.add(new BarEntry(0, 15f));
         barEntries.add(new BarEntry(1, 20f));
-        barEntries.add(new BarEntry(2, meals/10f)); 
+        barEntries.add(new BarEntry(2, meals/10f));
         
         BarDataSet barDataSet = new BarDataSet(barEntries, "Meals");
         barDataSet.setColor(ContextCompat.getColor(this, R.color.admin_chart_blue));
@@ -205,15 +255,24 @@ public class MainActivity extends AppCompatActivity {
     private void setupNavigation() {
         btnBazar.setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
         btnCash.setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
-        btnMember.setOnClickListener(v -> startActivity(new Intent(this, MemberActivity.class)));
+        
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String r = sp.getString("role", "Admin");
+
+        if ("Bua".equalsIgnoreCase(r)) {
+            btnMember.setOnClickListener(v -> startActivity(new Intent(this, BuaManagementActivity.class)));
+        } else {
+            btnMember.setOnClickListener(v -> startActivity(new Intent(this, MemberActivity.class)));
+        }
+
         btnMeals.setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
         btnMore.setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
         
         if (btnNotification != null) {
             btnNotification.setOnClickListener(v -> {
-                // Navigate to NoticesActivity when notification button is clicked
                 startActivity(new Intent(this, NoticesActivity.class));
             });
+            if ("Bua".equalsIgnoreCase(r)) btnNotification.setVisibility(View.GONE);
         }
         
         if (btnLogout != null) {

@@ -2,6 +2,7 @@ package com.project.messmanagement;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ public class EquipmentActivity extends AppCompatActivity {
 
     private LinearLayout container;
     private DatabaseHelper db;
+    private boolean isAdmin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,10 +37,20 @@ public class EquipmentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_equipment);
 
         db = new DatabaseHelper(this);
+        
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = pref.getString("role", "Member");
+        isAdmin = "Admin".equalsIgnoreCase(role);
+        
         container = findViewById(R.id.item_container);
 
         // 1. Setup Add Button
-        findViewById(R.id.btnAddEquipment).setOnClickListener(v -> showEquipmentDialog(-1, "", "", "", "", 0));
+        View btnAdd = findViewById(R.id.btnAddEquipment);
+        if (isAdmin) {
+            btnAdd.setOnClickListener(v -> showEquipmentDialog(-1, "", "", "", "", 0));
+        } else {
+            btnAdd.setVisibility(View.GONE);
+        }
 
         setupNavigation();
     }
@@ -163,21 +175,23 @@ public class EquipmentActivity extends AppCompatActivity {
         itemLayout.addView(tv);
         itemLayout.addView(line);
 
-        itemLayout.setOnClickListener(v -> showEquipmentDialog(id, name, location, status, date, price));
+        if (isAdmin) {
+            itemLayout.setOnClickListener(v -> showEquipmentDialog(id, name, location, status, date, price));
 
-        itemLayout.setOnLongClickListener(v -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Delete Equipment")
-                    .setMessage("Delete " + name + "?")
-                    .setPositiveButton("Confirm", (dialog, which) -> {
-                        db.deleteEquipment(id);
-                        refreshEquipmentList();
-                        Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-            return true;
-        });
+            itemLayout.setOnLongClickListener(v -> {
+                new AlertDialog.Builder(this)
+                        .setTitle("Delete Equipment")
+                        .setMessage("Delete " + name + "?")
+                        .setPositiveButton("Confirm", (dialog, which) -> {
+                            db.deleteEquipment(id);
+                            refreshEquipmentList();
+                            Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+                return true;
+            });
+        }
 
         container.addView(itemLayout);
     }
