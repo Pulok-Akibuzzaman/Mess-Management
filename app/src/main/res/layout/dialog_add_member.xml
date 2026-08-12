@@ -74,7 +74,8 @@
             android:id="@+id/etContact"
             style="@style/InputStyle"
             android:hint="01XXXXXXXXX"
-            android:inputType="phone" />
+            android:inputType="phone"
+            android:maxLength="11"/>
 
         <!-- EMAIL -->
         <TextView

@@ -25,8 +25,8 @@
         <ImageButton
             android:id="@+id/btnAddUtility"
             android:layout_marginTop="15dp"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:background="@drawable/bg_circle_teal"

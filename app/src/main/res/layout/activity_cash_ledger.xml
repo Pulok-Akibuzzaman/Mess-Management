@@ -7,33 +7,35 @@
     android:background="@color/bazar_bg">
 
     <!-- Material Toolbar -->
+
     <TextView
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/bazar_bg"
-        app:layout_constraintTop_toTopOf="parent"
-        android:text="@string/title_cash_ledger"
-
-        android:textSize="26sp"
-        android:paddingLeft="24dp"
         android:gravity="center_vertical"
+        android:paddingLeft="24dp"
+        android:text="@string/title_cash_ledger"
+        android:textColor="@color/text_dark"
+        android:textSize="26sp"
         android:textStyle="bold"
-        android:textColor="@color/text_dark" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="0dp" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <ImageButton
         android:id="@+id/fab_add_transaction"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:contentDescription="@string/header_transactions"
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/fab_bg"
-        app:fabSize="mini"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="@drawable/bg_circle_teal"
+        android:contentDescription="@string/header_transactions"
+
+        android:layout_marginEnd="24dp"
         app:layout_constraintBottom_toBottomOf="@id/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/toolbar"
-        app:tint="@color/white" />
+        />
 
     <ScrollView
         android:layout_width="match_parent"

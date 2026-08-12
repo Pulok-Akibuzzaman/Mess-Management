@@ -17,21 +17,23 @@
         android:paddingLeft="24dp"
         android:gravity="center_vertical"
         android:textStyle="bold"
-        android:textColor="@color/text_dark" />
+        android:textColor="@color/text_dark"/>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+
+    <ImageButton
         android:id="@+id/btn_add_bazar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:contentDescription="@string/nav_bazar"
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/fab_bg"
-        app:fabSize="mini"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="@drawable/bg_circle_teal"
+        android:contentDescription="@string/nav_bazar"
+        android:layout_marginEnd="24dp"
         app:layout_constraintBottom_toBottomOf="@id/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/toolbar"
-        app:tint="@color/white" />
+        />
+
 
     <ScrollView
         android:layout_width="match_parent"
