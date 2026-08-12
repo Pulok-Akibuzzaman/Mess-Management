@@ -10,6 +10,7 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor">@color/primary_bg</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="android:fitsSystemWindows">true</item>
     </style>
 
     <style name="Widget.MessMate.FeatureCard" parent="Widget.Material3.CardView.Elevated">
