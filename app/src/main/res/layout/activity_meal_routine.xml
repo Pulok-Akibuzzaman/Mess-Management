@@ -6,14 +6,20 @@
     android:layout_height="match_parent"
     android:background="@color/bazar_bg">
 
-    <com.google.android.material.appbar.MaterialToolbar
+    <TextView
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/bazar_bg"
         app:layout_constraintTop_toTopOf="parent"
-        app:title="Meal &amp; Routine"
-        app:titleTextColor="@color/text_dark" />
+        android:text="Meal &amp; Routine"
+
+        android:textSize="26sp"
+        android:paddingLeft="24dp"
+        android:gravity="center_vertical"
+        android:textStyle="bold"
+        android:textColor="@color/text_dark" />
+
 
     <ScrollView
         android:layout_width="match_parent"

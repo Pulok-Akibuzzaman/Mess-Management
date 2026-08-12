@@ -11,9 +11,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="20dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="12dp">
+        android:paddingHorizontal="20dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -26,8 +24,9 @@
 
         <ImageButton
             android:id="@+id/btnAddUtility"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_marginTop="15dp"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:background="@drawable/bg_circle_teal"
