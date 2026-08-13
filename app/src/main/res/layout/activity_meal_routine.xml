@@ -13,13 +13,11 @@
         android:background="@color/bazar_bg"
         app:layout_constraintTop_toTopOf="parent"
         android:text="Meal &amp; Routine"
-
         android:textSize="26sp"
         android:paddingLeft="24dp"
         android:gravity="center_vertical"
         android:textStyle="bold"
         android:textColor="@color/text_dark" />
-
 
     <ScrollView
         android:layout_width="match_parent"
@@ -38,126 +36,220 @@
                 android:id="@+id/tv_today_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tuesday, 04 Aug"
+                android:text="Friday, 14 Aug"
                 android:textColor="@color/text_dark"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="16dp" />
 
-            <!-- Breakfast Card -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- ADMIN DASHBOARD (Visible only for Admin) -->
+            <LinearLayout
+                android:id="@+id/admin_dashboard_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:strokeWidth="0dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Breakfast" android:textColor="@color/text_dark" android:textSize="16sp" />
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_b_minus"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:text="-"
-                        android:padding="0dp"
-                        android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
-                        app:backgroundTint="#F44336" />
-                    <TextView android:id="@+id/tv_b_count" android:layout_width="50dp" android:layout_height="wrap_content" android:text="0" android:gravity="center" android:textSize="18sp" android:textStyle="bold" />
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_b_plus"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:text="+"
-                        android:padding="0dp"
-                        android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
-                        app:backgroundTint="#4CAF50" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                android:orientation="vertical"
+                android:visibility="gone">
 
-            <!-- Lunch Card -->
-            <com.google.android.material.card.MaterialCardView
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BUA'S COOKING LIST (TODAY)"
+                    android:textColor="@color/text_gray"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Total Count Cards for Admin -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#E8F4F8"
+                    app:strokeWidth="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+
+                        <!-- Breakfast Row -->
+                        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Breakfast" android:textColor="#0D5169" android:textSize="15sp" android:textStyle="bold" />
+                            <TextView android:id="@+id/tv_admin_b_total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="0 Meals" android:textColor="#1B7A9E" android:textSize="16sp" android:textStyle="bold" />
+                        </RelativeLayout>
+                        <TextView android:id="@+id/tv_admin_b_breakdown" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 Members + 0 Guests" android:textColor="#64748B" android:textSize="12sp" android:layout_marginTop="2dp" />
+
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#FFFFFF" android:layout_marginVertical="12dp" />
+
+                        <!-- Lunch Row -->
+                        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Lunch" android:textColor="#0D5169" android:textSize="15sp" android:textStyle="bold" />
+                            <TextView android:id="@+id/tv_admin_l_total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="0 Meals" android:textColor="#1B7A9E" android:textSize="16sp" android:textStyle="bold" />
+                        </RelativeLayout>
+                        <TextView android:id="@+id/tv_admin_l_breakdown" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 Members + 0 Guests" android:textColor="#64748B" android:textSize="12sp" android:layout_marginTop="2dp" />
+
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#FFFFFF" android:layout_marginVertical="12dp" />
+
+                        <!-- Dinner Row -->
+                        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dinner" android:textColor="#0D5169" android:textSize="15sp" android:textStyle="bold" />
+                            <TextView android:id="@+id/tv_admin_d_total" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="0 Meals" android:textColor="#1B7A9E" android:textSize="16sp" android:textStyle="bold" />
+                        </RelativeLayout>
+                        <TextView android:id="@+id/tv_admin_d_breakdown" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 Members + 0 Guests" android:textColor="#64748B" android:textSize="12sp" android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Member-wise Breakdown Section -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MEMBER-WISE DETAILS (TODAY)"
+                    android:textColor="#475569"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#F8FAFC"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#E2E8F0">
+                    <LinearLayout
+                        android:id="@+id/admin_member_breakdown_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp" />
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- MEMBER PERSONAL SECTION (Hidden for Admin) -->
+            <LinearLayout
+                android:id="@+id/member_meal_controls"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:strokeWidth="0dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Lunch" android:textColor="@color/text_dark" android:textSize="16sp" />
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_l_minus"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:text="-"
-                        android:padding="0dp"
-                        android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
-                        app:backgroundTint="#F44336" />
-                    <TextView android:id="@+id/tv_l_count" android:layout_width="50dp" android:layout_height="wrap_content" android:text="0" android:gravity="center" android:textSize="18sp" android:textStyle="bold" />
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_l_plus"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:text="+"
-                        android:padding="0dp"
-                        android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
-                        app:backgroundTint="#4CAF50" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                android:orientation="vertical">
 
-            <!-- Dinner Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="16dp"
-                app:strokeWidth="0dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp" android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Dinner" android:textColor="@color/text_dark" android:textSize="16sp" />
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_d_minus"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:text="-"
-                        android:padding="0dp"
-                        android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
-                        app:backgroundTint="#F44336" />
-                    <TextView android:id="@+id/tv_d_count" android:layout_width="50dp" android:layout_height="wrap_content" android:text="0" android:gravity="center" android:textSize="18sp" android:textStyle="bold" />
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_d_plus"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:text="+"
-                        android:padding="0dp"
-                        android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
-                        app:backgroundTint="#4CAF50" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                <!-- Breakfast Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="16dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp" android:orientation="horizontal" android:gravity="center_vertical">
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Breakfast" android:textColor="@color/text_dark" android:textSize="16sp" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_b_minus"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:text="-"
+                            android:padding="0dp"
+                            android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
+                            app:backgroundTint="#F44336" />
+                        <TextView android:id="@+id/tv_b_count" android:layout_width="50dp" android:layout_height="wrap_content" android:text="0" android:gravity="center" android:textSize="18sp" android:textStyle="bold" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_b_plus"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:text="+"
+                            android:padding="0dp"
+                            android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
+                            app:backgroundTint="#4CAF50" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-            <!-- Personal Summary Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="20dp"
-                app:cardBackgroundColor="#1A4F5C"
-                app:strokeWidth="0dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MY SUMMARY" android:textColor="#A8C8D0" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.1" />
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal">
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-                            <TextView android:id="@+id/tv_my_total_meals" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="#FFFFFF" android:textSize="24sp" android:textStyle="bold" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="My Total Meals" android:textColor="#A8C8D0" android:textSize="12sp" />
-                        </LinearLayout>
+                <!-- Lunch Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="16dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp" android:orientation="horizontal" android:gravity="center_vertical">
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Lunch" android:textColor="@color/text_dark" android:textSize="16sp" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_l_minus"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:text="-"
+                            android:padding="0dp"
+                            android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
+                            app:backgroundTint="#F44336" />
+                        <TextView android:id="@+id/tv_l_count" android:layout_width="50dp" android:layout_height="wrap_content" android:text="0" android:gravity="center" android:textSize="18sp" android:textStyle="bold" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_l_plus"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:text="+"
+                            android:padding="0dp"
+                            android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
+                            app:backgroundTint="#4CAF50" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#33FFFFFF" android:layout_marginVertical="4dp" />
+                <!-- Dinner Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="16dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp" android:orientation="horizontal" android:gravity="center_vertical">
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Dinner" android:textColor="@color/text_dark" android:textSize="16sp" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_d_minus"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:text="-"
+                            android:padding="0dp"
+                            android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
+                            app:backgroundTint="#F44336" />
+                        <TextView android:id="@+id/tv_d_count" android:layout_width="50dp" android:layout_height="wrap_content" android:text="0" android:gravity="center" android:textSize="18sp" android:textStyle="bold" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_d_plus"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:text="+"
+                            android:padding="0dp"
+                            android:insetLeft="0dp" android:insetTop="0dp" android:insetRight="0dp" android:insetBottom="0dp"
+                            app:backgroundTint="#4CAF50" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-                            <TextView android:id="@+id/tv_my_total_cost" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="৳0" android:textColor="#FFFFFF" android:textSize="24sp" android:textStyle="bold" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total Meal Cost" android:textColor="#A8C8D0" android:textSize="12sp" />
+                <!-- Personal Summary Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/member_summary_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardBackgroundColor="#1A4F5C"
+                    app:strokeWidth="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MY SUMMARY" android:textColor="#A8C8D0" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.1" />
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                                <TextView android:id="@+id/tv_my_total_meals" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="#FFFFFF" android:textSize="24sp" android:textStyle="bold" />
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="My Total Meals" android:textColor="#A8C8D0" android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#33FFFFFF" android:layout_marginVertical="4dp" />
+
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                                <TextView android:id="@+id/tv_my_total_cost" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="৳0" android:textColor="#FFFFFF" android:textSize="24sp" android:textStyle="bold" />
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total Meal Cost" android:textColor="#A8C8D0" android:textSize="12sp" />
+                            </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                </com.google.android.material.card.MaterialCardView>
 
-
+            </LinearLayout>
 
             <!-- Weekly Routine Title -->
             <TextView
@@ -172,6 +264,7 @@
                 android:layout_marginBottom="12dp" />
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/history_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"

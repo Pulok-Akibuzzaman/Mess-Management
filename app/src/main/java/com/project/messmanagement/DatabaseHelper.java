@@ -556,6 +556,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return regular + guest;
     }
 
+    public Cursor getGlobalMealHistory() {
+        String query = "SELECT date, SUM(b), SUM(l), SUM(d) FROM (" +
+                "SELECT date, breakfast as b, lunch as l, dinner as d FROM meal_tracking " +
+                "UNION ALL " +
+                "SELECT date, " +
+                "CASE WHEN meal_type = 'Breakfast' THEN meal_count ELSE 0 END as b, " +
+                "CASE WHEN meal_type = 'Lunch' THEN meal_count ELSE 0 END as l, " +
+                "CASE WHEN meal_type = 'Dinner' THEN meal_count ELSE 0 END as d " +
+                "FROM guest_meals" +
+                ") GROUP BY date ORDER BY date DESC LIMIT 30";
+        return this.getReadableDatabase().rawQuery(query, null);
+    }
+
+    public Cursor getMemberMealDetailsForDate(String date) {
+        String query = "SELECT m.name, t.breakfast, t.lunch, t.dinner " +
+                "FROM meal_tracking t " +
+                "JOIN members m ON t.user_email = m.email " +
+                "WHERE t.date = ? AND (t.breakfast > 0 OR t.lunch > 0 OR t.dinner > 0)";
+        return this.getReadableDatabase().rawQuery(query, new String[]{date});
+    }
+
+    public int getMemberMealCount(String date, String type) {
+        String col = "breakfast";
+        if ("Lunch".equalsIgnoreCase(type)) col = "lunch";
+        else if ("Dinner".equalsIgnoreCase(type)) col = "dinner";
+        
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(" + col + ") FROM meal_tracking WHERE date=?", new String[]{date});
+        int count = 0; if (c.moveToFirst()) count = c.getInt(0); c.close();
+        return count;
+    }
+
+    public int getGuestMealCount(String date, String type) {
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(meal_count) FROM guest_meals WHERE date=? AND meal_type=?", new String[]{date, type});
+        int count = 0; if (c.moveToFirst()) count = c.getInt(0); c.close();
+        return count;
+    }
+
     public int[] getTodaysMealCounts(String date) {
         int[] counts = new int[]{0, 0, 0};
         

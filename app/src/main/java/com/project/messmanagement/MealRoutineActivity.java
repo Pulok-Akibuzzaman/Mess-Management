@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,10 +22,16 @@ public class MealRoutineActivity extends AppCompatActivity {
     private String currentUserEmail;
     private String todayDate;
     private int b = 0, l = 0, d = 0;
+    private boolean isAdmin = false;
 
     private TextView tvB, tvL, tvD;
     private TextView tvTodayDate, tvMyTotal, tvMyTotalCost;
-    private LinearLayout routineContainer;
+    private LinearLayout routineContainer, adminDashboard, memberControls, adminMemberBreakdown;
+
+    // Admin Dashboard Views
+    private TextView tvAdminBTotal, tvAdminBBreakdown;
+    private TextView tvAdminLTotal, tvAdminLBreakdown;
+    private TextView tvAdminDTotal, tvAdminDBreakdown;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,13 +41,23 @@ public class MealRoutineActivity extends AppCompatActivity {
         db = new DatabaseHelper(this);
         SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         currentUserEmail = pref.getString("email", "anonymous");
+        isAdmin = "Admin".equalsIgnoreCase(pref.getString("role", "Member"));
 
-        todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Calendar.getInstance().getTime());
+        Calendar cal = Calendar.getInstance();
+        todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(cal.getTime());
 
         initViews();
-        loadTodayStatus();
+        
+        if (isAdmin) {
+            memberControls.setVisibility(View.GONE);
+            adminDashboard.setVisibility(View.VISIBLE);
+            loadAdminData();
+        } else {
+            loadTodayStatus();
+            updateSummary();
+        }
+        
         loadMealHistory();
-        updateSummary();
         setupNavigation();
     }
 
@@ -54,6 +71,17 @@ public class MealRoutineActivity extends AppCompatActivity {
         tvMyTotalCost = findViewById(R.id.tv_my_total_cost);
         
         routineContainer = findViewById(R.id.routine_container);
+        adminDashboard = findViewById(R.id.admin_dashboard_container);
+        memberControls = findViewById(R.id.member_meal_controls);
+        adminMemberBreakdown = findViewById(R.id.admin_member_breakdown_container);
+
+        // Admin Views
+        tvAdminBTotal = findViewById(R.id.tv_admin_b_total);
+        tvAdminBBreakdown = findViewById(R.id.tv_admin_b_breakdown);
+        tvAdminLTotal = findViewById(R.id.tv_admin_l_total);
+        tvAdminLBreakdown = findViewById(R.id.tv_admin_l_breakdown);
+        tvAdminDTotal = findViewById(R.id.tv_admin_d_total);
+        tvAdminDBreakdown = findViewById(R.id.tv_admin_d_breakdown);
 
         tvTodayDate.setText(new SimpleDateFormat("EEEE, dd MMM", Locale.US).format(Calendar.getInstance().getTime()));
 
@@ -63,6 +91,60 @@ public class MealRoutineActivity extends AppCompatActivity {
         findViewById(R.id.btn_l_minus).setOnClickListener(v -> updateMeal("L", -1));
         findViewById(R.id.btn_d_plus).setOnClickListener(v -> updateMeal("D", 1));
         findViewById(R.id.btn_d_minus).setOnClickListener(v -> updateMeal("D", -1));
+    }
+
+    private void loadAdminData() {
+        // Today's Breakdown
+        updateAdminRow(todayDate, "Breakfast", tvAdminBTotal, tvAdminBBreakdown);
+        updateAdminRow(todayDate, "Lunch", tvAdminLTotal, tvAdminLBreakdown);
+        updateAdminRow(todayDate, "Dinner", tvAdminDTotal, tvAdminDBreakdown);
+
+        // Member-wise details
+        adminMemberBreakdown.removeAllViews();
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        double fixedRate = pref.getFloat("fixed_meal_rate", 0.0f);
+        
+        Cursor cursor = db.getMemberMealDetailsForDate(todayDate);
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                String name = cursor.getString(0);
+                int bVal = cursor.getInt(1);
+                int lVal = cursor.getInt(2);
+                int dVal = cursor.getInt(3);
+                int totalMeals = bVal + lVal + dVal;
+                int dailyCost = (int) (totalMeals * fixedRate);
+                
+                String mealStr = "B:" + bVal + " | L:" + lVal + " | D:" + dVal;
+                if (fixedRate > 0) {
+                    mealStr += " (৳" + dailyCost + ")";
+                }
+                
+                addAdminBreakdownRow(name, mealStr);
+            }
+            cursor.close();
+        }
+        if (adminMemberBreakdown.getChildCount() == 0) {
+            addAdminBreakdownRow("No member meals recorded yet.", "");
+        }
+    }
+
+    private void updateAdminRow(String date, String type, TextView totalTv, TextView breakdownTv) {
+        int members = db.getMemberMealCount(date, type);
+        int guests = db.getGuestMealCount(date, type);
+        int total = members + guests;
+
+        totalTv.setText(total + " Meals");
+        breakdownTv.setText(members + " Members + " + guests + " Guests");
+    }
+
+    private void addAdminBreakdownRow(String name, String meals) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(0, 8, 0, 8);
+        TextView nText = new TextView(this); nText.setText(name); nText.setTextColor(Color.BLACK); nText.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1));
+        TextView mText = new TextView(this); mText.setText(meals); mText.setTextColor(Color.parseColor("#1B7A9E")); mText.setGravity(android.view.Gravity.END);
+        row.addView(nText); row.addView(mText);
+        adminMemberBreakdown.addView(row);
     }
 
     private void loadTodayStatus() {
@@ -84,13 +166,13 @@ public class MealRoutineActivity extends AppCompatActivity {
         db.updateDailyMeals(currentUserEmail, todayDate, b, l, d);
         updateCounts();
         updateSummary();
-        loadMealHistory(); // Refresh history list
+        loadMealHistory(); 
     }
 
     private void updateCounts() {
-        tvB.setText(String.valueOf(b));
-        tvL.setText(String.valueOf(l));
-        tvD.setText(String.valueOf(d));
+        if (tvB != null) tvB.setText(String.valueOf(b));
+        if (tvL != null) tvL.setText(String.valueOf(l));
+        if (tvD != null) tvD.setText(String.valueOf(d));
     }
 
     private void updateSummary() {
@@ -107,21 +189,30 @@ public class MealRoutineActivity extends AppCompatActivity {
     private void loadMealHistory() {
         routineContainer.removeAllViews();
         
-        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        String currentName = pref.getString("name", "User");
-        
-        Cursor cursor = db.getUserMealHistory(currentUserEmail, currentName);
+        Cursor cursor;
+        if (isAdmin) {
+            // Admin sees global totals for previous days
+            cursor = db.getGlobalMealHistory();
+            findViewById(R.id.tv_history_title).setVisibility(View.VISIBLE);
+            ((TextView)findViewById(R.id.tv_history_title)).setText("GLOBAL MEAL HISTORY");
+            findViewById(R.id.history_card).setVisibility(View.VISIBLE);
+        } else {
+            // Member sees personal history
+            SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            String currentName = pref.getString("name", "User");
+            cursor = db.getUserMealHistory(currentUserEmail, currentName);
+        }
+
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 String date = cursor.getString(0);
+                if (date.equals(todayDate)) continue; // Skip today in history
+
                 int bVal = cursor.getInt(1);
                 int lVal = cursor.getInt(2);
                 int dVal = cursor.getInt(3);
 
-                // Format: B:1 | L:1 | D:1
                 String mealStr = "B:" + bVal + " | L:" + lVal + " | D:" + dVal;
-                
-                // Prettier date
                 String formattedDate = date;
                 try {
                     java.util.Date dObj = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(date);
@@ -135,7 +226,7 @@ public class MealRoutineActivity extends AppCompatActivity {
         
         if (routineContainer.getChildCount() == 0) {
             TextView empty = new TextView(this);
-            empty.setText("No history found for the last 30 days.");
+            empty.setText("No history found.");
             empty.setTextColor(Color.GRAY);
             empty.setGravity(android.view.Gravity.CENTER);
             empty.setPadding(0, 40, 0, 40);
@@ -147,9 +238,9 @@ public class MealRoutineActivity extends AppCompatActivity {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setPadding(0, 10, 0, 10);
-        TextView d = new TextView(this); d.setText(day); d.setTextColor(Color.BLACK); d.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1));
-        TextView m = new TextView(this); m.setText(meal); m.setTextColor(Color.GRAY); m.setGravity(android.view.Gravity.END);
-        row.addView(d); row.addView(m);
+        TextView dText = new TextView(this); dText.setText(day); dText.setTextColor(Color.BLACK); dText.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1));
+        TextView mText = new TextView(this); mText.setText(meal); mText.setTextColor(Color.GRAY); mText.setGravity(android.view.Gravity.END);
+        row.addView(dText); row.addView(mText);
         routineContainer.addView(row);
     }
 
