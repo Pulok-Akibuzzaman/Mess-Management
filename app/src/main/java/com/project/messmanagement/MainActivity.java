@@ -1,6 +1,7 @@
 package com.project.messmanagement;
 
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -46,7 +47,9 @@ public class MainActivity extends AppCompatActivity {
     String currentUserEmail;
     
     // 2. Declare Database Helper
-    DatabaseHelper db;
+    private DatabaseHelper db;
+
+    private MyBroadcastReceiver receiver = new MyBroadcastReceiver();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +67,29 @@ public class MainActivity extends AppCompatActivity {
         // 4. Navigation
         setupNavigation();
         checkSafetyTimer();
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_POWER_CONNECTED);
+        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+        filter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        registerReceiver(receiver, filter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(receiver);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadDashboardData();
     }
 
     private void checkSafetyTimer() {
@@ -88,13 +114,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             Toast.makeText(this, "SAFETY ALERT: Inactivity Timeout Reached!", Toast.LENGTH_LONG).show();
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Recalculate and update UI every time the user sees this screen
-        loadDashboardData();
     }
 
     private void initViews() {
