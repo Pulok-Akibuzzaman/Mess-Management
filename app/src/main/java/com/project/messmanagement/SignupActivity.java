@@ -71,7 +71,10 @@ public class SignupActivity extends AppCompatActivity {
                     Toast.makeText(SignupActivity.this, "Passwords do not match", Toast.LENGTH_SHORT).show();
                 } else {
                     // 1. Save to SQLite Database
-                    long result = db.addMember(name, "N/A", selectedRole, email, phone, "Just Now", password, 0.0);
+                    // By default, members are "Active" residents
+                    String statusToSave = selectedRole.equals("Member") ? "Active" : selectedRole;
+                    
+                    long result = db.addMember(name, "N/A", statusToSave, email, phone, "Just Now", password, 0.0);
 
                     if (result == -1) {
                         Toast.makeText(SignupActivity.this, "Signup Failed: Email might be taken or database error", Toast.LENGTH_SHORT).show();
@@ -83,16 +86,16 @@ public class SignupActivity extends AppCompatActivity {
                     SharedPreferences.Editor editor = pref.edit();
                     editor.putString("email", email);
                     editor.putString("name", name);
-                    editor.putString("role", selectedRole);
+                    editor.putString("role", statusToSave);
                     editor.putBoolean("isLoggedIn", true);
                     editor.apply();
 
-                    Toast.makeText(SignupActivity.this, "Signup Successful as " + selectedRole, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignupActivity.this, "Signup Successful as " + statusToSave, Toast.LENGTH_SHORT).show();
 
                     // 2. Navigate to MainActivity and pass the Name and Role
                     Intent intent = new Intent(SignupActivity.this, MainActivity.class);
                     intent.putExtra("USER_NAME", name);
-                    intent.putExtra("USER_ROLE", selectedRole);
+                    intent.putExtra("USER_ROLE", statusToSave);
                     startActivity(intent);
                     finish();
                 }

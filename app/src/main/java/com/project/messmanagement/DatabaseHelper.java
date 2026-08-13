@@ -325,6 +325,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE type='IN' AND description LIKE ?", new String[]{"%Bill Payment: " + type + "%"});
         double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
     }
+    public double getTotalBillsCollected() {
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM cash WHERE type='IN' AND description LIKE 'Bill Payment:%'", null);
+        double t = 0; if (c.moveToFirst()) t = c.getDouble(0); c.close(); return t;
+    }
 
     // --- EQUIPMENT METHODS ---
     public void addEquipment(String name, String loc, String status, String date, double price) {

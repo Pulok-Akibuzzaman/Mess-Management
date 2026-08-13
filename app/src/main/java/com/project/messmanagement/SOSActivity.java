@@ -18,6 +18,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ImageView;
+import androidx.annotation.NonNull;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -51,6 +56,11 @@ public class SOSActivity extends AppCompatActivity {
 
         // 3. Set Timer Button
         findViewById(R.id.btn_set_timer).setOnClickListener(v -> showSetTimerDialog());
+
+        // Check for Call Permission early
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 101);
+        }
 
         // Check if we were opened by the background alarm
         if (getIntent().getBooleanExtra("TRIGGER_DIAL", false)) {
@@ -210,9 +220,33 @@ public class SOSActivity extends AppCompatActivity {
         if (cursor != null && cursor.moveToFirst()) {
             String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
             cursor.close();
+            makeDirectCall(phone);
+        }
+    }
+
+    private void makeDirectCall(String phone) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+            // Permission is granted, call immediately
+            Intent intent = new Intent(Intent.ACTION_CALL);
+            intent.setData(Uri.parse("tel:" + phone));
+            startActivity(intent);
+        } else {
+            // Permission missing, request it and open dialer as fallback
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 101);
             Intent intent = new Intent(Intent.ACTION_DIAL);
             intent.setData(Uri.parse("tel:" + phone));
             startActivity(intent);
+            Toast.makeText(this, "Enable 'Call' permission in settings for automatic dialing", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 101) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Automatic calling enabled!", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -241,27 +275,33 @@ public class SOSActivity extends AppCompatActivity {
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setPadding(0, 10, 0, 10);
         row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
         TextView tv = new TextView(this);
         tv.setText(name + " (" + phone + ")");
         tv.setTextSize(16);
         tv.setTextColor(Color.BLACK);
         tv.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+
         Button btnCall = new Button(this);
         btnCall.setText("Call");
-        btnCall.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_DIAL);
-            intent.setData(Uri.parse("tel:" + phone));
-            startActivity(intent);
-        });
+        btnCall.setOnClickListener(v -> makeDirectCall(phone));
+
         row.addView(tv);
         row.addView(btnCall);
+        
         row.setOnLongClickListener(v -> {
-            new AlertDialog.Builder(this).setMessage("Delete " + name + "?").setPositiveButton("Delete", (d, w) -> {
-                db.deleteEmergencyContact(id);
-                refreshContactList();
-            }).show();
+            new AlertDialog.Builder(this)
+                .setTitle("Delete Contact")
+                .setMessage("Are you sure you want to delete " + name + "?")
+                .setPositiveButton("Delete", (d, w) -> {
+                    db.deleteEmergencyContact(id);
+                    refreshContactList();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
             return true;
         });
+
         contactContainer.addView(row);
     }
 

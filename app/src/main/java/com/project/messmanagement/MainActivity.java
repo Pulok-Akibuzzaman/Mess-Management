@@ -13,11 +13,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
@@ -35,14 +31,14 @@ public class MainActivity extends AppCompatActivity {
 
     // 1. Declare UI Elements
     TextView tvWelcome, tvTotalAmount, tvActiveMembers, tvCashBalance, tvMonthLabel;
-    TextView tvTotalMealsGrid, tvBazarSpentGrid, tvUtilitiesGrid, tvMyTotalBillGrid;
+    TextView tvTotalMealsGrid, tvBazarSpentGrid, tvUtilitiesGrid;
     TextView tvBazarLabelVal, tvUtilityLabelVal, tvBuaLabelVal, tvOtherLabelVal;
-    TextView tvMyBillSubtitle, tvBazarSpentSubtitle, tvUtilitiesSubtitle;
-    BarChart barChart;
+    TextView tvBazarSpentSubtitle, tvUtilitiesSubtitle, tvCurrentMealRate, tvEditRateHint;
     PieChart pieChart;
     LinearLayout btnBazar, btnCash, btnMeals, btnMore, btnMember;
     ImageView btnLogout;
     android.widget.FrameLayout btnNotification;
+    View cardMealRate;
     
     String currentUserEmail;
     
@@ -127,10 +123,12 @@ public class MainActivity extends AppCompatActivity {
         tvTotalMealsGrid = findViewById(R.id.tv_total_meals);
         tvBazarSpentGrid = findViewById(R.id.tv_bazar_spent);
         tvUtilitiesGrid = findViewById(R.id.tv_utilities_grid);
-        tvMyTotalBillGrid = findViewById(R.id.tv_avg_per_head); // Reusing this ID for Individual Bill
-        tvMyBillSubtitle = findViewById(R.id.tv_avg_per_head_subtitle);
         tvBazarSpentSubtitle = findViewById(R.id.tv_bazar_spent_subtitle);
         tvUtilitiesSubtitle = findViewById(R.id.tv_utilities_subtitle);
+
+        tvCurrentMealRate = findViewById(R.id.tv_current_meal_rate);
+        tvEditRateHint = findViewById(R.id.tv_edit_rate_hint);
+        cardMealRate = findViewById(R.id.card_meal_rate);
 
         // Role-based UI simplification for Bua
         SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
@@ -152,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
 
             // 3. Hide specific statistics cards in grid
             findViewById(R.id.grid_stats).setVisibility(View.GONE);
+            if (cardMealRate != null) cardMealRate.setVisibility(View.GONE);
 
             // 4. Hide financial stats in main card
             findViewById(R.id.layout_cash_balance).setVisibility(View.GONE);
@@ -163,7 +162,6 @@ public class MainActivity extends AppCompatActivity {
         tvBuaLabelVal = findViewById(R.id.tv_bua_label_val);
         tvOtherLabelVal = findViewById(R.id.tv_other_label_val);
 
-        barChart = findViewById(R.id.bar_chart_meals);
         pieChart = findViewById(R.id.pie_chart_expenses);
 
         btnBazar = findViewById(R.id.btn_bazar_layout);
@@ -228,8 +226,12 @@ public class MainActivity extends AppCompatActivity {
             tvTotalAmount.setText("৳" + (int)totalMessExpense);
             if (tvMonthLabel != null) tvMonthLabel.setText(month.toUpperCase() + " " + year + " MESS TOTAL");
             
-            // Re-allow Admin to update the rate by clicking the total amount
-            tvTotalAmount.setOnClickListener(v -> showUpdateRateDialog(fixedMealRate));
+            // Fixed rate can only be changed via the dedicated meal rate card
+            tvTotalAmount.setOnClickListener(null); 
+            if (cardMealRate != null) {
+                cardMealRate.setOnClickListener(v -> showUpdateRateDialog(fixedMealRate));
+                if (tvEditRateHint != null) tvEditRateHint.setVisibility(View.VISIBLE);
+            }
             tvCashBalance.setText("৳" + (int)cashBalance);
         } else {
             // Member sees their OWN personal due as the main focus
@@ -239,6 +241,10 @@ public class MainActivity extends AppCompatActivity {
             tvTotalAmount.setText("৳" + (int)myNetDue);
             if (tvMonthLabel != null) tvMonthLabel.setText("YOUR REMAINING DUE");
             tvTotalAmount.setOnClickListener(null);
+            if (cardMealRate != null) {
+                cardMealRate.setOnClickListener(null);
+                if (tvEditRateHint != null) tvEditRateHint.setVisibility(View.GONE);
+            }
 
             // Change cash balance label to show their personal paid total
             tvCashBalance.setText("৳" + (int)myPaid);
@@ -264,13 +270,20 @@ public class MainActivity extends AppCompatActivity {
         }
         if (tvBazarSpentGrid != null) tvBazarSpentGrid.setText("৳" + (int)totalBazar);
         if (tvBazarSpentSubtitle != null) tvBazarSpentSubtitle.setText(db.getBazarCount() + " purchases");
-        if (tvUtilitiesGrid != null) tvUtilitiesGrid.setText("৳" + (int)utilities);
-        if (tvUtilitiesSubtitle != null) tvUtilitiesSubtitle.setText(db.getUtilitiesCount() + " bills paid");
+        if (tvUtilitiesGrid != null) {
+            double sharedTotal = utilities + buaSalary + houseRent;
+            double sharedCollected = db.getTotalBillsCollected();
+            tvUtilitiesGrid.setText("৳" + (int)sharedCollected + " / ৳" + (int)sharedTotal);
+            tvUtilitiesGrid.setTextSize(16); // Make it fit
+        }
+        if (tvUtilitiesSubtitle != null) {
+            tvUtilitiesSubtitle.setText("Collected vs Goal");
+            tvUtilitiesSubtitle.setTextColor(ContextCompat.getColor(this, R.color.admin_icon_teal));
+        }
         
-        // --- THIS IS NOW INDIVIDUAL ---
-        if (tvMyTotalBillGrid != null) {
-            tvMyTotalBillGrid.setText("৳" + (int)fixedMealRate);
-            if (tvMyBillSubtitle != null) tvMyBillSubtitle.setText("Current rate / meal");
+        // --- FIXED MEAL RATE DISPLAY ---
+        if (tvCurrentMealRate != null) {
+            tvCurrentMealRate.setText("৳" + String.format(Locale.US, "%.1f", fixedMealRate));
         }
 
         // --- BUA SPECIFIC DASHBOARD ---
@@ -286,8 +299,6 @@ public class MainActivity extends AppCompatActivity {
             }
             
             findViewById(R.id.card_expense_chart).setVisibility(View.GONE);
-            findViewById(R.id.card_weekly_chart).setVisibility(View.GONE);
-            findViewById(R.id.tv_weekly_meal_title).setVisibility(View.GONE);
             findViewById(R.id.tv_expense_title).setVisibility(View.GONE);
         }
 
@@ -297,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
         if (tvBuaLabelVal != null) tvBuaLabelVal.setText("৳" + (int)buaSalary);
         if (tvOtherLabelVal != null) tvOtherLabelVal.setText("৳" + (int)houseRent);
 
-        setupCharts(totalMessMeals, totalBazar, utilities, buaSalary, houseRent);
+        setupCharts(totalBazar, utilities, buaSalary, houseRent);
     }
 
     private void showUpdateRateDialog(double currentRate) {
@@ -324,16 +335,7 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private void setupCharts(int totalMeals, double bazar, double util, double buaSalary, double houseRent) {
-        ArrayList<BarEntry> barEntries = new ArrayList<>();
-        // Removed hardcoded 15f and 20f bars
-        barEntries.add(new BarEntry(0, (float) totalMeals)); 
-        
-        BarDataSet barDataSet = new BarDataSet(barEntries, "Current Month Total Meals");
-        barDataSet.setColor(ContextCompat.getColor(this, R.color.admin_chart_blue));
-        barChart.setData(new BarData(barDataSet));
-        barChart.invalidate();
-
+    private void setupCharts(double bazar, double util, double buaSalary, double houseRent) {
         ArrayList<PieEntry> pieEntries = new ArrayList<>();
         ArrayList<Integer> colors = new ArrayList<>();
 
