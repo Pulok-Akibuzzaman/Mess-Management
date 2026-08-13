@@ -10,9 +10,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -79,11 +81,8 @@ public class MemberActivity extends AppCompatActivity {
         setupNavigation();
 
         ImageButton btnAdd = findViewById(R.id.btnAdd);
-        if (isAdmin) {
-            btnAdd.setOnClickListener(v -> showMemberDialog(null));
-        } else {
-            btnAdd.setVisibility(View.GONE);
-        }
+        // Admin can no longer add new members manually to prevent login issues
+        btnAdd.setVisibility(View.GONE);
     }
 
     /** Reloads memberList from the database (optionally filtered) and refreshes the adapter. */
@@ -198,6 +197,8 @@ public class MemberActivity extends AppCompatActivity {
         EditText etPhone      = view.findViewById(R.id.etContact);
         EditText etJoinDate   = view.findViewById(R.id.etJoinDate);
         Spinner spinnerStatus = view.findViewById(R.id.spinnerStatus);
+        TextView tvTitle      = view.findViewById(R.id.tvMemberDialogTitle);
+        Button btnAction      = view.findViewById(R.id.btnAddMember);
 
         ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(
                 this, android.R.layout.simple_spinner_dropdown_item,
@@ -208,11 +209,19 @@ public class MemberActivity extends AppCompatActivity {
         final java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
 
         if (isEdit) {
+            tvTitle.setText("Edit Member Details");
+            btnAction.setText("Update Information");
+            
             etFullName.setText(existingMember.name);
             etRoomNumber.setText(existingMember.room);
             etEmail.setText(existingMember.email);
             etPhone.setText(existingMember.phone);
             etJoinDate.setText(existingMember.joinDate);
+            
+            // Disable email editing to maintain login integrity
+            etEmail.setEnabled(false);
+            etEmail.setAlpha(0.6f);
+            
             int statusPos = statusAdapter.getPosition(existingMember.status);
             spinnerStatus.setSelection(statusPos >= 0 ? statusPos : 0);
         } else {

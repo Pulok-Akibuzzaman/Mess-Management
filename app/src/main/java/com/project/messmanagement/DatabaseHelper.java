@@ -158,7 +158,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
     public Cursor getAllMembers() {
-        return this.getReadableDatabase().rawQuery("SELECT * FROM members WHERE status != 'Bua'", null);
+        return this.getReadableDatabase().rawQuery("SELECT * FROM members WHERE status NOT IN ('Bua', 'Admin')", null);
     }
     public Cursor getMemberByEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -173,11 +173,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return c;
     }
     public Cursor searchMembers(String query) {
-        return this.getReadableDatabase().rawQuery("SELECT * FROM members WHERE name LIKE ? AND status != 'Bua'", new String[]{"%" + query + "%"});
+        return this.getReadableDatabase().rawQuery("SELECT * FROM members WHERE name LIKE ? AND status NOT IN ('Bua', 'Admin')", new String[]{"%" + query + "%"});
     }
     public int getResidentCount() {
-        // Everyone except Bua should share the fixed costs (Active, Away, Member)
-        Cursor c = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM members WHERE status != 'Bua'", null);
+        // Everyone except Bua and Admin should share the fixed costs
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM members WHERE status NOT IN ('Bua', 'Admin')", null);
         int count = 0; if (c.moveToFirst()) count = c.getInt(0); c.close(); 
         return (count > 0) ? count : 1; // Prevent division by zero
     }
