@@ -84,7 +84,9 @@ public class UtilityActivity extends AppCompatActivity {
         double gas = db.getUtilityTotalByType("Gas");
         double gPaid = db.getUtilityCollected("Gas");
 
-        double bua = db.getBuaSalary();
+        // Use direct utility table check to stay in sync with Admin's "Set Official Bill"
+        double bua = db.getUtilityTotalByType("Bua Salary");
+        if (bua == 0) bua = db.getBuaSalary(); // Fallback to profile value
         double bPaid = db.getUtilityCollected("Bua Salary");
 
         double rent = db.getUtilityTotalByType("House Rent");

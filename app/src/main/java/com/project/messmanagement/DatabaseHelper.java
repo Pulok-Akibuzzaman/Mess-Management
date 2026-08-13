@@ -287,6 +287,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public double getBuaSalary() {
         double salary = 0;
+        
+        // 1. Try to get from utilities table first (where admin sets monthly bills)
+        salary = getUtilityTotalByType("Bua Salary");
+        if (salary > 0) return salary;
+
+        // 2. Fallback to profile table
         Cursor c = getBuaProfile();
         if (c != null) {
             if (c.moveToFirst()) salary = c.getDouble(c.getColumnIndexOrThrow("salary"));
@@ -304,6 +310,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues v = new ContentValues();
         v.put("type", type); v.put("amount", amount); v.put("date", date);
         db.insert("utilities", null, v);
+
+        // SYNC FIX: If it's Bua Salary, update the profile as well
+        if ("Bua Salary".equalsIgnoreCase(type)) {
+            db.execSQL("UPDATE bua_profile SET salary = ? WHERE id = 1", new Object[]{amount});
+        }
     }
     public double getUtilityTotalByType(String type) {
         Cursor c = this.getReadableDatabase().rawQuery("SELECT SUM(amount) FROM utilities WHERE type=?", new String[]{type});
