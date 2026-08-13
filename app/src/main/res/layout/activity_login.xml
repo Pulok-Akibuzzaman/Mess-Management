@@ -131,22 +131,21 @@
                         android:text="@string/remember_me"
                         android:textColor="@color/white"
                         android:textSize="12sp"
-                        app:buttonTint="@color/white"
-                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:buttonTint="@color/teal_200"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <TextView
-                        android:id="@+id/tv_forgot_password"
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/cb_remember_login"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/forgot_password"
-                        android:textColor="@color/teal_200"
+                        android:text="Remember Login"
+                        android:textColor="@color/white"
                         android:textSize="12sp"
-                        android:textStyle="bold"
+                        app:buttonTint="@color/teal_200"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/cb_remember_me" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
