@@ -125,6 +125,26 @@ public class UtilityActivity extends AppCompatActivity {
         View view = getLayoutInflater().inflate(R.layout.dialog_add_utility, null);
         bottomSheet.setContentView(view);
 
+        // Fix for keyboard pushing the whole dialog off-screen
+        if (bottomSheet.getWindow() != null) {
+            bottomSheet.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
+
+        bottomSheet.setOnShowListener(dialog -> {
+            BottomSheetDialog d = (BottomSheetDialog) dialog;
+            android.widget.FrameLayout bottomSheetView = d.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (bottomSheetView != null) {
+                com.google.android.material.bottomsheet.BottomSheetBehavior behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheetView);
+                behavior.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setSkipCollapsed(true);
+                
+                // Force height to Match Parent so adjustResize can work inside the sheet
+                android.view.ViewGroup.LayoutParams layoutParams = bottomSheetView.getLayoutParams();
+                layoutParams.height = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+                bottomSheetView.setLayoutParams(layoutParams);
+            }
+        });
+
         Spinner spinnerBillType = view.findViewById(R.id.spinnerBillType);
         Spinner spinnerEntryType = view.findViewById(R.id.spinnerEntryType);
         EditText etAmount = view.findViewById(R.id.etAmount);

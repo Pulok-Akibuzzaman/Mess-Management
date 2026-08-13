@@ -176,6 +176,22 @@ public class MemberActivity extends AppCompatActivity {
         View view = getLayoutInflater().inflate(R.layout.dialog_add_member, null);
         bottomSheet.setContentView(view);
 
+        // Fix for keyboard scrolling the whole screen
+        if (bottomSheet.getWindow() != null) {
+            bottomSheet.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
+        bottomSheet.setOnShowListener(dialog -> {
+            BottomSheetDialog d = (BottomSheetDialog) dialog;
+            android.widget.FrameLayout internalSheet = d.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (internalSheet != null) {
+                com.google.android.material.bottomsheet.BottomSheetBehavior behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(internalSheet);
+                behavior.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setSkipCollapsed(true);
+                internalSheet.getLayoutParams().height = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+                internalSheet.requestLayout();
+            }
+        });
+
         EditText etFullName   = view.findViewById(R.id.etFullName);
         EditText etRoomNumber = view.findViewById(R.id.etRoomNumber);
         EditText etEmail      = view.findViewById(R.id.etEmail);
