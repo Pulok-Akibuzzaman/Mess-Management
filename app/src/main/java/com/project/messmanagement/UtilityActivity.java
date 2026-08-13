@@ -150,8 +150,54 @@ public class UtilityActivity extends AppCompatActivity {
         Spinner spinnerBillType = view.findViewById(R.id.spinnerBillType);
         Spinner spinnerEntryType = view.findViewById(R.id.spinnerEntryType);
         EditText etAmount = view.findViewById(R.id.etAmount);
+        EditText etMonth = view.findViewById(R.id.etMonth);
+        EditText etDueDate = view.findViewById(R.id.etDueDate);
         Button btnAddBill = view.findViewById(R.id.btnAddBill);
         ImageButton btnClose = view.findViewById(R.id.btnCloseUtility);
+
+        // Populate Month and Due Date dynamically
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        java.text.SimpleDateFormat monthFormat = new java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.US);
+        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.US);
+
+        if (etMonth != null) etMonth.setText(monthFormat.format(cal.getTime()));
+        if (etDueDate != null) {
+            cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
+            etDueDate.setText(dateFormat.format(cal.getTime()));
+        }
+
+        // Date Pickers for Month and Due Date (Restricted to Admin)
+        if (isAdmin) {
+            if (etMonth != null) {
+                etMonth.setOnClickListener(v -> {
+                    java.util.Calendar mCal = java.util.Calendar.getInstance();
+                    new android.app.DatePickerDialog(this, (view1, year, month, dayOfMonth) -> {
+                        mCal.set(year, month, dayOfMonth);
+                        etMonth.setText(monthFormat.format(mCal.getTime()));
+                    }, mCal.get(java.util.Calendar.YEAR), mCal.get(java.util.Calendar.MONTH), mCal.get(java.util.Calendar.DAY_OF_MONTH)).show();
+                });
+            }
+
+            if (etDueDate != null) {
+                etDueDate.setOnClickListener(v -> {
+                    java.util.Calendar dCal = java.util.Calendar.getInstance();
+                    new android.app.DatePickerDialog(this, (view1, year, month, dayOfMonth) -> {
+                        dCal.set(year, month, dayOfMonth);
+                        etDueDate.setText(dateFormat.format(dCal.getTime()));
+                    }, dCal.get(java.util.Calendar.YEAR), dCal.get(java.util.Calendar.MONTH), dCal.get(java.util.Calendar.DAY_OF_MONTH)).show();
+                });
+            }
+        } else {
+            // Non-admins can only see the current values, not change them
+            if (etMonth != null) {
+                etMonth.setClickable(false);
+                etMonth.setFocusable(false);
+            }
+            if (etDueDate != null) {
+                etDueDate.setClickable(false);
+                etDueDate.setFocusable(false);
+            }
+        }
 
         ArrayAdapter<String> billAdapter = new ArrayAdapter<>(UtilityActivity.this,
                 android.R.layout.simple_spinner_item,
