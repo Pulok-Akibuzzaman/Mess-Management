@@ -84,19 +84,6 @@
             android:background="@drawable/bg_input_field"
             android:paddingHorizontal="16dp" />
 
-        <!-- AUDIENCE -->
-        <TextView
-            style="@style/LabelStyle"
-            android:text="AUDIENCE" />
-
-        <Spinner
-            android:id="@+id/spinnerAudience"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_input_field"
-            android:paddingHorizontal="16dp" />
-
         <!-- Post Button -->
         <Button
             android:id="@+id/btnPostNotice"

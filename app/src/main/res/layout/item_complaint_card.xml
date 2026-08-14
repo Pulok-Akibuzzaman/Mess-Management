@@ -49,11 +49,12 @@
             android:lineSpacingExtra="4dp" />
 
         <TextView
+            android:id="@+id/tvComplaintAddedBy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_gravity="end"
-            android:text="Submitted Anonymously"
+            android:text="Added by: System"
             android:textColor="@color/admin_icon_teal"
             android:textSize="11sp"
             android:textStyle="italic" />

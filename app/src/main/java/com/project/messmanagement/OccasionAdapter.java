@@ -47,6 +47,7 @@ public class OccasionAdapter extends RecyclerView.Adapter<OccasionAdapter.ViewHo
         
         double perHead = item.memberCount > 0 ? item.totalCost / item.memberCount : 0;
         holder.tvPerHead.setText(String.format(Locale.US, "Per head: ৳%,.0f", perHead));
+        holder.tvAddedBy.setText("Added by: " + (item.addedBy != null ? item.addedBy : "System"));
 
         // Color based on type
         if ("Festival".equalsIgnoreCase(item.type)) {
@@ -73,7 +74,7 @@ public class OccasionAdapter extends RecyclerView.Adapter<OccasionAdapter.ViewHo
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvType, tvCost, tvDetails, tvPerHead;
+        TextView tvTitle, tvType, tvCost, tvDetails, tvPerHead, tvAddedBy;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -82,6 +83,7 @@ public class OccasionAdapter extends RecyclerView.Adapter<OccasionAdapter.ViewHo
             tvCost = itemView.findViewById(R.id.tvOccasionCost);
             tvDetails = itemView.findViewById(R.id.tvOccasionDetails);
             tvPerHead = itemView.findViewById(R.id.tvPerHead);
+            tvAddedBy = itemView.findViewById(R.id.tvOccasionAddedBy);
         }
     }
 }

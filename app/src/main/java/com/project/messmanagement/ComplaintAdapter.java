@@ -34,6 +34,7 @@ public class ComplaintAdapter extends RecyclerView.Adapter<ComplaintAdapter.View
         Complaint item = complaints.get(position);
         holder.tvMessage.setText(item.message);
         holder.tvDate.setText(item.date);
+        holder.tvAddedBy.setText("Added by: " + (item.addedBy != null ? item.addedBy : "Anonymous"));
         
         holder.itemView.setOnLongClickListener(v -> {
             listener.onItemLongClick(item);
@@ -47,12 +48,13 @@ public class ComplaintAdapter extends RecyclerView.Adapter<ComplaintAdapter.View
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvMessage, tvDate;
+        TextView tvMessage, tvDate, tvAddedBy;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvMessage = itemView.findViewById(R.id.tvComplaintMessage);
             tvDate = itemView.findViewById(R.id.tvComplaintDate);
+            tvAddedBy = itemView.findViewById(R.id.tvComplaintAddedBy);
         }
     }
 }

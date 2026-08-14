@@ -38,6 +38,7 @@ public class LoanAdapter extends RecyclerView.Adapter<LoanAdapter.ViewHolder> {
         holder.tvLender.setText(item.lender);
         holder.tvDate.setText(item.date);
         holder.tvAmount.setText(String.format(Locale.US, "৳%,.0f", item.amount));
+        holder.tvAddedBy.setText("Added by: " + item.addedBy);
         
         holder.tvStatus.setText(item.status);
         if (item.status.equalsIgnoreCase("Paid")) {
@@ -64,7 +65,7 @@ public class LoanAdapter extends RecyclerView.Adapter<LoanAdapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvLender, tvDate, tvStatus, tvAmount;
+        TextView tvLender, tvDate, tvStatus, tvAmount, tvAddedBy;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -72,6 +73,7 @@ public class LoanAdapter extends RecyclerView.Adapter<LoanAdapter.ViewHolder> {
             tvDate = itemView.findViewById(R.id.tvLoanDate);
             tvStatus = itemView.findViewById(R.id.tvLoanStatus);
             tvAmount = itemView.findViewById(R.id.tvLoanAmount);
+            tvAddedBy = itemView.findViewById(R.id.tvAddedBy);
         }
     }
 }

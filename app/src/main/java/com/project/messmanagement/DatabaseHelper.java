@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "MessManager.db";
-    private static final int DATABASE_VERSION = 22; 
+    private static final int DATABASE_VERSION = 25; 
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -23,16 +23,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE members (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, room TEXT, status TEXT, email TEXT, phone TEXT, join_date TEXT, password TEXT, paid_amount REAL DEFAULT 0)");
         db.execSQL("CREATE TABLE equipment (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, location TEXT, status TEXT, purchase_date TEXT, price REAL)");
         db.execSQL("CREATE TABLE notices (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT, priority TEXT, audience TEXT, date TEXT)");
-        db.execSQL("CREATE TABLE loans (id INTEGER PRIMARY KEY AUTOINCREMENT, lender TEXT, amount REAL, status TEXT, date TEXT)");
+        db.execSQL("CREATE TABLE loans (id INTEGER PRIMARY KEY AUTOINCREMENT, lender TEXT, amount REAL, status TEXT, date TEXT, added_by TEXT)");
         db.execSQL("CREATE TABLE polls (id INTEGER PRIMARY KEY AUTOINCREMENT, question TEXT, option1 TEXT, option2 TEXT, votes1 INTEGER, votes2 INTEGER, status TEXT, date TEXT)");
         db.execSQL("CREATE TABLE poll_votes (poll_id INTEGER, user_email TEXT, option_number INTEGER, PRIMARY KEY (poll_id, user_email))");
-        db.execSQL("CREATE TABLE complaints (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT, date TEXT)");
+        db.execSQL("CREATE TABLE complaints (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT, date TEXT, added_by TEXT)");
         db.execSQL("CREATE TABLE emergency_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT)");
         db.execSQL("CREATE TABLE meal_tracking (id INTEGER PRIMARY KEY AUTOINCREMENT, user_email TEXT, date TEXT, breakfast INTEGER DEFAULT 0, lunch INTEGER DEFAULT 0, dinner INTEGER DEFAULT 0, UNIQUE(user_email, date))");
         db.execSQL("CREATE TABLE bua_profile (id INTEGER PRIMARY KEY, name TEXT, phone TEXT, address TEXT, salary REAL, join_date TEXT)");
         db.execSQL("CREATE TABLE room_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, member_name TEXT, room_no TEXT, issue TEXT, priority TEXT, status TEXT, date TEXT)");
         db.execSQL("CREATE TABLE guest_meals (id INTEGER PRIMARY KEY AUTOINCREMENT, member_name TEXT, guest_name TEXT, meal_count INTEGER, meal_type TEXT, date TEXT)");
-        db.execSQL("CREATE TABLE occasions (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, type TEXT, total_cost REAL, member_count INTEGER, date TEXT)");
+        db.execSQL("CREATE TABLE occasions (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, type TEXT, total_cost REAL, member_count INTEGER, date TEXT, added_by TEXT)");
         db.execSQL("CREATE TABLE bua_salary_history (id INTEGER PRIMARY KEY AUTOINCREMENT, month_year TEXT, amount REAL, paid_date TEXT, status TEXT)");
         
         insertSampleData(db);
@@ -85,6 +85,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (oldVersion < 22) {
             try {
                 db.execSQL("ALTER TABLE bazar ADD COLUMN bought_by TEXT");
+            } catch (Exception ignored) {}
+        }
+        if (oldVersion < 23) {
+            try {
+                db.execSQL("ALTER TABLE loans ADD COLUMN added_by TEXT");
+            } catch (Exception ignored) {}
+        }
+        if (oldVersion < 24) {
+            try {
+                db.execSQL("ALTER TABLE complaints ADD COLUMN added_by TEXT");
+            } catch (Exception ignored) {}
+        }
+        if (oldVersion < 25) {
+            try {
+                db.execSQL("ALTER TABLE occasions ADD COLUMN added_by TEXT");
             } catch (Exception ignored) {}
         }
         
@@ -176,9 +191,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return this.getReadableDatabase().rawQuery("SELECT * FROM members WHERE name LIKE ? AND status NOT IN ('Bua', 'Admin')", new String[]{"%" + query + "%"});
     }
     public int getResidentCount() {
-        // Everyone except Bua and Admin should share the fixed costs
+        // Everyone except Bua and Admin should share the fixed costs (Utilities, Rent, etc)
         Cursor c = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM members WHERE status NOT IN ('Bua', 'Admin')", null);
         int count = 0; if (c.moveToFirst()) count = c.getInt(0); c.close(); 
+        return count;
+    }
+    
+    public int getActiveMemberCount() {
+        // Only members actually present share the Occasion Food costs
+        Cursor c = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM members WHERE status = 'Active'", null);
+        int count = 0; if (c.moveToFirst()) count = c.getInt(0); c.close();
         return count;
     }
     public void addMemberPayment(int id, double amount) {
@@ -378,9 +400,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // --- LOANS METHODS ---
-    public void addLoan(String lender, double amount, String status, String date) {
+    public void addLoan(String lender, double amount, String status, String date, String addedBy) {
         ContentValues v = new ContentValues();
         v.put("lender", lender); v.put("amount", amount); v.put("status", status); v.put("date", date);
+        v.put("added_by", addedBy);
         this.getWritableDatabase().insert("loans", null, v);
     }
     public void updateLoan(int id, String lender, double amount, String status, String date) {
@@ -442,9 +465,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // --- COMPLAINTS METHODS ---
-    public void addComplaint(String message, String date) {
+    public void addComplaint(String message, String date, String addedBy) {
         ContentValues v = new ContentValues();
         v.put("message", message); v.put("date", date);
+        v.put("added_by", addedBy);
         this.getWritableDatabase().insert("complaints", null, v);
     }
     public void deleteComplaint(int id) {
@@ -646,10 +670,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // --- OCCASIONS METHODS ---
-    public void addOccasion(String title, String type, double cost, int members, String date) {
+    public void addOccasion(String title, String type, double cost, int members, String date, String addedBy) {
         ContentValues v = new ContentValues();
         v.put("title", title); v.put("type", type);
         v.put("total_cost", cost); v.put("member_count", members); v.put("date", date);
+        v.put("added_by", addedBy);
         this.getWritableDatabase().insert("occasions", null, v);
     }
     public void updateOccasion(int id, String title, String type, double cost, int members, String date) {

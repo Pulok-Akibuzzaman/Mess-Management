@@ -105,10 +105,15 @@ public class MemberActivity extends AppCompatActivity {
 
         // Fetch shared values ONCE for efficiency
         int residentCount = dbHelper.getResidentCount();
+        int activeCount = dbHelper.getActiveMemberCount();
         double utilities = dbHelper.getUtilitiesTotal();
         double buaSalary = dbHelper.getBuaSalary();
         double houseRent = dbHelper.getHouseRent();
-        double sharedCost = residentCount > 0 ? (utilities + buaSalary + houseRent) / residentCount : 0; 
+        double occasionCost = dbHelper.getTotalOccasionCost();
+        double otherExpenses = dbHelper.getUtilityTotalByType("Others");
+        
+        double sharedUtility = residentCount > 0 ? (utilities + buaSalary + houseRent + otherExpenses) / residentCount : 0; 
+        double sharedOccasion = activeCount > 0 ? occasionCost / activeCount : 0;
         
         SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         double fixedRate = sp.getFloat("fixed_meal_rate", 0.0f);
@@ -128,7 +133,12 @@ public class MemberActivity extends AppCompatActivity {
             int userMeals = dbHelper.getUserTotalMeals(email, name);
             
             double mealShare = userMeals * fixedRate;
-            double totalShare = mealShare + sharedCost;
+            double mySharedTotal = sharedUtility;
+            if ("Active".equalsIgnoreCase(status)) {
+                mySharedTotal += sharedOccasion;
+            }
+            
+            double totalShare = mealShare + mySharedTotal;
             double finalDue = totalShare - paid;
 
             memberList.add(new Member(id, name, initialsOf(name), room, 

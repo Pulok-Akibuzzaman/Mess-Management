@@ -71,6 +71,16 @@
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/tvAddedBy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Added by: System"
+                android:textColor="@color/text_gray"
+                android:textSize="10sp"
+                android:alpha="0.7" />
+
         </LinearLayout>
 
         <TextView

@@ -37,7 +37,6 @@ public class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.ViewHolder
         holder.tvTitle.setText(notice.title);
         holder.tvContent.setText(notice.content);
         holder.tvDate.setText(notice.date);
-        holder.tvAudience.setText("For: " + notice.audience);
         
         holder.tvPriority.setText(notice.priority.toUpperCase());
         if (notice.priority.equalsIgnoreCase("High")) {
@@ -67,7 +66,7 @@ public class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.ViewHolder
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvPriority, tvTitle, tvContent, tvDate, tvAudience;
+        TextView tvPriority, tvTitle, tvContent, tvDate;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -75,7 +74,6 @@ public class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.ViewHolder
             tvTitle = itemView.findViewById(R.id.tvNoticeTitle);
             tvContent = itemView.findViewById(R.id.tvNoticeContent);
             tvDate = itemView.findViewById(R.id.tvNoticeDate);
-            tvAudience = itemView.findViewById(R.id.tvNoticeAudience);
         }
     }
 }

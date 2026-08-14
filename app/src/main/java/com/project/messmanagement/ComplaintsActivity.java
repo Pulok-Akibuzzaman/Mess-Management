@@ -1,6 +1,7 @@
 package com.project.messmanagement;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -31,6 +32,7 @@ public class ComplaintsActivity extends AppCompatActivity {
     private ComplaintAdapter adapter;
     private List<Complaint> complaintList = new ArrayList<>();
     private DatabaseHelper db;
+    private String currentUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,12 +40,21 @@ public class ComplaintsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_notices); // Reuse list layout
 
         db = new DatabaseHelper(this);
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        currentUserEmail = pref.getString("email", "anonymous");
+
         rvComplaints = findViewById(R.id.rvNotices); // Reuse layout component
         rvComplaints.setLayoutManager(new LinearLayoutManager(this));
         rvComplaints.setVisibility(View.VISIBLE);
         findViewById(R.id.scrollLegacy).setVisibility(View.GONE);
 
-        adapter = new ComplaintAdapter(complaintList, complaint -> confirmDelete(complaint));
+        adapter = new ComplaintAdapter(complaintList, complaint -> {
+            if (complaint.addedBy != null && complaint.addedBy.equalsIgnoreCase(currentUserEmail)) {
+                confirmDelete(complaint);
+            } else {
+                Toast.makeText(this, "Only the creator can delete this complaint", Toast.LENGTH_SHORT).show();
+            }
+        });
         rvComplaints.setAdapter(adapter);
         
         TextView tvTitle = findViewById(R.id.tvActivityTitle);
@@ -70,8 +81,9 @@ public class ComplaintsActivity extends AppCompatActivity {
                 int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
                 String message = cursor.getString(cursor.getColumnIndexOrThrow("message"));
                 String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+                String addedBy = cursor.getColumnIndex("added_by") != -1 ? cursor.getString(cursor.getColumnIndexOrThrow("added_by")) : "System";
 
-                complaintList.add(new Complaint(id, message, date));
+                complaintList.add(new Complaint(id, message, date, addedBy));
             } while (cursor.moveToNext());
             cursor.close();
         }
@@ -105,8 +117,8 @@ public class ComplaintsActivity extends AppCompatActivity {
             String date = new SimpleDateFormat("dd MMM yyyy", Locale.US).format(Calendar.getInstance().getTime());
 
             if (!message.isEmpty()) {
-                db.addComplaint(message, date);
-                Toast.makeText(this, "Complaint submitted anonymously", Toast.LENGTH_SHORT).show();
+                db.addComplaint(message, date, currentUserEmail);
+                Toast.makeText(this, "Complaint submitted", Toast.LENGTH_SHORT).show();
                 refreshComplaintList();
                 dialog.dismiss();
             } else {

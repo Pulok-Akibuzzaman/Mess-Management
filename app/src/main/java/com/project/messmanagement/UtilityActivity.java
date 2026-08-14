@@ -200,7 +200,7 @@ public class UtilityActivity extends AppCompatActivity {
 
         ArrayAdapter<String> billAdapter = new ArrayAdapter<>(UtilityActivity.this,
                 android.R.layout.simple_spinner_item,
-                new String[]{"Electricity", "Water", "Internet", "Gas", "Bua Salary", "House Rent", "Others"});
+                new String[]{"Electricity", "Water", "Internet", "Gas", "Bua Salary", "House Rent"});
         billAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerBillType.setAdapter(billAdapter);
 

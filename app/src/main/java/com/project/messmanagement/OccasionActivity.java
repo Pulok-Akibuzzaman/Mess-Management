@@ -32,6 +32,7 @@ public class OccasionActivity extends AppCompatActivity {
     private List<Occasion> occasionList = new ArrayList<>();
     private TextView tvTotalSpent, tvEventCount;
     private boolean isAdmin = false;
+    private String currentUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +42,7 @@ public class OccasionActivity extends AppCompatActivity {
         db = new DatabaseHelper(this);
 
         SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        currentUserEmail = pref.getString("email", "anonymous");
         String role = pref.getString("role", "Member");
         isAdmin = "Admin".equalsIgnoreCase(role);
 
@@ -50,11 +52,7 @@ public class OccasionActivity extends AppCompatActivity {
         loadOccasions();
 
         View fabAdd = findViewById(R.id.fab_add_occasion);
-        if (isAdmin) {
-            fabAdd.setOnClickListener(v -> showOccasionDialog(null));
-        } else {
-            fabAdd.setVisibility(View.GONE);
-        }
+        fabAdd.setOnClickListener(v -> showOccasionDialog(null));
     }
 
     private void initViews() {
@@ -68,12 +66,20 @@ public class OccasionActivity extends AppCompatActivity {
         adapter = new OccasionAdapter(occasionList, new OccasionAdapter.OnOccasionClickListener() {
             @Override
             public void onItemClick(Occasion item) {
-                if (isAdmin) showOccasionDialog(item);
+                if (item.addedBy != null && item.addedBy.equalsIgnoreCase(currentUserEmail)) {
+                    showOccasionDialog(item);
+                } else {
+                    Toast.makeText(OccasionActivity.this, "Only the creator can edit this occasion", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onLongClick(Occasion item) {
-                if (isAdmin) confirmDelete(item);
+                if (item.addedBy != null && item.addedBy.equalsIgnoreCase(currentUserEmail)) {
+                    confirmDelete(item);
+                } else {
+                    Toast.makeText(OccasionActivity.this, "Only the creator can delete this occasion", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         rvOccasions.setAdapter(adapter);
@@ -90,7 +96,9 @@ public class OccasionActivity extends AppCompatActivity {
                 double cost = cursor.getDouble(cursor.getColumnIndexOrThrow("total_cost"));
                 int members = cursor.getInt(cursor.getColumnIndexOrThrow("member_count"));
                 String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
-                occasionList.add(new Occasion(id, title, type, cost, members, date));
+                String addedBy = cursor.getColumnIndex("added_by") != -1 ? cursor.getString(cursor.getColumnIndexOrThrow("added_by")) : "System";
+                
+                occasionList.add(new Occasion(id, title, type, cost, members, date, addedBy));
             } while (cursor.moveToNext());
             cursor.close();
         }
@@ -110,7 +118,6 @@ public class OccasionActivity extends AppCompatActivity {
         EditText etTitle = view.findViewById(R.id.etOccasionTitle);
         Spinner spinnerType = view.findViewById(R.id.spinnerType);
         EditText etCost = view.findViewById(R.id.etTotalCost);
-        EditText etMembers = view.findViewById(R.id.etMemberCount);
         EditText etDate = view.findViewById(R.id.etDate);
         Button btnSave = view.findViewById(R.id.btnSave);
         ImageButton btnClose = view.findViewById(R.id.btnClose);
@@ -125,7 +132,6 @@ public class OccasionActivity extends AppCompatActivity {
             etTitle.setText(existing.title);
             spinnerType.setSelection(typeAdapter.getPosition(existing.type));
             etCost.setText(String.valueOf(existing.totalCost));
-            etMembers.setText(String.valueOf(existing.memberCount));
             etDate.setText(existing.date);
             btnSave.setText("Update Occasion");
         }
@@ -143,26 +149,26 @@ public class OccasionActivity extends AppCompatActivity {
             String title = etTitle.getText().toString().trim();
             String type = spinnerType.getSelectedItem().toString();
             String costStr = etCost.getText().toString().trim();
-            String memStr = etMembers.getText().toString().trim();
             String date = etDate.getText().toString().trim();
 
-            if (title.isEmpty() || costStr.isEmpty() || memStr.isEmpty() || date.isEmpty()) {
+            if (title.isEmpty() || costStr.isEmpty() || date.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             double cost = Double.parseDouble(costStr);
-            int members = Integer.parseInt(memStr);
+            int members = db.getActiveMemberCount();
+            if (members <= 0) members = 1;
 
             if (isEdit) {
                 db.updateOccasion(existing.id, title, type, cost, members, date);
                 Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show();
             } else {
-                db.addOccasion(title, type, cost, members, date);
+                db.addOccasion(title, type, cost, members, date, currentUserEmail);
 
                 // Automatically record in Cash Ledger
                 SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-                String name = pref.getString("name", "Admin");
+                String name = pref.getString("name", "User");
                 db.addCashTransaction("Occasion: " + title, cost, "OUT", date, name, "");
 
                 Toast.makeText(this, "Added & Recorded in Ledger", Toast.LENGTH_SHORT).show();

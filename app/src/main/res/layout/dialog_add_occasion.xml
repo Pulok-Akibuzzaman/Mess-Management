@@ -77,16 +77,6 @@
 
         <TextView
             style="@style/LabelStyle"
-            android:text="MEMBER COUNT" />
-
-        <EditText
-            android:id="@+id/etMemberCount"
-            style="@style/InputStyle"
-            android:hint="e.g. 5"
-            android:inputType="number" />
-
-        <TextView
-            style="@style/LabelStyle"
             android:text="DATE" />
 
         <EditText

@@ -206,7 +206,6 @@ public class MealRoutineActivity extends AppCompatActivity {
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 String date = cursor.getString(0);
-                if (date.equals(todayDate)) continue; // Skip today in history
 
                 int bVal = cursor.getInt(1);
                 int lVal = cursor.getInt(2);

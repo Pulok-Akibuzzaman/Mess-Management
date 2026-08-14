@@ -2,6 +2,7 @@ package com.project.messmanagement;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -34,6 +35,7 @@ public class LoanActivity extends AppCompatActivity {
     private LoanAdapter adapter;
     private List<Loan> loanList = new ArrayList<>();
     private DatabaseHelper db;
+    private String currentUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,10 @@ public class LoanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_notices); // Reusing layout for list
 
         db = new DatabaseHelper(this);
+        
+        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        currentUserEmail = pref.getString("email", "");
+        
         rvLoans = findViewById(R.id.rvNotices); // Reusing ID from layout
         rvLoans.setLayoutManager(new LinearLayoutManager(this));
         rvLoans.setVisibility(View.VISIBLE);
@@ -49,12 +55,20 @@ public class LoanActivity extends AppCompatActivity {
         adapter = new LoanAdapter(loanList, new LoanAdapter.OnLoanClickListener() {
             @Override
             public void onItemClick(Loan loan) {
-                showLoanDialog(loan.id, loan.lender, loan.amount, loan.status, loan.date);
+                if (loan.addedBy != null && loan.addedBy.equalsIgnoreCase(currentUserEmail)) {
+                    showLoanDialog(loan.id, loan.lender, loan.amount, loan.status, loan.date);
+                } else {
+                    Toast.makeText(LoanActivity.this, "Only the creator can edit this loan", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onItemLongClick(Loan loan) {
-                confirmDelete(loan);
+                if (loan.addedBy != null && loan.addedBy.equalsIgnoreCase(currentUserEmail)) {
+                    confirmDelete(loan);
+                } else {
+                    Toast.makeText(LoanActivity.this, "Only the creator can delete this loan", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         rvLoans.setAdapter(adapter);
@@ -85,8 +99,9 @@ public class LoanActivity extends AppCompatActivity {
                 double amount = cursor.getDouble(cursor.getColumnIndexOrThrow("amount"));
                 String status = cursor.getString(cursor.getColumnIndexOrThrow("status"));
                 String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+                String addedBy = cursor.getColumnIndex("added_by") != -1 ? cursor.getString(cursor.getColumnIndexOrThrow("added_by")) : "System";
 
-                loanList.add(new Loan(id, lender, amount, status, date));
+                loanList.add(new Loan(id, lender, amount, status, date, addedBy));
             } while (cursor.moveToNext());
             cursor.close();
         }
@@ -156,7 +171,7 @@ public class LoanActivity extends AppCompatActivity {
             if (!lender.isEmpty() && !amountStr.isEmpty()) {
                 double amount = Double.parseDouble(amountStr);
                 if (id == -1) {
-                    db.addLoan(lender, amount, status, date);
+                    db.addLoan(lender, amount, status, date, currentUserEmail);
                     Toast.makeText(this, "Loan added", Toast.LENGTH_SHORT).show();
                 } else {
                     db.updateLoan(id, lender, amount, status, date);

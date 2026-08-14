@@ -73,7 +73,12 @@ public class MonthlyReportActivity extends AppCompatActivity {
         SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         double fixedRate = sp.getFloat("fixed_meal_rate", 0.0f);
         
-        double sharedCostPerMember = memberCount > 0 ? (totalUtilities + buaSalary + houseRent + otherExpenses) / memberCount : 0;
+        // Split Shared Costs
+        int totalResidents = db.getResidentCount();
+        int activeResidents = db.getActiveMemberCount();
+        
+        double sharedUtilityPerPerson = totalResidents > 0 ? (totalUtilities + buaSalary + houseRent + otherExpenses) / totalResidents : 0;
+        double occasionPerPerson = activeResidents > 0 ? occasionCost / activeResidents : 0;
 
         // Update Main Card
         tvGrandTotal.setText(String.format(Locale.US, "৳%,.0f", grandTotal));
@@ -115,11 +120,19 @@ public class MonthlyReportActivity extends AppCompatActivity {
             do {
                 String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
                 String email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
+                String status = cursor.getString(cursor.getColumnIndexOrThrow("status"));
+                
                 int userMeals = (email != null) ? db.getUserTotalMeals(email, name) : 0;
                 double foodCost = userMeals * fixedRate;
-                double totalOwed = foodCost + sharedCostPerMember;
+                
+                double myShared = sharedUtilityPerPerson;
+                if ("Active".equalsIgnoreCase(status)) {
+                    myShared += occasionPerPerson;
+                }
+                
+                double totalOwed = foodCost + myShared;
 
-                addMemberToUI(name, userMeals, fixedRate, foodCost, sharedCostPerMember, totalOwed);
+                addMemberToUI(name, userMeals, fixedRate, foodCost, myShared, totalOwed);
             } while (cursor.moveToNext());
             cursor.close();
         }

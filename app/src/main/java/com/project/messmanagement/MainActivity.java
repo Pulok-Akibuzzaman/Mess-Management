@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Role-based UI simplification for Bua
         SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        String userRole = pref.getString("role", "Admin");
+        String userRole = pref.getString("role", "Member");
         if ("Bua".equalsIgnoreCase(userRole)) {
             // 1. Hide unwanted navbar items
             findViewById(R.id.btn_bazar_layout).setVisibility(View.GONE);
@@ -205,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
         int totalMessMeals = db.getTotalMeals();
         double utilities = db.getUtilitiesTotal();
         int residentCount = db.getResidentCount();
+        int activeCount = db.getActiveMemberCount();
         double cashBalance = db.getCashBalance();
         
         String currentUserName = pref.getString("name", "User");
@@ -212,15 +213,26 @@ public class MainActivity extends AppCompatActivity {
 
         double buaSalary = db.getBuaSalary();
         double houseRent = db.getHouseRent();
+        double occasionCost = db.getTotalOccasionCost();
+        double otherExpenses = db.getUtilityTotalByType("Others");
 
         // Fixed Rate Calculation
         double fixedMealRate = pref.getFloat("fixed_meal_rate", 0.0f);
-        double fixedCostPerHead = residentCount > 0 ? (utilities + buaSalary + houseRent) / residentCount : 0; 
-        double myTotalBill = (myMeals * fixedMealRate) + fixedCostPerHead;
         
-        double totalMessExpense = totalBazar + utilities + buaSalary + houseRent;
-
-        String userRole = pref.getString("role", "Admin");
+        String userRole = pref.getString("role", "Member");
+        
+        // Split Calculation
+        double sharedUtilityPerPerson = residentCount > 0 ? (utilities + buaSalary + houseRent + otherExpenses) / residentCount : 0;
+        double occasionPerPerson = activeCount > 0 ? occasionCost / activeCount : 0;
+        
+        double mySharedTotal = sharedUtilityPerPerson;
+        if ("Active".equalsIgnoreCase(userRole)) {
+            mySharedTotal += occasionPerPerson;
+        }
+        
+        double myTotalBill = (myMeals * fixedMealRate) + mySharedTotal;
+        
+        double totalMessExpense = totalBazar + utilities + buaSalary + houseRent + occasionCost + otherExpenses;
 
         if ("Admin".equalsIgnoreCase(userRole)) {
             // Admin sees the big picture
@@ -307,14 +319,14 @@ public class MainActivity extends AppCompatActivity {
         if (tvBazarLabelVal != null) tvBazarLabelVal.setText("৳" + (int)totalBazar);
         if (tvUtilityLabelVal != null) tvUtilityLabelVal.setText("৳" + (int)utilities);
         if (tvBuaLabelVal != null) tvBuaLabelVal.setText("৳" + (int)buaSalary);
-        if (tvOtherLabelVal != null) tvOtherLabelVal.setText("৳" + (int)houseRent);
+        if (tvOtherLabelVal != null) tvOtherLabelVal.setText("৳" + (int)(houseRent + occasionCost));
 
-        setupCharts(totalBazar, utilities, buaSalary, houseRent);
+        setupCharts(totalBazar, utilities, buaSalary, houseRent + occasionCost);
     }
 
     private void showUpdateRateDialog(double currentRate) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Set Fixed Meal Rate");
+        builder.setTitle("MEAL PRICE");
         
         final EditText input = new EditText(this);
         input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);

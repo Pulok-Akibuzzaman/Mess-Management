@@ -55,7 +55,7 @@ public class NoticesActivity extends AppCompatActivity {
         adapter = new NoticeAdapter(noticeList, new NoticeAdapter.OnNoticeClickListener() {
             @Override
             public void onItemClick(Notice notice) {
-                if (isAdmin) showNoticeDialog(notice.id, notice.title, notice.content, notice.priority, notice.audience);
+                if (isAdmin) showNoticeDialog(notice.id, notice.title, notice.content, notice.priority);
             }
 
             @Override
@@ -68,7 +68,7 @@ public class NoticesActivity extends AppCompatActivity {
         // 1. Setup Add Button
         View btnAdd = findViewById(R.id.btnAddNotice);
         if (isAdmin) {
-            btnAdd.setOnClickListener(v -> showNoticeDialog(-1, "", "", "Medium", "All Members"));
+            btnAdd.setOnClickListener(v -> showNoticeDialog(-1, "", "", "Medium"));
         } else {
             btnAdd.setVisibility(View.GONE);
         }
@@ -115,7 +115,7 @@ public class NoticesActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void showNoticeDialog(final int id, String initialTitle, String initialContent, String initialPriority, String initialAudience) {
+    private void showNoticeDialog(final int id, String initialTitle, String initialContent, String initialPriority) {
         final BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_create_notice, null);
         dialog.setContentView(view);
@@ -123,7 +123,6 @@ public class NoticesActivity extends AppCompatActivity {
         final EditText etTitle = view.findViewById(R.id.etNoticeTitle);
         final EditText etContent = view.findViewById(R.id.etNoticeDetails);
         final Spinner spinnerPriority = view.findViewById(R.id.spinnerPriority);
-        final Spinner spinnerAudience = view.findViewById(R.id.spinnerAudience);
         Button btnPost = view.findViewById(R.id.btnPostNotice);
         ImageButton btnClose = view.findViewById(R.id.btnCloseNotice);
 
@@ -132,16 +131,10 @@ public class NoticesActivity extends AppCompatActivity {
         priorityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerPriority.setAdapter(priorityAdapter);
 
-        // Audience Spinner Setup
-        ArrayAdapter<String> audienceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new String[]{"All Members", "Admins Only", "Members Only"});
-        audienceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerAudience.setAdapter(audienceAdapter);
-
         if (id != -1) {
             etTitle.setText(initialTitle);
             etContent.setText(initialContent);
             spinnerPriority.setSelection(priorityAdapter.getPosition(initialPriority));
-            spinnerAudience.setSelection(audienceAdapter.getPosition(initialAudience));
             btnPost.setText("Update Notice");
         }
 
@@ -149,7 +142,7 @@ public class NoticesActivity extends AppCompatActivity {
             String title = etTitle.getText().toString().trim();
             String content = etContent.getText().toString().trim();
             String priority = spinnerPriority.getSelectedItem().toString();
-            String audience = spinnerAudience.getSelectedItem().toString();
+            String audience = "Everyone";
             String date = new SimpleDateFormat("dd MMM yyyy", Locale.US).format(Calendar.getInstance().getTime());
 
             if (!title.isEmpty() && !content.isEmpty()) {
