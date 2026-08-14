@@ -63,7 +63,6 @@ public class AllFeaturesActivity extends AppCompatActivity {
         setupFeature(R.id.card_sos, SOSActivity.class);
         setupFeature(R.id.card_room_service, RoomServiceActivity.class);
         setupFeature(R.id.card_bua, BuaManagementActivity.class);
-        setupFeature(R.id.card_bt_chat, BTChatActivity.class);
         setupFeature(R.id.card_polls, PollsActivity.class);
         setupFeature(R.id.card_complaints, ComplaintsActivity.class);
         setupFeature(R.id.card_occasions, OccasionActivity.class);
@@ -92,7 +91,6 @@ public class AllFeaturesActivity extends AppCompatActivity {
             // Hide everything in the grid
             View grid = findViewById(R.id.grid_features);
             if (grid != null) grid.setVisibility(View.GONE);
-            findViewById(R.id.card_bt_chat).setVisibility(View.GONE);
 
             // Create a clean container for Bua's allowed features
             LinearLayout buaBox = new LinearLayout(this);
@@ -107,13 +105,11 @@ public class AllFeaturesActivity extends AppCompatActivity {
             // Fetch the card she needs (ONLY SOS)
             View cardSos = findViewById(R.id.card_sos);
             View cardBua = findViewById(R.id.card_bua);
-            View cardBt = findViewById(R.id.card_bt_chat);
 
             if (cardSos != null) {
                 // Remove from old parent
                 ((android.view.ViewGroup) cardSos.getParent()).removeView(cardSos);
                 if (cardBua != null) ((android.view.ViewGroup) cardBua.getParent()).removeView(cardBua);
-                if (cardBt != null) ((android.view.ViewGroup) cardBt.getParent()).removeView(cardBt);
 
                 cardSos.setVisibility(View.VISIBLE);
                 row.addView(cardSos);

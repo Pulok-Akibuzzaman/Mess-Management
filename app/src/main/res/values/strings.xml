@@ -100,7 +100,6 @@
     <string name="feat_occasions">Occasions</string>
     <string name="feat_monthly_report">Monthly Report</string>
     <string name="feat_guest_meals">Guest Meals</string>
-    <string name="feat_bt_chat">BT Chat</string>
     <string name="section_quick_stats">QUICK STATS — JULY</string>
     <string name="btn_sign_out">Sign Out</string>
 </resources>
