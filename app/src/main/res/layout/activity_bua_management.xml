@@ -369,7 +369,7 @@
                 android:textSize="11sp" />
         </LinearLayout>
 
-        <!-- Bazar (Active) -->
+        <!-- Bazar -->
         <LinearLayout
             android:id="@+id/btn_bazar_layout"
             android:layout_width="0dp"
@@ -392,8 +392,7 @@
                 android:layout_marginTop="4dp"
                 android:text="@string/nav_bazar"
                 android:textColor="@color/nav_inactive"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:textSize="11sp" />
         </LinearLayout>
 
         <!-- Cash -->
@@ -438,13 +437,13 @@
                 android:layout_height="24dp"
                 android:contentDescription="@string/nav_more"
                 android:src="@drawable/ic_more"
-                app:tint="@color/nav_active" />
+                app:tint="@color/nav_inactive" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="@string/nav_more"
-                android:textColor="@color/nav_active"
+                android:textColor="@color/nav_inactive"
                 android:textSize="11sp" />
         </LinearLayout>
 

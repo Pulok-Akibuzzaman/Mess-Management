@@ -210,7 +210,6 @@ public class BuaManagementActivity extends AppCompatActivity {
             String tenure = calculateTenure(joinDateStr);
             setRow(view, R.id.rowTenure,    "Service Time", tenure);
             
-            setRow(view, R.id.rowEmergency, "Emergency", "018XXXXXXXX");
             cursor.close();
         } else {
             setRow(view, R.id.rowFullName,  "Full Name", "Not Assigned");
@@ -218,7 +217,6 @@ public class BuaManagementActivity extends AppCompatActivity {
             setRow(view, R.id.rowAddress,   "Address",   "N/A");
             setRow(view, R.id.rowJoinDate,  "Join Date", "N/A");
             setRow(view, R.id.rowTenure,    "Service Time", "0 days");
-            setRow(view, R.id.rowEmergency, "Emergency", "N/A");
         }
         tabContent.addView(view);
     }
@@ -430,7 +428,23 @@ public class BuaManagementActivity extends AppCompatActivity {
         if (tvL != null) tvL.setText(String.valueOf(counts[1]));
         if (tvD != null) tvD.setText(String.valueOf(counts[2]));
 
+        // Set Schedule Rows
+        setScheduleRow(view, R.id.rowMorning, "Morning Cleaning", "7:00–9:00 AM", "Sat–Thu");
+        setScheduleRow(view, R.id.rowCooking, "Lunch Cooking", "11:00–1:30 PM", "Daily");
+        setScheduleRow(view, R.id.rowDish,    "Dish Washing",  "2:00–3:00 PM",  "Daily");
+        setScheduleRow(view, R.id.rowEvening, "Dinner Cooking", "6:30–8:30 PM", "Daily");
+        setScheduleRow(view, R.id.rowDeep,    "Deep Cleaning", "10:00–1:00 PM", "Friday");
+
         tabContent.addView(view);
+    }
+
+    private void setScheduleRow(View parent, int rowId, String task, String time, String days) {
+        View row = parent.findViewById(rowId);
+        if (row != null) {
+            ((TextView) row.findViewById(R.id.tvTaskName)).setText(task);
+            ((TextView) row.findViewById(R.id.tvTimeSlot)).setText(time);
+            ((TextView) row.findViewById(R.id.tvDays)).setText(days);
+        }
     }
 
     private void setupNavigation() {
@@ -445,8 +459,25 @@ public class BuaManagementActivity extends AppCompatActivity {
             
             LinearLayout btnSalaryNav = findViewById(R.id.btn_member_layout);
             if (btnSalaryNav != null) {
-                ((TextView) btnSalaryNav.getChildAt(1)).setText("Salary");
-                ((ImageView) btnSalaryNav.getChildAt(0)).setImageResource(R.drawable.ic_briefcase);
+                TextView tv = (TextView) btnSalaryNav.getChildAt(1);
+                tv.setText("Salary");
+                tv.setTextColor(getResources().getColor(R.color.nav_active));
+                tv.setTypeface(null, android.graphics.Typeface.BOLD);
+                
+                ImageView iv = (ImageView) btnSalaryNav.getChildAt(0);
+                iv.setImageResource(R.drawable.ic_briefcase);
+                iv.setColorFilter(getResources().getColor(R.color.nav_active));
+            }
+        } else {
+            // If Admin/Member is here, it's a sub-feature of 'More'
+            LinearLayout btnMoreNav = findViewById(R.id.btn_more_layout);
+            if (btnMoreNav != null) {
+                TextView tv = (TextView) btnMoreNav.getChildAt(1);
+                tv.setTextColor(getResources().getColor(R.color.nav_active));
+                tv.setTypeface(null, android.graphics.Typeface.BOLD);
+                
+                ImageView iv = (ImageView) btnMoreNav.getChildAt(0);
+                iv.setColorFilter(getResources().getColor(R.color.nav_active));
             }
         }
 

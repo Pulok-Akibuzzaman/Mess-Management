@@ -187,7 +187,8 @@ public class MainActivity extends AppCompatActivity {
             role = pref.getString("role", "Admin");
         }
         
-        tvWelcome.setText("Welcome back, " + name + " (" + role + ")");
+        String firstName = name.trim().split(" ")[0];
+        tvWelcome.setText("Welcome back, " + firstName + " (" + role + ")");
     }
 
     private void loadDashboardData() {
