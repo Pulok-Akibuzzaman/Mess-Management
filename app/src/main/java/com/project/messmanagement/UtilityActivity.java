@@ -93,7 +93,6 @@ public class UtilityActivity extends AppCompatActivity {
         double rPaid = db.getUtilityCollected("House Rent");
         
         int memberCount = db.getResidentCount();
-        if (memberCount <= 0) memberCount = 1;
 
         double grandTotal = electricity + water + internet + gas + bua + rent;
         tvTotalAmount.setText(String.format(Locale.US, "৳%.0f", grandTotal));
@@ -104,22 +103,22 @@ public class UtilityActivity extends AppCompatActivity {
 
         // Update cards with Paid vs Bill info
         tvElectricity.setText(String.format(Locale.US, "৳%.0f / ৳%.0f", ePaid, electricity));
-        tvElectricityHead.setText(String.format(Locale.US, "৳%.0f per head", electricity / memberCount));
+        tvElectricityHead.setText(memberCount > 0 ? String.format(Locale.US, "৳%.0f per head", electricity / memberCount) : "৳0 per head");
 
         tvWater.setText(String.format(Locale.US, "৳%.0f / ৳%.0f", wPaid, water));
-        tvWaterHead.setText(String.format(Locale.US, "৳%.0f per head", water / memberCount));
+        tvWaterHead.setText(memberCount > 0 ? String.format(Locale.US, "৳%.0f per head", water / memberCount) : "৳0 per head");
 
         tvInternet.setText(String.format(Locale.US, "৳%.0f / ৳%.0f", iPaid, internet));
-        tvInternetHead.setText(String.format(Locale.US, "৳%.0f per head", internet / memberCount));
+        tvInternetHead.setText(memberCount > 0 ? String.format(Locale.US, "৳%.0f per head", internet / memberCount) : "৳0 per head");
 
         tvGas.setText(String.format(Locale.US, "৳%.0f / ৳%.0f", gPaid, gas));
-        tvGasHead.setText(String.format(Locale.US, "৳%.0f per head", gas / memberCount));
+        tvGasHead.setText(memberCount > 0 ? String.format(Locale.US, "৳%.0f per head", gas / memberCount) : "৳0 per head");
 
         tvBua.setText(String.format(Locale.US, "৳%.0f / ৳%.0f", bPaid, bua));
-        tvBuaHead.setText(String.format(Locale.US, "৳%.0f per head", bua / memberCount));
+        tvBuaHead.setText(memberCount > 0 ? String.format(Locale.US, "৳%.0f per head", bua / memberCount) : "৳0 per head");
 
         tvRent.setText(String.format(Locale.US, "৳%.0f / ৳%.0f", rPaid, rent));
-        tvRentHead.setText(String.format(Locale.US, "৳%.0f per head", rent / memberCount));
+        tvRentHead.setText(memberCount > 0 ? String.format(Locale.US, "৳%.0f per head", rent / memberCount) : "৳0 per head");
     }
 
     private void showAddUtilityDialog() {

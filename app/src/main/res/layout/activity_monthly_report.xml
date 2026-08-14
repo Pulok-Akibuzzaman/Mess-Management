@@ -403,9 +403,10 @@
                                     android:textSize="14sp"
                                     android:textColor="#475569" />
                                 <TextView
+                                    android:id="@+id/tvOccasionCost"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="৳500"
+                                    android:text="৳0"
                                     android:textSize="15sp"
                                     android:textStyle="bold"
                                     android:textColor="#1E293B"
@@ -413,9 +414,10 @@
                             </RelativeLayout>
 
                             <com.google.android.material.progressindicator.LinearProgressIndicator
+                                android:id="@+id/pbOccasion"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:progress="2"
+                                android:progress="0"
                                 app:trackThickness="5dp"
                                 app:trackColor="#EDF2F7"
                                 app:indicatorColor="#9C27B0"
@@ -455,9 +457,10 @@
                                     android:textSize="14sp"
                                     android:textColor="#475569" />
                                 <TextView
+                                    android:id="@+id/tvOtherCost"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="৳700"
+                                    android:text="৳0"
                                     android:textSize="15sp"
                                     android:textStyle="bold"
                                     android:textColor="#1E293B"
@@ -465,64 +468,16 @@
                             </RelativeLayout>
 
                             <com.google.android.material.progressindicator.LinearProgressIndicator
+                                android:id="@+id/pbOther"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:progress="5"
+                                android:progress="0"
                                 app:trackThickness="5dp"
                                 app:trackColor="#EDF2F7"
                                 app:indicatorColor="#E91E63"
                                 app:trackCornerRadius="10dp"
                                 android:layout_marginTop="4dp" />
                         </LinearLayout>
-                    </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Chart Card -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/white">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="5-MONTH TREND"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:textColor="#1E293B"
-                        android:layout_marginBottom="8dp"
-                        android:letterSpacing="0.05" />
-
-                    <!-- Chart Area -->
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:src="@drawable/ic_trend_chart"
-                        android:scaleType="fitXY" />
-
-                    <!-- Month Labels -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="4dp">
-
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Mar" android:textSize="12sp" android:textColor="#475569" android:gravity="center" />
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Apr" android:textSize="12sp" android:textColor="#475569" android:gravity="center" />
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="May" android:textSize="12sp" android:textColor="#475569" android:gravity="center" />
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Jun" android:textSize="12sp" android:textColor="#475569" android:gravity="center" />
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Jul" android:textSize="12sp" android:textColor="#475569" android:gravity="center" />
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

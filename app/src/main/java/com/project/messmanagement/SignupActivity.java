@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.database.sqlite.SQLiteDatabase;
+import com.google.android.material.checkbox.MaterialCheckBox;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SignupActivity extends AppCompatActivity {
@@ -16,6 +17,7 @@ public class SignupActivity extends AppCompatActivity {
     // Declare UI elements
     EditText etName, etEmail, etPhone, etPassword, etConfirmPassword;
     Button btnSignup, btnRoleMember, btnRoleBua;
+    MaterialCheckBox cbRememberMe, cbKeepLoggedIn;
     TextView tvLogin;
     String selectedRole = "Member"; // Default role for signup
     DatabaseHelper db;
@@ -37,6 +39,8 @@ public class SignupActivity extends AppCompatActivity {
         tvLogin = findViewById(R.id.tv_signin_link);
         btnRoleMember = findViewById(R.id.btn_signup_member);
         btnRoleBua = findViewById(R.id.btn_signup_bua);
+        cbRememberMe = findViewById(R.id.cb_remember_me);
+        cbKeepLoggedIn = findViewById(R.id.cb_keep_logged_in);
 
         // Role Button Clicks
         btnRoleMember.setOnClickListener(new View.OnClickListener() {
@@ -84,10 +88,26 @@ public class SignupActivity extends AppCompatActivity {
                     // 2. Save session to SharedPreferences
                     SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                     SharedPreferences.Editor editor = pref.edit();
+                    
+                    // Handle "Remember Me"
+                    if (cbRememberMe.isChecked()) {
+                        editor.putBoolean("rememberMe", true);
+                        editor.putString("savedEmail", email);
+                    } else {
+                        editor.putBoolean("rememberMe", false);
+                        editor.remove("savedEmail");
+                    }
+
+                    // Handle "Keep me logged in"
+                    if (cbKeepLoggedIn.isChecked()) {
+                        editor.putBoolean("isLoggedIn", true);
+                    } else {
+                        editor.putBoolean("isLoggedIn", false);
+                    }
+
                     editor.putString("email", email);
                     editor.putString("name", name);
                     editor.putString("role", statusToSave);
-                    editor.putBoolean("isLoggedIn", true);
                     editor.apply();
 
                     Toast.makeText(SignupActivity.this, "Signup Successful as " + statusToSave, Toast.LENGTH_SHORT).show();

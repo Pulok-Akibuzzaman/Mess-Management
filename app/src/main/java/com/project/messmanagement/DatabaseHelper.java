@@ -179,7 +179,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Everyone except Bua and Admin should share the fixed costs
         Cursor c = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM members WHERE status NOT IN ('Bua', 'Admin')", null);
         int count = 0; if (c.moveToFirst()) count = c.getInt(0); c.close(); 
-        return (count > 0) ? count : 1; // Prevent division by zero
+        return count;
     }
     public void addMemberPayment(int id, double amount) {
         this.getWritableDatabase().execSQL("UPDATE members SET paid_amount = paid_amount + ? WHERE id = ?", new Object[]{amount, id});

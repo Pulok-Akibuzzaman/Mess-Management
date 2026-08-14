@@ -242,6 +242,23 @@
                         app:cornerRadius="12dp" />
                 </LinearLayout>
 
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cb_remember_me"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/remember_me"
+                    android:textColor="@color/white"
+                    app:buttonTint="@color/teal_200" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cb_keep_logged_in"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/keep_me_logged_in"
+                    android:textColor="@color/white"
+                    app:buttonTint="@color/teal_200" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_continue_container"
                     android:layout_width="match_parent"

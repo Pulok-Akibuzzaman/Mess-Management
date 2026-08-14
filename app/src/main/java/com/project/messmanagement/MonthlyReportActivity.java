@@ -20,8 +20,8 @@ public class MonthlyReportActivity extends AppCompatActivity {
 
     private DatabaseHelper db;
     private TextView tvGrandTotal, tvTotalMeals, tvMealRate, tvMemberCount;
-    private TextView tvBazarCost, tvUtilityCost, tvBuaCost;
-    private LinearProgressIndicator pbBazar, pbUtility, pbBua;
+    private TextView tvBazarCost, tvUtilityCost, tvBuaCost, tvOccasionCost, tvOtherCost;
+    private LinearProgressIndicator pbBazar, pbUtility, pbBua, pbOccasion, pbOther;
     private LinearLayout memberContainer;
     private TextView tvReportMonth;
 
@@ -44,9 +44,13 @@ public class MonthlyReportActivity extends AppCompatActivity {
         tvBazarCost = findViewById(R.id.tvBazarCost);
         tvUtilityCost = findViewById(R.id.tvUtilityCost);
         tvBuaCost = findViewById(R.id.tvBuaCost);
+        tvOccasionCost = findViewById(R.id.tvOccasionCost);
+        tvOtherCost = findViewById(R.id.tvOtherCost);
         pbBazar = findViewById(R.id.pbBazar);
         pbUtility = findViewById(R.id.pbUtility);
         pbBua = findViewById(R.id.pbBua);
+        pbOccasion = findViewById(R.id.pbOccasion);
+        pbOther = findViewById(R.id.pbOther);
         memberContainer = findViewById(R.id.memberBreakdownContainer);
         tvReportMonth = findViewById(R.id.tvReportMonth);
 
@@ -62,12 +66,14 @@ public class MonthlyReportActivity extends AppCompatActivity {
         
         double buaSalary = db.getBuaSalary();
         double houseRent = db.getHouseRent();
-        double grandTotal = totalBazar + totalUtilities + buaSalary + houseRent;
+        double occasionCost = db.getTotalOccasionCost();
+        double otherExpenses = db.getUtilityTotalByType("Others");
+        double grandTotal = totalBazar + totalUtilities + buaSalary + houseRent + occasionCost + otherExpenses;
         
         SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         double fixedRate = sp.getFloat("fixed_meal_rate", 0.0f);
         
-        double sharedCostPerMember = memberCount > 0 ? (totalUtilities + buaSalary + houseRent) / memberCount : 0;
+        double sharedCostPerMember = memberCount > 0 ? (totalUtilities + buaSalary + houseRent + otherExpenses) / memberCount : 0;
 
         // Update Main Card
         tvGrandTotal.setText(String.format(Locale.US, "৳%,.0f", grandTotal));
@@ -79,11 +85,15 @@ public class MonthlyReportActivity extends AppCompatActivity {
         tvBazarCost.setText(String.format(Locale.US, "৳%,.0f", totalBazar));
         tvUtilityCost.setText(String.format(Locale.US, "৳%,.0f", totalUtilities));
         tvBuaCost.setText(String.format(Locale.US, "৳%,.0f", buaSalary));
+        tvOccasionCost.setText(String.format(Locale.US, "৳%,.0f", occasionCost));
+        tvOtherCost.setText(String.format(Locale.US, "৳%,.0f", otherExpenses));
 
         if (grandTotal > 0) {
             pbBazar.setProgress((int) ((totalBazar / grandTotal) * 100));
             pbUtility.setProgress((int) ((totalUtilities / grandTotal) * 100));
             pbBua.setProgress((int) ((buaSalary / grandTotal) * 100));
+            pbOccasion.setProgress((int) ((occasionCost / grandTotal) * 100));
+            pbOther.setProgress((int) ((otherExpenses / grandTotal) * 100));
         }
 
         // Member Breakdown
