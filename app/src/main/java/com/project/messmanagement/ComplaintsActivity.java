@@ -20,6 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -63,6 +66,7 @@ public class ComplaintsActivity extends AppCompatActivity {
         // 1. Setup Add Button
         findViewById(R.id.btnAddNotice).setOnClickListener(v -> showComplaintDialog());
 
+        fetchComplaintsFromCloud();
         setupNavigation();
     }
 
@@ -118,6 +122,15 @@ public class ComplaintsActivity extends AppCompatActivity {
 
             if (!message.isEmpty()) {
                 db.addComplaint(message, date, currentUserEmail);
+                
+                // Sync to Supabase
+                String json = "{" +
+                        "\"message\": \"" + message + "\"," +
+                        "\"date\": \"" + date + "\"," +
+                        "\"added_by\": \"" + currentUserEmail + "\"" +
+                        "}";
+                RemoteAccess.getInstance().syncToSupabase("complaints", json);
+                
                 Toast.makeText(this, "Complaint submitted", Toast.LENGTH_SHORT).show();
                 refreshComplaintList();
                 dialog.dismiss();
@@ -131,29 +144,54 @@ public class ComplaintsActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
+        boolean isBua = "Bua".equalsIgnoreCase(role);
+
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MemberActivity.class));
-            finish();
+            if (isBua) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
         });
-        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MealRoutineActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, BazarActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, CashLedgerActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, AllFeaturesActivity.class));
-            finish();
-        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    private void fetchComplaintsFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("complaints", "order=id.desc");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String message = obj.getString("message");
+                        String date = obj.getString("date");
+                        String addedBy = obj.getString("added_by");
+
+                        if (!complaintExistsLocally(message, date, addedBy)) {
+                            db.addComplaint(message, date, addedBy);
+                        }
+                    }
+                    runOnUiThread(this::refreshComplaintList);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private boolean complaintExistsLocally(String message, String date, String addedBy) {
+        Cursor c = db.getReadableDatabase().rawQuery(
+                "SELECT id FROM complaints WHERE message=? AND date=? AND added_by=?",
+                new String[]{message, date, addedBy});
+        boolean exists = c.getCount() > 0;
+        c.close();
+        return exists;
     }
 }

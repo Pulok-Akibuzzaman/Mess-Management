@@ -22,6 +22,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -73,6 +76,7 @@ public class NoticesActivity extends AppCompatActivity {
             btnAdd.setVisibility(View.GONE);
         }
 
+        fetchNoticesFromCloud();
         setupNavigation();
     }
 
@@ -148,6 +152,17 @@ public class NoticesActivity extends AppCompatActivity {
             if (!title.isEmpty() && !content.isEmpty()) {
                 if (id == -1) {
                     db.addNotice(title, content, priority, audience, date);
+                    
+                    // Sync to Supabase
+                    String json = "{" +
+                            "\"title\": \"" + title + "\"," +
+                            "\"content\": \"" + content + "\"," +
+                            "\"priority\": \"" + priority + "\"," +
+                            "\"audience\": \"" + audience + "\"," +
+                            "\"date\": \"" + date + "\"" +
+                            "}";
+                    RemoteAccess.getInstance().syncToSupabase("notices", json);
+                    
                     Toast.makeText(this, "Notice posted", Toast.LENGTH_SHORT).show();
                 } else {
                     db.updateNotice(id, title, content, priority, audience, date);
@@ -165,29 +180,55 @@ public class NoticesActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
+        boolean isBua = "Bua".equalsIgnoreCase(role);
+
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MemberActivity.class));
-            finish();
+            if (isBua) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
         });
-        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MealRoutineActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, BazarActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, CashLedgerActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, AllFeaturesActivity.class));
-            finish();
-        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    private void fetchNoticesFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("notices", "order=id.desc");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String title = obj.getString("title");
+                        String content = obj.getString("content");
+                        String priority = obj.getString("priority");
+                        String audience = obj.getString("audience");
+                        String date = obj.getString("date");
+
+                        // Check if exists locally before adding
+                        if (!noticeExistsLocally(title, date)) {
+                            db.addNotice(title, content, priority, audience, date);
+                        }
+                    }
+                    runOnUiThread(this::refreshNoticeList);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private boolean noticeExistsLocally(String title, String date) {
+        Cursor c = db.getReadableDatabase().rawQuery("SELECT id FROM notices WHERE title=? AND date=?", new String[]{title, date});
+        boolean exists = c.getCount() > 0;
+        c.close();
+        return exists;
     }
 }

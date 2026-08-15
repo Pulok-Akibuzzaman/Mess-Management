@@ -85,7 +85,18 @@ public class SignupActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // 2. Save session to SharedPreferences
+                    // 2. Sync to Supabase (Cloud Backup)
+                    String json = "{" +
+                            "\"name\": \"" + name + "\"," +
+                            "\"email\": \"" + email + "\"," +
+                            "\"password\": \"" + password + "\"," +
+                            "\"status\": \"" + statusToSave + "\"," +
+                            "\"phone\": \"" + phone + "\"," +
+                            "\"room\": \"N/A\"" +
+                            "}";
+                    RemoteAccess.getInstance().syncToSupabase("members", json);
+
+                    // 3. Save session to SharedPreferences
                     SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                     SharedPreferences.Editor editor = pref.edit();
                     

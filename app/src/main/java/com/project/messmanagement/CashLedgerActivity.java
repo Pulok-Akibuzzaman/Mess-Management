@@ -21,6 +21,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -69,6 +72,7 @@ public class CashLedgerActivity extends AppCompatActivity {
             fabAdd.setVisibility(View.GONE);
         }
 
+        fetchTransactionsFromCloud();
         setupNavigation();
     }
 
@@ -258,6 +262,17 @@ public class CashLedgerActivity extends AppCompatActivity {
 
                 db.addCashTransaction(finalDesc, amount, type, date, currentUserName, targetMemberEmail);
                 
+                // Sync to Supabase
+                String json = "{" +
+                        "\"description\": \"" + finalDesc + "\"," +
+                        "\"amount\": " + amount + "," +
+                        "\"type\": \"" + type + "\"," +
+                        "\"date\": \"" + date + "\"," +
+                        "\"performed_by\": \"" + currentUserName + "\"," +
+                        "\"member_email\": \"" + targetMemberEmail + "\"" +
+                        "}";
+                RemoteAccess.getInstance().syncToSupabase("cash", json);
+
                 if (type.equals("IN")) {
                     int memberId;
                     if (isAdmin) {
@@ -285,25 +300,59 @@ public class CashLedgerActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
+        boolean isBua = "Bua".equalsIgnoreCase(role);
+
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MemberActivity.class));
-            finish();
+            if (isBua) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
         });
-        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MealRoutineActivity.class));
-            finish();
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
+            // Already here
         });
-        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, BazarActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, AllFeaturesActivity.class));
-            finish();
-        });
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    private void fetchTransactionsFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("cash", "order=id.desc");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String desc = obj.getString("description");
+                        double amount = obj.getDouble("amount");
+                        String type = obj.getString("type");
+                        String date = obj.getString("date");
+                        String performedBy = obj.getString("performed_by");
+                        String memberEmail = obj.optString("member_email", "");
+
+                        if (!transactionExistsLocally(desc, amount, date)) {
+                            db.addCashTransaction(desc, amount, type, date, performedBy, memberEmail);
+                        }
+                    }
+                    runOnUiThread(this::refreshCashList);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private boolean transactionExistsLocally(String desc, double amount, String date) {
+        Cursor c = db.getReadableDatabase().rawQuery(
+                "SELECT id FROM cash WHERE description=? AND amount=? AND date=?",
+                new String[]{desc, String.valueOf(amount), date});
+        boolean exists = c.getCount() > 0;
+        c.close();
+        return exists;
     }
 }

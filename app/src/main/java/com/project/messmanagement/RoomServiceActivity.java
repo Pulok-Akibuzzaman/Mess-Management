@@ -22,6 +22,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,6 +75,18 @@ public class RoomServiceActivity extends AppCompatActivity {
             if (!msg.isEmpty()) {
                 String date = new SimpleDateFormat("dd MMM yyyy", Locale.US).format(Calendar.getInstance().getTime());
                 db.addRoomRequest("Quick User", "General", msg, "Medium", date);
+                
+                // Sync to Supabase
+                String json = "{" +
+                        "\"member_name\": \"Quick User\"," +
+                        "\"room_no\": \"General\"," +
+                        "\"issue\": \"" + msg + "\"," +
+                        "\"priority\": \"Medium\"," +
+                        "\"status\": \"Pending\"," +
+                        "\"date\": \"" + date + "\"" +
+                        "}";
+                RemoteAccess.getInstance().syncToSupabase("room_requests", json);
+
                 etQuick.setText("");
                 refreshRequestList();
                 Toast.makeText(this, "Quick request submitted!", Toast.LENGTH_SHORT).show();
@@ -176,6 +191,18 @@ public class RoomServiceActivity extends AppCompatActivity {
 
             if (!issue.isEmpty()) {
                 db.addRoomRequest(member, room, issue, prio, date);
+                
+                // Sync to Supabase
+                String json = "{" +
+                        "\"member_name\": \"" + member + "\"," +
+                        "\"room_no\": \"" + room + "\"," +
+                        "\"issue\": \"" + issue + "\"," +
+                        "\"priority\": \"" + prio + "\"," +
+                        "\"status\": \"Pending\"," +
+                        "\"date\": \"" + date + "\"" +
+                        "}";
+                RemoteAccess.getInstance().syncToSupabase("room_requests", json);
+
                 refreshRequestList();
                 dialog.dismiss();
                 Toast.makeText(this, "Request added successfully", Toast.LENGTH_SHORT).show();
@@ -189,41 +216,64 @@ public class RoomServiceActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        if (findViewById(R.id.btn_home_layout) != null) {
-            findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
-                startActivity(new Intent(this, MainActivity.class));
-                finish();
-            });
-        }
-        if (findViewById(R.id.btn_member_layout) != null) {
-            findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
+        boolean isBua = "Bua".equalsIgnoreCase(role);
+
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
+            if (isBua) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
                 startActivity(new Intent(this, MemberActivity.class));
-                finish();
-            });
-        }
-        if (findViewById(R.id.btn_meals_layout) != null) {
-            findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-                startActivity(new Intent(this, MealRoutineActivity.class));
-                finish();
-            });
-        }
-        if (findViewById(R.id.btn_bazar_layout) != null) {
-            findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
-                startActivity(new Intent(this, BazarActivity.class));
-                finish();
-            });
-        }
-        if (findViewById(R.id.btn_cash_layout) != null) {
-            findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-                startActivity(new Intent(this, CashLedgerActivity.class));
-                finish();
-            });
-        }
-        if (findViewById(R.id.btn_more_layout) != null) {
-            findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-                startActivity(new Intent(this, AllFeaturesActivity.class));
-                finish();
-            });
-        }
+            }
+        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        fetchRequestsFromCloud();
+    }
+
+    private void fetchRequestsFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("room_requests", "order=id.desc");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String member = obj.getString("member_name");
+                        String room = obj.getString("room_no");
+                        String issue = obj.getString("issue");
+                        String prio = obj.getString("priority");
+                        String status = obj.getString("status");
+                        String date = obj.getString("date");
+
+                        if (!requestExistsLocally(member, issue, date)) {
+                            db.addRoomRequest(member, room, issue, prio, date);
+                            // We might need to update status if it changed in cloud
+                        }
+                    }
+                    runOnUiThread(this::refreshRequestList);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private boolean requestExistsLocally(String member, String issue, String date) {
+        Cursor c = db.getReadableDatabase().rawQuery(
+                "SELECT id FROM room_requests WHERE member_name=? AND issue=? AND date=?",
+                new String[]{member, issue, date});
+        boolean exists = c.getCount() > 0;
+        c.close();
+        return exists;
     }
 }

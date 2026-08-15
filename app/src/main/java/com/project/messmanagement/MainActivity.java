@@ -361,26 +361,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        btnBazar.setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
-        btnCash.setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
-        
         SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        String r = sp.getString("role", "Admin");
+        String role = sp.getString("role", "Member");
+        boolean isBua = "Bua".equalsIgnoreCase(role);
 
-        if ("Bua".equalsIgnoreCase(r)) {
-            btnMember.setOnClickListener(v -> startActivity(new Intent(this, BuaManagementActivity.class)));
-        } else {
-            btnMember.setOnClickListener(v -> startActivity(new Intent(this, MemberActivity.class)));
-        }
-
-        btnMeals.setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
-        btnMore.setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
+            // Already here
+        });
+        findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
+            if (isBua) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
+        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
         
         if (btnNotification != null) {
             btnNotification.setOnClickListener(v -> {
                 startActivity(new Intent(this, NoticesActivity.class));
             });
-            if ("Bua".equalsIgnoreCase(r)) btnNotification.setVisibility(View.GONE);
+            if (isBua) btnNotification.setVisibility(View.GONE);
         }
         
         if (btnLogout != null) {

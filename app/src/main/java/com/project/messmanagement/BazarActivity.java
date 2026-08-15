@@ -20,6 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -78,6 +81,7 @@ public class BazarActivity extends AppCompatActivity {
             }
         }
 
+        fetchBazarFromCloud();
         setupNavigation();
     }
 
@@ -192,6 +196,15 @@ public class BazarActivity extends AppCompatActivity {
                 dbHelper.addBazarItem(name, amount, date, currentUserName);
                 // Automatically record in Cash Ledger
                 dbHelper.addCashTransaction("Bazar: " + name, amount, "OUT", date, currentUserName, "");
+
+                // Sync to Supabase
+                String json = "{" +
+                        "\"item_name\": \"" + name + "\"," +
+                        "\"amount\": " + amount + "," +
+                        "\"date\": \"" + date + "\"," +
+                        "\"bought_by\": \"" + currentUserName + "\"" +
+                        "}";
+                RemoteAccess.getInstance().syncToSupabase("bazar", json);
             }
 
             loadHistoryData();
@@ -202,25 +215,57 @@ public class BazarActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, CashLedgerActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MealRoutineActivity.class));
-            finish();
-        });
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
+        boolean isBua = "Bua".equalsIgnoreCase(role);
+
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MemberActivity.class));
-            finish();
+            if (isBua) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
         });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, AllFeaturesActivity.class));
-            finish();
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
+            // Already here
         });
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    private void fetchBazarFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("bazar", "order=id.desc");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String name = obj.getString("item_name");
+                        double amount = obj.getDouble("amount");
+                        String date = obj.getString("date");
+                        String boughtBy = obj.getString("bought_by");
+
+                        if (!bazarExistsLocally(name, amount, date)) {
+                            dbHelper.addBazarItem(name, amount, date, boughtBy);
+                        }
+                    }
+                    runOnUiThread(this::loadHistoryData);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private boolean bazarExistsLocally(String name, double amount, String date) {
+        Cursor c = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT id FROM bazar WHERE item_name=? AND amount=? AND date=?",
+                new String[]{name, String.valueOf(amount), date});
+        boolean exists = c.getCount() > 0;
+        c.close();
+        return exists;
     }
 }

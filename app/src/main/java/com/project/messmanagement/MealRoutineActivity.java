@@ -12,6 +12,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -58,6 +61,7 @@ public class MealRoutineActivity extends AppCompatActivity {
         }
         
         loadMealHistory();
+        fetchMealsFromCloud();
         setupNavigation();
     }
 
@@ -164,6 +168,17 @@ public class MealRoutineActivity extends AppCompatActivity {
         else if (type.equals("D")) d = Math.max(0, d + delta);
 
         db.updateDailyMeals(currentUserEmail, todayDate, b, l, d);
+        
+        // Sync to Supabase (Cloud)
+        String json = "{" +
+                "\"user_email\": \"" + currentUserEmail + "\"," +
+                "\"date\": \"" + todayDate + "\"," +
+                "\"breakfast\": " + b + "," +
+                "\"lunch\": " + l + "," +
+                "\"dinner\": " + d +
+                "}";
+        RemoteAccess.getInstance().syncToSupabase("meal_tracking", json);
+
         updateCounts();
         updateSummary();
         loadMealHistory(); 
@@ -191,13 +206,11 @@ public class MealRoutineActivity extends AppCompatActivity {
         
         Cursor cursor;
         if (isAdmin) {
-            // Admin sees global totals for previous days
             cursor = db.getGlobalMealHistory();
             findViewById(R.id.tv_history_title).setVisibility(View.VISIBLE);
             ((TextView)findViewById(R.id.tv_history_title)).setText("GLOBAL MEAL HISTORY");
             findViewById(R.id.history_card).setVisibility(View.VISIBLE);
         } else {
-            // Member sees personal history
             SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
             String currentName = pref.getString("name", "User");
             cursor = db.getUserMealHistory(currentUserEmail, currentName);
@@ -206,7 +219,6 @@ public class MealRoutineActivity extends AppCompatActivity {
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 String date = cursor.getString(0);
-
                 int bVal = cursor.getInt(1);
                 int lVal = cursor.getInt(2);
                 int dVal = cursor.getInt(3);
@@ -244,10 +256,50 @@ public class MealRoutineActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> { startActivity(new Intent(this, MainActivity.class)); finish(); });
-        findViewById(R.id.btn_member_layout).setOnClickListener(v -> { startActivity(new Intent(this, MemberActivity.class)); finish(); });
-        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> { startActivity(new Intent(this, BazarActivity.class)); finish(); });
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> { startActivity(new Intent(this, CashLedgerActivity.class)); finish(); });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> { startActivity(new Intent(this, AllFeaturesActivity.class)); finish(); });
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
+        boolean isBua = "Bua".equalsIgnoreCase(role);
+
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
+            if (isBua) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
+        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
+            // Already here
+        });
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    private void fetchMealsFromCloud() {
+        new Thread(() -> {
+            String query = "user_email=eq." + currentUserEmail + "&order=date.desc";
+            String response = RemoteAccess.getInstance().syncFromSupabase("meal_tracking", query);
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String date = obj.getString("date");
+                        int bVal = obj.getInt("breakfast");
+                        int lVal = obj.getInt("lunch");
+                        int dVal = obj.getInt("dinner");
+                        db.updateDailyMeals(currentUserEmail, date, bVal, lVal, dVal);
+                    }
+                    runOnUiThread(() -> {
+                        loadTodayStatus();
+                        updateSummary();
+                        loadMealHistory();
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

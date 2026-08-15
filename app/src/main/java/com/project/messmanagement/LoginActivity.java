@@ -11,6 +11,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.database.Cursor;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -91,7 +93,8 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(LoginActivity.this, "Invalid Password", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(LoginActivity.this, "Invalid Email or Password", Toast.LENGTH_SHORT).show();
+                    // Final Fallback: Check Supabase (Cloud Login)
+                    checkSupabaseLogin(email, password);
                 }
             }
         });
@@ -139,5 +142,67 @@ public class LoginActivity extends AppCompatActivity {
         intent.putExtra("USER_ROLE", role);
         startActivity(intent);
         finish();
+    }
+
+    private void checkSupabaseLogin(final String email, final String password) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Encode the email for the URL
+                String encodedEmail = email;
+                try {
+                    encodedEmail = java.net.URLEncoder.encode(email, "UTF-8");
+                } catch (Exception ignored) {}
+
+                // Supabase query: Select user where email matches
+                String response = RemoteAccess.getInstance().makeSupabaseRequest("members?email=eq." + encodedEmail, "GET", null);
+                System.out.println("@SupabaseResponse: " + response); // Debug: See exactly what Supabase says
+                
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (response != null && !response.isEmpty()) {
+                                if (response.trim().startsWith("{")) {
+                                    // It's an error object
+                                    JSONObject errorObj = new JSONObject(response);
+                                    String msg = errorObj.optString("message", "Unknown cloud error");
+                                    Toast.makeText(LoginActivity.this, "Cloud Error: " + msg, Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+
+                                JSONArray array = new JSONArray(response);
+                                if (array.length() > 0) {
+                                    JSONObject user = array.getJSONObject(0);
+                                    String cloudPassword = user.getString("password");
+                                    
+                                    if (cloudPassword.equals(password)) {
+                                        // Match! Save to local SQLite so it works offline next time
+                                        String name = user.getString("name");
+                                        String status = user.getString("status");
+                                        String phone = user.optString("phone", "");
+                                        String room = user.optString("room", "N/A");
+                                        double paid = user.optDouble("paid_amount", 0.0);
+
+                                        dbHelper.addMember(name, room, status, email, phone, "Cloud Sync", password, paid);
+                                        
+                                        saveSessionAndContinue(email, name, status);
+                                    } else {
+                                        Toast.makeText(LoginActivity.this, "Invalid Password", Toast.LENGTH_SHORT).show();
+                                    }
+                                } else {
+                                    Toast.makeText(LoginActivity.this, "User not found in Cloud", Toast.LENGTH_SHORT).show();
+                                }
+                            } else {
+                                Toast.makeText(LoginActivity.this, "Login Failed: Check internet connection", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(LoginActivity.this, "Response Parse Error: " + response, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        }).start();
     }
 }

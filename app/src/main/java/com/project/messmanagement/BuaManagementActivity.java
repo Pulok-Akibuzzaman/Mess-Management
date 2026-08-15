@@ -18,6 +18,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import android.widget.LinearLayout;
 import android.widget.ImageView;
@@ -51,6 +54,7 @@ public class BuaManagementActivity extends AppCompatActivity {
         
         initViews();
         loadBuaData();
+        fetchBuaCloudData();
         setupNavigation();
 
         btnProfile.setOnClickListener(v -> { setActiveTab(btnProfile); showProfile(); });
@@ -169,7 +173,20 @@ public class BuaManagementActivity extends AppCompatActivity {
             String joinDate = etJoinDate.getText().toString().trim();
 
             if (!name.isEmpty() && !salaryStr.isEmpty() && !joinDate.isEmpty()) {
-                db.updateBuaProfile(name, phone, address, Double.parseDouble(salaryStr), joinDate);
+                double salary = Double.parseDouble(salaryStr);
+                db.updateBuaProfile(name, phone, address, salary, joinDate);
+                
+                // Sync to Supabase
+                String json = "{" +
+                        "\"id\": 1," +
+                        "\"name\": \"" + name + "\"," +
+                        "\"phone\": \"" + phone + "\"," +
+                        "\"address\": \"" + address + "\"," +
+                        "\"salary\": " + salary + "," +
+                        "\"join_date\": \"" + joinDate + "\"" +
+                        "}";
+                RemoteAccess.getInstance().syncToSupabase("bua_profile", json);
+
                 dialog.dismiss();
                 
                 loadBuaData();
@@ -397,6 +414,15 @@ public class BuaManagementActivity extends AppCompatActivity {
             String today = new SimpleDateFormat("dd MMM", Locale.US).format(java.util.Calendar.getInstance().getTime());
             db.addBuaSalaryPayment(currentMonth, amount, today);
             
+            // Sync to Supabase
+            String json = "{" +
+                    "\"month_year\": \"" + currentMonth + "\"," +
+                    "\"amount\": " + amount + "," +
+                    "\"paid_date\": \"" + today + "\"," +
+                    "\"status\": \"Paid\"" +
+                    "}";
+            RemoteAccess.getInstance().syncToSupabase("bua_salary_history", json);
+
             // Sync with Ledger
             SharedPreferences prefUser = getSharedPreferences("UserPrefs", MODE_PRIVATE);
             String adminName = prefUser.getString("name", "Admin");
@@ -448,8 +474,8 @@ public class BuaManagementActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        String role = pref.getString("role", "Member");
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
         boolean isBuaRole = "Bua".equalsIgnoreCase(role);
 
         if (isBuaRole) {
@@ -481,20 +507,50 @@ public class BuaManagementActivity extends AppCompatActivity {
             }
         }
 
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> { startActivity(new Intent(this, MainActivity.class)); finish(); });
-        
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.btn_member_layout).setOnClickListener(v -> { 
             if (isBuaRole) {
-                // Already here, maybe refresh
+                // Already here
             } else {
                 startActivity(new Intent(this, MemberActivity.class)); 
-                finish();
             }
         });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
 
-        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> { startActivity(new Intent(this, MealRoutineActivity.class)); finish(); });
-        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> { startActivity(new Intent(this, BazarActivity.class)); finish(); });
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> { startActivity(new Intent(this, CashLedgerActivity.class)); finish(); });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> { startActivity(new Intent(this, AllFeaturesActivity.class)); finish(); });
+    private void fetchBuaCloudData() {
+        new Thread(() -> {
+            // Fetch Profile
+            String pResp = RemoteAccess.getInstance().syncFromSupabase("bua_profile", "id=eq.1");
+            if (pResp != null && !pResp.isEmpty()) {
+                try {
+                    JSONArray arr = new JSONArray(pResp);
+                    if (arr.length() > 0) {
+                        JSONObject obj = arr.getJSONObject(0);
+                        db.updateBuaProfile(obj.getString("name"), obj.getString("phone"), 
+                                          obj.getString("address"), obj.getDouble("salary"), obj.getString("join_date"));
+                    }
+                } catch (Exception e) { e.printStackTrace(); }
+            }
+
+            // Fetch Salary History
+            String sResp = RemoteAccess.getInstance().syncFromSupabase("bua_salary_history", "order=id.desc");
+            if (sResp != null && !sResp.isEmpty()) {
+                try {
+                    JSONArray arr = new JSONArray(sResp);
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject obj = arr.getJSONObject(i);
+                        String month = obj.getString("month_year");
+                        if (!db.isBuaSalaryPaid(month)) {
+                            db.addBuaSalaryPayment(month, obj.getDouble("amount"), obj.getString("paid_date"));
+                        }
+                    }
+                } catch (Exception e) { e.printStackTrace(); }
+            }
+            runOnUiThread(this::loadBuaData);
+        }).start();
     }
 }

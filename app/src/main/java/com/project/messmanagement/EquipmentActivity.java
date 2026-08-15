@@ -23,6 +23,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,6 +75,7 @@ public class EquipmentActivity extends AppCompatActivity {
             btnAdd.setVisibility(View.GONE);
         }
 
+        fetchEquipmentFromCloud();
         setupNavigation();
     }
 
@@ -172,6 +176,17 @@ public class EquipmentActivity extends AppCompatActivity {
                 double price = Double.parseDouble(priceStr);
                 if (id == -1) {
                     db.addEquipment(name, location, status, date, price);
+                    
+                    // Sync to Supabase
+                    String json = "{" +
+                            "\"name\": \"" + name + "\"," +
+                            "\"location\": \"" + location + "\"," +
+                            "\"status\": \"" + status + "\"," +
+                            "\"purchase_date\": \"" + date + "\"," +
+                            "\"price\": " + price +
+                            "}";
+                    RemoteAccess.getInstance().syncToSupabase("equipment", json);
+                    
                     Toast.makeText(this, "Equipment added", Toast.LENGTH_SHORT).show();
                 } else {
                     db.updateEquipment(id, name, location, status, date, price);
@@ -189,29 +204,56 @@ public class EquipmentActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
+        boolean isBua = "Bua".equalsIgnoreCase(role);
+
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MemberActivity.class));
-            finish();
+            if (isBua) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
         });
-        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MealRoutineActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, BazarActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, CashLedgerActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, AllFeaturesActivity.class));
-            finish();
-        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    private void fetchEquipmentFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("equipment", "order=id.desc");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String name = obj.getString("name");
+                        String location = obj.getString("location");
+                        String status = obj.getString("status");
+                        String date = obj.getString("purchase_date");
+                        double price = obj.getDouble("price");
+
+                        if (!equipmentExistsLocally(name, price, date)) {
+                            db.addEquipment(name, location, status, date, price);
+                        }
+                    }
+                    runOnUiThread(this::refreshEquipmentList);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private boolean equipmentExistsLocally(String name, double price, String date) {
+        Cursor c = db.getReadableDatabase().rawQuery(
+                "SELECT id FROM equipment WHERE name=? AND price=? AND purchase_date=?",
+                new String[]{name, String.valueOf(price), date});
+        boolean exists = c.getCount() > 0;
+        c.close();
+        return exists;
     }
 }

@@ -18,6 +18,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -54,6 +57,7 @@ public class PollsActivity extends AppCompatActivity {
             btnAdd.setVisibility(View.GONE);
         }
 
+        fetchPollsFromCloud();
         setupNavigation();
     }
 
@@ -113,10 +117,20 @@ public class PollsActivity extends AppCompatActivity {
             if (!q.isEmpty() && !o1.isEmpty() && !o2.isEmpty()) {
                 if (id == -1) {
                     db.addPoll(q, o1, o2, date);
+                    
+                    // Sync to Supabase
+                    String json = "{" +
+                            "\"question\": \"" + q + "\"," +
+                            "\"option1\": \"" + o1 + "\"," +
+                            "\"option2\": \"" + o2 + "\"," +
+                            "\"date\": \"" + date + "\"," +
+                            "\"status\": \"Open\"" +
+                            "}";
+                    RemoteAccess.getInstance().syncToSupabase("polls", json);
+                    
                     Toast.makeText(this, "Poll created", Toast.LENGTH_SHORT).show();
                 } else {
                     db.updatePoll(id, q, o1, o2);
-                    Toast.makeText(this, "Poll updated", Toast.LENGTH_SHORT).show();
                 }
                 refreshPollList();
                 dialog.dismiss();
@@ -159,6 +173,15 @@ public class PollsActivity extends AppCompatActivity {
         btn1.setAllCaps(false);
         btn1.setOnClickListener(v -> {
             db.toggleVote(id, currentUserEmail, 1);
+            
+            // Sync Vote to Supabase
+            String json = "{" +
+                    "\"poll_id\": " + id + "," +
+                    "\"user_email\": \"" + currentUserEmail + "\"," +
+                    "\"option_number\": 1" +
+                    "}";
+            RemoteAccess.getInstance().syncToSupabase("poll_votes", json);
+            
             refreshPollList();
         });
         itemLayout.addView(btn1);
@@ -171,6 +194,15 @@ public class PollsActivity extends AppCompatActivity {
         btn2.setAllCaps(false);
         btn2.setOnClickListener(v -> {
             db.toggleVote(id, currentUserEmail, 2);
+            
+            // Sync Vote to Supabase
+            String json = "{" +
+                    "\"poll_id\": " + id + "," +
+                    "\"user_email\": \"" + currentUserEmail + "\"," +
+                    "\"option_number\": 2" +
+                    "}";
+            RemoteAccess.getInstance().syncToSupabase("poll_votes", json);
+            
             refreshPollList();
         });
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -204,29 +236,79 @@ public class PollsActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
+        boolean isBua = "Bua".equalsIgnoreCase(role);
+
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MemberActivity.class));
-            finish();
+            if (isBua) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
         });
-        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MealRoutineActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, BazarActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, CashLedgerActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, AllFeaturesActivity.class));
-            finish();
-        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    private void fetchPollsFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("polls", "order=id.desc");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String q = obj.getString("question");
+                        String o1 = obj.getString("option1");
+                        String o2 = obj.getString("option2");
+                        String date = obj.getString("date");
+
+                        if (!pollExistsLocally(q, date)) {
+                            db.addPoll(q, o1, o2, date);
+                        }
+                    }
+                    runOnUiThread(this::refreshPollList);
+                    fetchVotesFromCloud();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private void fetchVotesFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("poll_votes", "");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        int pollId = obj.getInt("poll_id");
+                        String email = obj.getString("user_email");
+                        int opt = obj.getInt("option_number");
+
+                        // Locally record the vote if not present
+                        if (db.getUserVote(pollId, email) == 0) {
+                            db.toggleVote(pollId, email, opt);
+                        }
+                    }
+                    runOnUiThread(this::refreshPollList);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private boolean pollExistsLocally(String question, String date) {
+        Cursor c = db.getReadableDatabase().rawQuery("SELECT id FROM polls WHERE question=? AND date=?", new String[]{question, date});
+        boolean exists = c.getCount() > 0;
+        c.close();
+        return exists;
     }
 }

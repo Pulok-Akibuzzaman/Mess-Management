@@ -23,52 +23,9 @@ public class AllFeaturesActivity extends AppCompatActivity {
         String role = pref.getString("role", "Member");
         isBua = "Bua".equalsIgnoreCase(role);
 
-        btnHome = findViewById(R.id.btn_home_layout);
-        if (btnHome != null) {
-            btnHome.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent i = new Intent(AllFeaturesActivity.this, MainActivity.class);
-                    startActivity(i);
-                    finish();
-                }
-            });
-        }
-
-        findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MemberActivity.class));
-            finish();
-        });
-
-        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MealRoutineActivity.class));
-            finish();
-        });
-
-        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, BazarActivity.class));
-            finish();
-        });
-
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, CashLedgerActivity.class));
-            finish();
-        });
-
-        // 2. Feature Clicks
-        setupFeature(R.id.card_utilities, UtilityActivity.class);
-        setupFeature(R.id.card_equipment, EquipmentActivity.class);
-        setupFeature(R.id.card_notices, NoticesActivity.class);
-        setupFeature(R.id.card_loans, LoanActivity.class);
-        setupFeature(R.id.card_sos, SOSActivity.class);
-        setupFeature(R.id.card_room_service, RoomServiceActivity.class);
-        setupFeature(R.id.card_bua, BuaManagementActivity.class);
-        setupFeature(R.id.card_polls, PollsActivity.class);
-        setupFeature(R.id.card_complaints, ComplaintsActivity.class);
-        setupFeature(R.id.card_occasions, OccasionActivity.class);
-        setupFeature(R.id.card_reports, MonthlyReportActivity.class);
-        setupFeature(R.id.card_guest_meals, GuestMealsActivity.class);
-        setupFeature(R.id.card_profile, UserProfileActivity.class);
+        initViews();
+        setupNavigation();
+        setupFeatures();
 
         if (isBua) {
             // Hide navbar items she doesn't need
@@ -134,6 +91,50 @@ public class AllFeaturesActivity extends AppCompatActivity {
             public void onClick(View v) {
                 signOut(v);
             }
+        });
+    }
+
+    private void initViews() {
+        btnHome = findViewById(R.id.btn_home_layout);
+        btnBazar = findViewById(R.id.btn_bazar_layout);
+        btnCash = findViewById(R.id.btn_cash_layout);
+        btnMeals = findViewById(R.id.btn_meals_layout);
+    }
+
+    private void setupFeatures() {
+        setupFeature(R.id.card_utilities, UtilityActivity.class);
+        setupFeature(R.id.card_equipment, EquipmentActivity.class);
+        setupFeature(R.id.card_notices, NoticesActivity.class);
+        setupFeature(R.id.card_loans, LoanActivity.class);
+        setupFeature(R.id.card_sos, SOSActivity.class);
+        setupFeature(R.id.card_room_service, RoomServiceActivity.class);
+        setupFeature(R.id.card_bua, BuaManagementActivity.class);
+        setupFeature(R.id.card_polls, PollsActivity.class);
+        setupFeature(R.id.card_complaints, ComplaintsActivity.class);
+        setupFeature(R.id.card_occasions, OccasionActivity.class);
+        setupFeature(R.id.card_reports, MonthlyReportActivity.class);
+        setupFeature(R.id.card_guest_meals, GuestMealsActivity.class);
+        setupFeature(R.id.card_profile, UserProfileActivity.class);
+    }
+
+    private void setupNavigation() {
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
+        boolean isBuaLocal = "Bua".equalsIgnoreCase(role);
+
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
+            if (isBuaLocal) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
+        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
+            // Already here
         });
     }
 
