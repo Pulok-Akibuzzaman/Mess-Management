@@ -1,15 +1,12 @@
 package com.project.messmanagement;
 
-import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,15 +25,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-import java.util.concurrent.TimeUnit;
-
 public class SOSActivity extends AppCompatActivity {
 
     private LinearLayout contactContainer;
     private DatabaseHelper db;
-    private TextView tvLastCheckin, tvDeadmanStatus;
-    private CountDownTimer countdownDisplay;
-    private long triggerThresholdMillis = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +37,6 @@ public class SOSActivity extends AppCompatActivity {
 
         db = new DatabaseHelper(this);
         contactContainer = findViewById(R.id.contact_container);
-        tvLastCheckin = findViewById(R.id.tv_last_checkin);
-        tvDeadmanStatus = findViewById(R.id.tv_deadman_status);
 
         // 1. SOS Button Click
         findViewById(R.id.card_sos_trigger).setOnClickListener(v -> triggerSOS());
@@ -54,15 +44,12 @@ public class SOSActivity extends AppCompatActivity {
         // 2. Add Contact Button
         findViewById(R.id.btn_add_contact).setOnClickListener(v -> showAddContactDialog());
 
-        // 3. Set Timer Button
-        findViewById(R.id.btn_set_timer).setOnClickListener(v -> showSetTimerDialog());
-
         // Check for Call Permission early
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 101);
         }
 
-        // Check if we were opened by the background alarm
+        // Check if we were opened by the background alarm (Fallback for removed feature)
         if (getIntent().getBooleanExtra("TRIGGER_DIAL", false)) {
             triggerSOS();
         }
@@ -74,129 +61,6 @@ public class SOSActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshContactList();
-        
-        // User is here! They are safe. Reset Activity and CANCEL any background alarm.
-        updateLastActivity();
-        loadTimerState();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (countdownDisplay != null) countdownDisplay.cancel();
-    }
-
-    private void updateLastActivity() {
-        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        pref.edit().putLong("last_activity_time", System.currentTimeMillis()).apply();
-        tvLastCheckin.setText("Last Activity: Just now");
-        
-        // Re-schedule the background alarm based on new "Safe" time
-        scheduleBackgroundSOS();
-    }
-
-    private void loadTimerState() {
-        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        triggerThresholdMillis = pref.getLong("sos_timeout_millis", 0);
-        
-        if (countdownDisplay != null) countdownDisplay.cancel();
-
-        if (triggerThresholdMillis > 0) {
-            long lastActivity = pref.getLong("last_activity_time", System.currentTimeMillis());
-            long expiryTime = lastActivity + triggerThresholdMillis;
-            long diff = expiryTime - System.currentTimeMillis();
-
-            if (diff <= 0) {
-                tvDeadmanStatus.setText("STATUS: TIMEOUT EXPIRED");
-                tvDeadmanStatus.setTextColor(Color.RED);
-            } else {
-                startCountdownDisplay(diff);
-            }
-        } else {
-            tvDeadmanStatus.setText("Safety Timer: Not Set");
-            tvDeadmanStatus.setTextColor(Color.GRAY);
-        }
-    }
-
-    private void startCountdownDisplay(long millis) {
-        countdownDisplay = new CountDownTimer(millis, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                long h = TimeUnit.MILLISECONDS.toHours(millisUntilFinished);
-                long m = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished) % 60;
-                long s = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) % 60;
-                tvDeadmanStatus.setText(String.format(java.util.Locale.US, "Next Check-in: %02d:%02d:%02d", h, m, s));
-                tvDeadmanStatus.setTextColor(Color.parseColor("#FFA500"));
-            }
-
-            @Override
-            public void onFinish() {
-                tvDeadmanStatus.setText("STATUS: ALERTING...");
-                tvDeadmanStatus.setTextColor(Color.RED);
-            }
-        }.start();
-    }
-
-    private void scheduleBackgroundSOS() {
-        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        long timeout = pref.getLong("sos_timeout_millis", 0);
-        
-        AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-        Intent intent = new Intent(this, SOSReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-        if (timeout > 0) {
-            long triggerAt = System.currentTimeMillis() + timeout;
-            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi);
-        } else {
-            am.cancel(pi);
-        }
-    }
-
-    private void showSetTimerDialog() {
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.HORIZONTAL);
-        layout.setPadding(50, 40, 50, 10);
-
-        final EditText etHours = new EditText(this);
-        etHours.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
-        etHours.setHint("Hours");
-        etHours.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-
-        final EditText etMins = new EditText(this);
-        etMins.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
-        etMins.setHint("Minutes");
-        etMins.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-
-        layout.addView(etHours);
-        layout.addView(etMins);
-
-        new AlertDialog.Builder(this)
-            .setTitle("Safety Timeout")
-            .setMessage("Set background inactivity limit:")
-            .setView(layout)
-            .setPositiveButton("Set", (d, w) -> {
-                String hVal = etHours.getText().toString();
-                String mVal = etMins.getText().toString();
-                long hours = hVal.isEmpty() ? 0 : Long.parseLong(hVal);
-                long mins = mVal.isEmpty() ? 0 : Long.parseLong(mVal);
-                
-                if (hours > 0 || mins > 0) {
-                    long totalMillis = (hours * 3600000) + (mins * 60000);
-                    getSharedPreferences("UserPrefs", MODE_PRIVATE).edit()
-                        .putLong("sos_timeout_millis", totalMillis).apply();
-                    updateLastActivity();
-                    loadTimerState();
-                    Toast.makeText(this, "Background SOS active", Toast.LENGTH_SHORT).show();
-                }
-            })
-            .setNegativeButton("Disable", (d, w) -> {
-                getSharedPreferences("UserPrefs", MODE_PRIVATE).edit()
-                    .putLong("sos_timeout_millis", 0).apply();
-                scheduleBackgroundSOS();
-                loadTimerState();
-            })
-            .show();
     }
 
     private void refreshContactList() {
@@ -221,6 +85,8 @@ public class SOSActivity extends AppCompatActivity {
             String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
             cursor.close();
             makeDirectCall(phone);
+        } else {
+            Toast.makeText(this, "No emergency contacts found!", Toast.LENGTH_SHORT).show();
         }
     }
 

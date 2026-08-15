@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         
         // 4. Navigation
         setupNavigation();
-        checkSafetyTimer();
     }
 
     @Override
@@ -86,30 +85,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadDashboardData();
-    }
-
-    private void checkSafetyTimer() {
-        SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        long threshold = pref.getLong("sos_timeout_millis", 0);
-        if (threshold > 0) {
-            long lastActivity = pref.getLong("last_activity_time", System.currentTimeMillis());
-            if (System.currentTimeMillis() - lastActivity > threshold) {
-                // Timer Expired!
-                triggerEmergencyDial();
-            }
-        }
-    }
-
-    private void triggerEmergencyDial() {
-        Cursor cursor = db.getAllEmergencyContacts();
-        if (cursor != null && cursor.moveToFirst()) {
-            String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
-            cursor.close();
-            Intent intent = new Intent(Intent.ACTION_DIAL);
-            intent.setData(Uri.parse("tel:" + phone));
-            startActivity(intent);
-            Toast.makeText(this, "SAFETY ALERT: Inactivity Timeout Reached!", Toast.LENGTH_LONG).show();
-        }
     }
 
     private void initViews() {
