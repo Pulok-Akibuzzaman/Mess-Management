@@ -505,7 +505,7 @@
                                 android:textStyle="bold" />
                         </LinearLayout>
 
-                        <!-- Other -->
+                        <!-- Rent -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -521,11 +521,11 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
                                 android:layout_weight="1"
-                                android:text="Other"
+                                android:text="Rent"
                                 android:textColor="@color/admin_text_gray"
                                 android:textSize="12sp" />
                             <TextView
-                                android:id="@+id/tv_other_label_val"
+                                android:id="@+id/tv_rent_label_val"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="--"

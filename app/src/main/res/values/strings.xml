@@ -20,7 +20,6 @@
     <!-- Signup Strings -->
     <string name="signup_title">Create Account</string>
     <string name="signup_subtitle">Join your mess community</string>
-    <string name="step_1_title">STEP 1 — PERSONAL INFO</string>
     <string name="label_full_name">FULL NAME</string>
     <string name="label_email">EMAIL</string>
     <string name="label_phone">PHONE</string>
@@ -61,24 +60,8 @@
     <string name="btn_july_2025">Current Month</string>
     <string name="alert_cutoff_title">Tonight\'s cut-off: 8:00 PM</string>
     <string name="alert_cutoff_subtitle">Confirm your dinner before the cut-off time.</string>
-    <string name="section_today">TODAY — SATURDAY</string>
-    <string name="label_breakfast">Breakfast</string>
-    <string name="label_lunch">Lunch</string>
-    <string name="label_dinner">Dinner</string>
     <string name="status_on">On</string>
     <string name="status_off">Off</string>
-    <string name="section_weekly">WEEKLY OVERVIEW</string>
-    <string name="col_meal">Meal</string>
-    <string name="row_break">Break</string>
-    <string name="row_lunch">Lunch</string>
-    <string name="row_dinner">Dinne</string>
-    <string name="day_sat">Sat</string>
-    <string name="day_sun">Sun</string>
-    <string name="day_mon">Mon</string>
-    <string name="day_tue">Tue</string>
-    <string name="day_wed">Wed</string>
-    <string name="day_thu">Thu</string>
-    <string name="day_fri">Fri</string>
     <string name="section_summary">MY MONTH SUMMARY</string>
     <string name="count_breakfasts">28</string>
     <string name="label_breakfasts">Breakfasts</string>

@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     // 1. Declare UI Elements
     TextView tvWelcome, tvTotalAmount, tvActiveMembers, tvCashBalance, tvMonthLabel;
     TextView tvTotalMealsGrid, tvBazarSpentGrid, tvUtilitiesGrid;
-    TextView tvBazarLabelVal, tvUtilityLabelVal, tvBuaLabelVal, tvOtherLabelVal;
+    TextView tvBazarLabelVal, tvUtilityLabelVal, tvBuaLabelVal, tvRentLabelVal;
     TextView tvBazarSpentSubtitle, tvUtilitiesSubtitle, tvCurrentMealRate, tvEditRateHint;
     PieChart pieChart;
     LinearLayout btnBazar, btnCash, btnMeals, btnMore, btnMember;
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         tvBazarLabelVal = findViewById(R.id.tv_bazar_label_val);
         tvUtilityLabelVal = findViewById(R.id.tv_utility_label_val);
         tvBuaLabelVal = findViewById(R.id.tv_bua_label_val);
-        tvOtherLabelVal = findViewById(R.id.tv_other_label_val);
+        tvRentLabelVal = findViewById(R.id.tv_rent_label_val);
 
         pieChart = findViewById(R.id.pie_chart_expenses);
 
@@ -189,7 +189,6 @@ public class MainActivity extends AppCompatActivity {
         double buaSalary = db.getBuaSalary();
         double houseRent = db.getHouseRent();
         double occasionCost = db.getTotalOccasionCost();
-        double otherExpenses = db.getUtilityTotalByType("Others");
 
         // Fixed Rate Calculation
         double fixedMealRate = pref.getFloat("fixed_meal_rate", 0.0f);
@@ -197,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
         String userRole = pref.getString("role", "Member");
         
         // Split Calculation
-        double sharedUtilityPerPerson = residentCount > 0 ? (utilities + buaSalary + houseRent + otherExpenses) / residentCount : 0;
+        double sharedUtilityPerPerson = residentCount > 0 ? (utilities + buaSalary + houseRent) / residentCount : 0;
         double occasionPerPerson = activeCount > 0 ? occasionCost / activeCount : 0;
         
         double mySharedTotal = sharedUtilityPerPerson;
@@ -207,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
         
         double myTotalBill = (myMeals * fixedMealRate) + mySharedTotal;
         
-        double totalMessExpense = totalBazar + utilities + buaSalary + houseRent + occasionCost + otherExpenses;
+        double totalMessExpense = totalBazar + utilities + buaSalary + houseRent + occasionCost;
 
         if ("Admin".equalsIgnoreCase(userRole)) {
             // Admin sees the big picture
@@ -294,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
         if (tvBazarLabelVal != null) tvBazarLabelVal.setText("৳" + (int)totalBazar);
         if (tvUtilityLabelVal != null) tvUtilityLabelVal.setText("৳" + (int)utilities);
         if (tvBuaLabelVal != null) tvBuaLabelVal.setText("৳" + (int)buaSalary);
-        if (tvOtherLabelVal != null) tvOtherLabelVal.setText("৳" + (int)(houseRent + occasionCost));
+        if (tvRentLabelVal != null) tvRentLabelVal.setText("৳" + (int)(houseRent + occasionCost));
 
         setupCharts(totalBazar, utilities, buaSalary, houseRent + occasionCost);
     }

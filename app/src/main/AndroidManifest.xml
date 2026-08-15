@@ -70,10 +70,6 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".ItemMemberCardActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
             android:name=".UtilityActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
@@ -82,15 +78,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".ItemEquipmentActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
             android:name=".NoticesActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".ItemNoticeActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
@@ -98,15 +86,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".ItemRoomRequestActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
             android:name=".BuaManagementActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".LayoutTabProfileActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
