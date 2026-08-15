@@ -169,7 +169,7 @@ public class MealRoutineActivity extends AppCompatActivity {
 
         db.updateDailyMeals(currentUserEmail, todayDate, b, l, d);
         
-        // Sync to Supabase (Cloud)
+        // Sync to Supabase (Cloud) using UPSERT
         String json = "{" +
                 "\"user_email\": \"" + currentUserEmail + "\"," +
                 "\"date\": \"" + todayDate + "\"," +
@@ -177,7 +177,7 @@ public class MealRoutineActivity extends AppCompatActivity {
                 "\"lunch\": " + l + "," +
                 "\"dinner\": " + d +
                 "}";
-        RemoteAccess.getInstance().syncToSupabase("meal_tracking", json);
+        RemoteAccess.getInstance().upsertToSupabase("meal_tracking", json);
 
         updateCounts();
         updateSummary();

@@ -90,6 +90,7 @@ public class LoanActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshLoanList();
+        fetchLoansFromCloud();
     }
 
     private void refreshLoanList() {

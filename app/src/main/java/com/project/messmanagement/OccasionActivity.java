@@ -18,6 +18,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -53,6 +57,13 @@ public class OccasionActivity extends AppCompatActivity {
 
         View fabAdd = findViewById(R.id.fab_add_occasion);
         fabAdd.setOnClickListener(v -> showOccasionDialog(null));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadOccasions();
+        fetchOccasionsFromCloud();
     }
 
     private void initViews() {
@@ -166,6 +177,17 @@ public class OccasionActivity extends AppCompatActivity {
             } else {
                 db.addOccasion(title, type, cost, members, date, currentUserEmail);
 
+                // Sync to Supabase
+                String json = "{" +
+                        "\"title\": \"" + title + "\"," +
+                        "\"type\": \"" + type + "\"," +
+                        "\"total_cost\": " + cost + "," +
+                        "\"member_count\": " + members + "," +
+                        "\"date\": \"" + date + "\"," +
+                        "\"added_by\": \"" + currentUserEmail + "\"" +
+                        "}";
+                RemoteAccess.getInstance().syncToSupabase("occasions", json);
+
                 // Automatically record in Cash Ledger
                 SharedPreferences pref = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                 String name = pref.getString("name", "User");
@@ -187,6 +209,14 @@ public class OccasionActivity extends AppCompatActivity {
                 .setMessage("Delete " + item.title + "?")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     db.deleteOccasion(item.id);
+                    
+                    // Sync Delete to Supabase
+                    try {
+                        String query = "title=eq." + java.net.URLEncoder.encode(item.title, "UTF-8") +
+                                "&date=eq." + java.net.URLEncoder.encode(item.date, "UTF-8");
+                        RemoteAccess.getInstance().syncActionToSupabase("occasions", "DELETE", null, query);
+                    } catch (Exception ignored) {}
+
                     loadOccasions();
                     Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
                 })
@@ -195,29 +225,57 @@ public class OccasionActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        findViewById(R.id.btn_home).setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
+        boolean isBua = "Bua".equalsIgnoreCase(role);
+
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
+            if (isBua) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
         });
-        findViewById(R.id.btn_members).setOnClickListener(v -> {
-            startActivity(new Intent(this, MemberActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_meals).setOnClickListener(v -> {
-            startActivity(new Intent(this, MealRoutineActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_bazar).setOnClickListener(v -> {
-            startActivity(new Intent(this, BazarActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_cash).setOnClickListener(v -> {
-            startActivity(new Intent(this, CashLedgerActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_more).setOnClickListener(v -> {
-            startActivity(new Intent(this, AllFeaturesActivity.class));
-            finish();
-        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    private void fetchOccasionsFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("occasions", "order=id.desc");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String title = obj.getString("title");
+                        String type = obj.getString("type");
+                        double cost = obj.getDouble("total_cost");
+                        int members = obj.getInt("member_count");
+                        String date = obj.getString("date");
+                        String addedBy = obj.getString("added_by");
+
+                        if (!occasionExistsLocally(title, date)) {
+                            db.addOccasion(title, type, cost, members, date, addedBy);
+                        }
+                    }
+                    runOnUiThread(this::loadOccasions);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private boolean occasionExistsLocally(String title, String date) {
+        Cursor c = db.getReadableDatabase().rawQuery(
+                "SELECT id FROM occasions WHERE title=? AND date=?",
+                new String[]{title, date});
+        boolean exists = c.getCount() > 0;
+        c.close();
+        return exists;
     }
 }

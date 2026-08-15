@@ -80,6 +80,7 @@ public class CashLedgerActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshCashList();
+        fetchTransactionsFromCloud();
     }
 
     private void refreshCashList() {
@@ -134,6 +135,15 @@ public class CashLedgerActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to delete this transaction?")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     db.deleteCashTransaction(transaction.id);
+                    
+                    // Sync Delete to Supabase
+                    try {
+                        String query = "description=eq." + java.net.URLEncoder.encode(transaction.description, "UTF-8") +
+                                "&date=eq." + java.net.URLEncoder.encode(transaction.date, "UTF-8") +
+                                "&amount=eq." + transaction.amount;
+                        RemoteAccess.getInstance().syncActionToSupabase("cash", "DELETE", null, query);
+                    } catch (Exception ignored) {}
+
                     refreshCashList();
                     Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
                 })

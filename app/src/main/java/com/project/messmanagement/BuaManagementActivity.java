@@ -54,7 +54,6 @@ public class BuaManagementActivity extends AppCompatActivity {
         
         initViews();
         loadBuaData();
-        fetchBuaCloudData();
         setupNavigation();
 
         btnProfile.setOnClickListener(v -> { setActiveTab(btnProfile); showProfile(); });
@@ -67,6 +66,13 @@ public class BuaManagementActivity extends AppCompatActivity {
         } else {
             btnEdit.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadBuaData();
+        fetchBuaCloudData();
     }
 
     private void initViews() {
@@ -135,6 +141,10 @@ public class BuaManagementActivity extends AppCompatActivity {
                     .setMessage("Are you sure you want to remove all Bua information?")
                     .setPositiveButton("Remove", (d, w) -> {
                         db.deleteBuaProfile();
+                        
+                        // Sync Delete to Supabase
+                        RemoteAccess.getInstance().syncActionToSupabase("bua_profile", "DELETE", null, "id=eq.1");
+
                         dialog.dismiss();
                         loadBuaData();
                         showProfile();
@@ -176,7 +186,7 @@ public class BuaManagementActivity extends AppCompatActivity {
                 double salary = Double.parseDouble(salaryStr);
                 db.updateBuaProfile(name, phone, address, salary, joinDate);
                 
-                // Sync to Supabase
+                // Sync to Supabase using UPSERT
                 String json = "{" +
                         "\"id\": 1," +
                         "\"name\": \"" + name + "\"," +
@@ -185,7 +195,7 @@ public class BuaManagementActivity extends AppCompatActivity {
                         "\"salary\": " + salary + "," +
                         "\"join_date\": \"" + joinDate + "\"" +
                         "}";
-                RemoteAccess.getInstance().syncToSupabase("bua_profile", json);
+                RemoteAccess.getInstance().upsertToSupabase("bua_profile", json);
 
                 dialog.dismiss();
                 

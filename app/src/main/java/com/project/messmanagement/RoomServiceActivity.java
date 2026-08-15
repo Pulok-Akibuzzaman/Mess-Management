@@ -102,6 +102,7 @@ public class RoomServiceActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshRequestList();
+        fetchRequestsFromCloud();
     }
 
     private void refreshRequestList() {
@@ -131,6 +132,12 @@ public class RoomServiceActivity extends AppCompatActivity {
             .setItems(new String[]{"Pending", "In Progress", "Completed"}, (d, which) -> {
                 String newStatus = (which == 0) ? "Pending" : (which == 1) ? "In Progress" : "Completed";
                 db.updateRoomRequestStatus(request.id, newStatus);
+                
+                // Sync Update to Supabase
+                String json = "{\"status\": \"" + newStatus + "\"}";
+                String query = "member_name=eq." + request.memberName + "&issue=eq." + request.issue;
+                RemoteAccess.getInstance().syncActionToSupabase("room_requests", "PATCH", json, query);
+                
                 refreshRequestList();
             }).show();
     }
@@ -140,6 +147,15 @@ public class RoomServiceActivity extends AppCompatActivity {
             .setMessage("Remove this request?")
             .setPositiveButton("Delete", (d, w) -> {
                 db.deleteRoomRequest(request.id);
+                
+                // Sync Delete to Supabase
+                try {
+                    String query = "member_name=eq." + java.net.URLEncoder.encode(request.memberName, "UTF-8") +
+                            "&issue=eq." + java.net.URLEncoder.encode(request.issue, "UTF-8") +
+                            "&date=eq." + java.net.URLEncoder.encode(request.date, "UTF-8");
+                    RemoteAccess.getInstance().syncActionToSupabase("room_requests", "DELETE", null, query);
+                } catch (Exception ignored) {}
+
                 refreshRequestList();
             })
             .setNegativeButton("Cancel", null)
@@ -237,7 +253,6 @@ public class RoomServiceActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        fetchRequestsFromCloud();
     }
 
     private void fetchRequestsFromCloud() {

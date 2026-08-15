@@ -170,6 +170,11 @@ public class MemberActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to delete " + member.name + "?")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     dbHelper.deleteMember(member.id);
+                    
+                    // Sync Delete to Supabase
+                    String query = "email=eq." + member.email;
+                    RemoteAccess.getInstance().syncActionToSupabase("members", "DELETE", null, query);
+
                     loadMembers(etSearch.getText().toString().trim());
                     Toast.makeText(this, member.name + " deleted", Toast.LENGTH_SHORT).show();
                 })
@@ -265,6 +270,16 @@ public class MemberActivity extends AppCompatActivity {
 
             if (isEdit) {
                 dbHelper.updateMember(existingMember.id, name, room, status, email, phone, date, existingMember.password, existingMember.paidAmount);
+                
+                // Sync Update to Supabase
+                String json = "{" +
+                        "\"name\": \"" + name + "\"," +
+                        "\"status\": \"" + status + "\"," +
+                        "\"phone\": \"" + phone + "\"," +
+                        "\"room\": \"" + room + "\"" +
+                        "}";
+                RemoteAccess.getInstance().syncActionToSupabase("members", "PATCH", json, "email=eq." + email);
+                
                 Toast.makeText(this, "Member updated", Toast.LENGTH_SHORT).show();
             } else {
                 dbHelper.addMember(name, room, status, email, phone, date, "1234", 0.0);

@@ -154,7 +154,64 @@ public class RemoteAccess {
             @Override
             public void run() {
                 String response = makeSupabaseRequest(table, "POST", jsonPayload);
-                System.out.println("@SupabaseSync-" + table + ": " + response);
+                System.out.println("@SupabaseSync-POST-" + table + ": " + response);
+            }
+        }).start();
+    }
+
+    /**
+     * Generic sync for Update/Delete.
+     */
+    public void syncActionToSupabase(final String table, final String method, final String jsonPayload, final String query) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String path = table;
+                if (query != null && !query.isEmpty()) {
+                    path += "?" + query;
+                }
+                String response = makeSupabaseRequest(path, method, jsonPayload);
+                System.out.println("@SupabaseSync-" + method + "-" + table + ": " + response);
+            }
+        }).start();
+    }
+
+    /**
+     * Asynchronously syncs data to Supabase using UPSERT logic.
+     */
+    public void upsertToSupabase(final String table, final String jsonPayload) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String url = SUPABASE_URL + table;
+                    URL urlc = new URL(url);
+                    HttpURLConnection http = (HttpURLConnection) urlc.openConnection();
+                    http.setRequestMethod("POST");
+                    http.setConnectTimeout(10000);
+                    http.setReadTimeout(10000);
+
+                    // Headers for UPSERT
+                    http.setRequestProperty("apikey", SUPABASE_KEY);
+                    http.setRequestProperty("Authorization", "Bearer " + SUPABASE_KEY);
+                    http.setRequestProperty("Content-Type", "application/json");
+                    http.setRequestProperty("Prefer", "resolution=merge-duplicates"); // This is the magic line for Upsert
+
+                    http.setDoOutput(true);
+                    OutputStream os = http.getOutputStream();
+                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                    writer.write(jsonPayload);
+                    writer.flush();
+                    writer.close();
+                    os.close();
+
+                    http.connect();
+                    int responseCode = http.getResponseCode();
+                    System.out.println("@SupabaseUpsert-" + table + ": " + responseCode);
+                    http.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
     }

@@ -74,6 +74,7 @@ public class ComplaintsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshComplaintList();
+        fetchComplaintsFromCloud();
     }
 
     private void refreshComplaintList() {

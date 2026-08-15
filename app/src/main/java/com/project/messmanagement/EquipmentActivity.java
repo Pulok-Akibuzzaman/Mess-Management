@@ -83,6 +83,7 @@ public class EquipmentActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshEquipmentList();
+        fetchEquipmentFromCloud();
     }
 
     private void refreshEquipmentList() {

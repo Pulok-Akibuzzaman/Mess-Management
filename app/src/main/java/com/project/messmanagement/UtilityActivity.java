@@ -13,6 +13,10 @@ import android.widget.Toast;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.Locale;
 
 public class UtilityActivity extends AppCompatActivity {
@@ -36,6 +40,7 @@ public class UtilityActivity extends AppCompatActivity {
 
         initViews();
         loadUtilityData();
+        fetchOfficialBillsFromCloud();
         setupNavigation();
 
         ImageButton btnAddUtility = findViewById(R.id.btnAddUtility);
@@ -255,6 +260,15 @@ public class UtilityActivity extends AppCompatActivity {
 
                     if (isAdmin) {
                         db.addUtility(billType, amount, today);
+                        
+                        // Sync to Supabase
+                        String json = "{" +
+                                "\"type\": \"" + billType + "\"," +
+                                "\"amount\": " + amount + "," +
+                                "\"date\": \"" + today + "\"" +
+                                "}";
+                        RemoteAccess.getInstance().upsertToSupabase("utilities", json);
+
                         Toast.makeText(UtilityActivity.this, "Official Bill Set Dynamically", Toast.LENGTH_SHORT).show();
                     } else {
                         // Check if already paid this month
@@ -306,5 +320,28 @@ public class UtilityActivity extends AppCompatActivity {
         findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
         findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
         findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    private void fetchOfficialBillsFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("utilities", "");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String type = obj.getString("type");
+                        double amount = obj.getDouble("amount");
+                        String date = obj.getString("date");
+                        
+                        // Local update (addUtility handles replace)
+                        db.addUtility(type, amount, date);
+                    }
+                    runOnUiThread(this::loadUtilityData);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

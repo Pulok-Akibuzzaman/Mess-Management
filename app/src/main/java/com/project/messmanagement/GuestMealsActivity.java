@@ -3,6 +3,7 @@ package com.project.messmanagement;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
@@ -16,6 +17,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -53,8 +58,14 @@ public class GuestMealsActivity extends AppCompatActivity {
 
         findViewById(R.id.btnAddGuestMeal).setOnClickListener(v -> showGuestMealDialog(null));
 
-        loadGuestMeals();
         setupNavigation();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadGuestMeals();
+        fetchGuestMealsFromCloud();
     }
 
     private void loadGuestMeals() {
@@ -143,6 +154,17 @@ public class GuestMealsActivity extends AppCompatActivity {
                 Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show();
             } else {
                 db.addGuestMeal(host, guest, count, type, date);
+                
+                // Sync to Supabase
+                String json = "{" +
+                        "\"member_name\": \"" + host + "\"," +
+                        "\"guest_name\": \"" + guest + "\"," +
+                        "\"meal_count\": " + count + "," +
+                        "\"meal_type\": \"" + type + "\"," +
+                        "\"date\": \"" + date + "\"" +
+                        "}";
+                RemoteAccess.getInstance().syncToSupabase("guest_meals", json);
+
                 Toast.makeText(this, "Added", Toast.LENGTH_SHORT).show();
             }
             loadGuestMeals();
@@ -159,6 +181,15 @@ public class GuestMealsActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to delete this record for " + item.guestName + "?")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     db.deleteGuestMeal(item.id);
+                    
+                    // Sync Delete to Supabase
+                    try {
+                        String query = "member_name=eq." + java.net.URLEncoder.encode(item.memberName, "UTF-8") +
+                                "&guest_name=eq." + java.net.URLEncoder.encode(item.guestName, "UTF-8") +
+                                "&date=eq." + java.net.URLEncoder.encode(item.date, "UTF-8");
+                        RemoteAccess.getInstance().syncActionToSupabase("guest_meals", "DELETE", null, query);
+                    } catch (Exception ignored) {}
+
                     loadGuestMeals();
                     Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
                 })
@@ -167,29 +198,56 @@ public class GuestMealsActivity extends AppCompatActivity {
     }
 
     private void setupNavigation() {
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
+        SharedPreferences sp = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = sp.getString("role", "Member");
+        boolean isBua = "Bua".equalsIgnoreCase(role);
+
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MemberActivity.class));
-            finish();
+            if (isBua) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
         });
-        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MealRoutineActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, BazarActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, CashLedgerActivity.class));
-            finish();
-        });
-        findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, AllFeaturesActivity.class));
-            finish();
-        });
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    private void fetchGuestMealsFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("guest_meals", "order=id.desc");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String member = obj.getString("member_name");
+                        String guest = obj.getString("guest_name");
+                        int count = obj.getInt("meal_count");
+                        String type = obj.getString("meal_type");
+                        String date = obj.getString("date");
+
+                        if (!guestMealExistsLocally(member, guest, date)) {
+                            db.addGuestMeal(member, guest, count, type, date);
+                        }
+                    }
+                    runOnUiThread(this::loadGuestMeals);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private boolean guestMealExistsLocally(String member, String guest, String date) {
+        Cursor c = db.getReadableDatabase().rawQuery(
+                "SELECT id FROM guest_meals WHERE member_name=? AND guest_name=? AND date=?",
+                new String[]{member, guest, date});
+        boolean exists = c.getCount() > 0;
+        c.close();
+        return exists;
     }
 }

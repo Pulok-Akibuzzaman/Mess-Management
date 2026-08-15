@@ -26,6 +26,8 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.view.View;
 import java.text.SimpleDateFormat;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -84,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        fetchMealRateFromCloud();
         loadDashboardData();
     }
 
@@ -314,6 +317,11 @@ public class MainActivity extends AppCompatActivity {
                 SharedPreferences.Editor editor = getSharedPreferences("UserPrefs", MODE_PRIVATE).edit();
                 editor.putFloat("fixed_meal_rate", Float.parseFloat(val));
                 editor.apply();
+
+                // Sync to Supabase
+                String json = "{\"key\": \"fixed_meal_rate\", \"value\": \"" + val + "\"}";
+                RemoteAccess.getInstance().upsertToSupabase("settings", json);
+
                 loadDashboardData();
                 Toast.makeText(this, "Rate updated to ৳" + val, Toast.LENGTH_SHORT).show();
             }
@@ -404,5 +412,28 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             });
         }
+    }
+
+    private void fetchMealRateFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("settings", "key=eq.fixed_meal_rate");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    if (array.length() > 0) {
+                        JSONObject obj = array.getJSONObject(0);
+                        float rate = (float) obj.getDouble("value");
+                        
+                        SharedPreferences.Editor editor = getSharedPreferences("UserPrefs", MODE_PRIVATE).edit();
+                        editor.putFloat("fixed_meal_rate", rate);
+                        editor.apply();
+                        
+                        runOnUiThread(this::loadDashboardData);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

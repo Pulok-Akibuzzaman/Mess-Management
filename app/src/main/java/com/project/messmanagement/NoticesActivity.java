@@ -84,6 +84,7 @@ public class NoticesActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshNoticeList();
+        fetchNoticesFromCloud();
     }
 
     private void refreshNoticeList() {
@@ -112,6 +113,14 @@ public class NoticesActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to delete this notice?")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     db.deleteNotice(notice.id);
+                    
+                    // Sync Delete to Supabase
+                    try {
+                        String query = "title=eq." + java.net.URLEncoder.encode(notice.title, "UTF-8") +
+                                "&date=eq." + java.net.URLEncoder.encode(notice.date, "UTF-8");
+                        RemoteAccess.getInstance().syncActionToSupabase("notices", "DELETE", null, query);
+                    } catch (Exception ignored) {}
+
                     refreshNoticeList();
                     Toast.makeText(this, "Notice deleted", Toast.LENGTH_SHORT).show();
                 })

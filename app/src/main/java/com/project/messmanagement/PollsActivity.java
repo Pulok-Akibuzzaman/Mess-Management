@@ -65,6 +65,7 @@ public class PollsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshPollList();
+        fetchPollsFromCloud();
     }
 
     private void refreshPollList() {
@@ -218,6 +219,14 @@ public class PollsActivity extends AppCompatActivity {
                             if (which == 0) showPollDialog(id, q, o1, o2);
                             else {
                                 db.deletePoll(id);
+                                
+                                // Sync Delete to Supabase
+                                try {
+                                    String query = "question=eq." + java.net.URLEncoder.encode(q, "UTF-8") +
+                                            "&date=eq." + java.net.URLEncoder.encode(date, "UTF-8");
+                                    RemoteAccess.getInstance().syncActionToSupabase("polls", "DELETE", null, query);
+                                } catch (Exception ignored) {}
+
                                 refreshPollList();
                                 Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
                             }

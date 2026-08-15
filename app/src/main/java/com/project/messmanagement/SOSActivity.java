@@ -25,6 +25,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class SOSActivity extends AppCompatActivity {
 
     private LinearLayout contactContainer;
@@ -61,6 +64,7 @@ public class SOSActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshContactList();
+        fetchContactsFromCloud();
     }
 
     private void refreshContactList() {
@@ -128,6 +132,14 @@ public class SOSActivity extends AppCompatActivity {
             String phone = etPhone.getText().toString().trim();
             if (!name.isEmpty() && !phone.isEmpty()) {
                 db.addEmergencyContact(name, phone);
+                
+                // Sync to Supabase
+                String json = "{" +
+                        "\"name\": \"" + name + "\"," +
+                        "\"phone\": \"" + phone + "\"" +
+                        "}";
+                RemoteAccess.getInstance().syncToSupabase("emergency_contacts", json);
+
                 refreshContactList();
                 dialog.dismiss();
             }
@@ -161,6 +173,14 @@ public class SOSActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to delete " + name + "?")
                 .setPositiveButton("Delete", (d, w) -> {
                     db.deleteEmergencyContact(id);
+                    
+                    // Sync Delete to Supabase
+                    try {
+                        String query = "name=eq." + java.net.URLEncoder.encode(name, "UTF-8") +
+                                "&phone=eq." + java.net.URLEncoder.encode(phone, "UTF-8");
+                        RemoteAccess.getInstance().syncActionToSupabase("emergency_contacts", "DELETE", null, query);
+                    } catch (Exception ignored) {}
+
                     refreshContactList();
                 })
                 .setNegativeButton("Cancel", null)
@@ -188,43 +208,49 @@ public class SOSActivity extends AppCompatActivity {
             }
         }
 
-        findViewById(R.id.btn_home_layout).setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
+        findViewById(R.id.btn_home_layout).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
+            if (isBuaRole) {
+                startActivity(new Intent(this, BuaManagementActivity.class));
+            } else {
+                startActivity(new Intent(this, MemberActivity.class));
+            }
         });
-        if (findViewById(R.id.btn_member_layout) != null) {
-            findViewById(R.id.btn_member_layout).setOnClickListener(v -> {
-                if (isBuaRole) {
-                    startActivity(new Intent(this, BuaManagementActivity.class));
-                } else {
-                    startActivity(new Intent(this, MemberActivity.class));
+        findViewById(R.id.btn_meals_layout).setOnClickListener(v -> startActivity(new Intent(this, MealRoutineActivity.class)));
+        findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> startActivity(new Intent(this, BazarActivity.class)));
+        findViewById(R.id.btn_cash_layout).setOnClickListener(v -> startActivity(new Intent(this, CashLedgerActivity.class)));
+        findViewById(R.id.btn_more_layout).setOnClickListener(v -> startActivity(new Intent(this, AllFeaturesActivity.class)));
+    }
+
+    private void fetchContactsFromCloud() {
+        new Thread(() -> {
+            String response = RemoteAccess.getInstance().syncFromSupabase("emergency_contacts", "");
+            if (response != null && !response.isEmpty()) {
+                try {
+                    JSONArray array = new JSONArray(response);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject obj = array.getJSONObject(i);
+                        String name = obj.getString("name");
+                        String phone = obj.getString("phone");
+
+                        if (!contactExistsLocally(name, phone)) {
+                            db.addEmergencyContact(name, phone);
+                        }
+                    }
+                    runOnUiThread(this::refreshContactList);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                finish();
-            });
-        }
-        if (findViewById(R.id.btn_meals_layout) != null) {
-            findViewById(R.id.btn_meals_layout).setOnClickListener(v -> {
-                startActivity(new Intent(this, MealRoutineActivity.class));
-                finish();
-            });
-        }
-        if (findViewById(R.id.btn_bazar_layout) != null) {
-            findViewById(R.id.btn_bazar_layout).setOnClickListener(v -> {
-                startActivity(new Intent(this, BazarActivity.class));
-                finish();
-            });
-        }
-        if (findViewById(R.id.btn_cash_layout) != null) {
-            findViewById(R.id.btn_cash_layout).setOnClickListener(v -> {
-                startActivity(new Intent(this, CashLedgerActivity.class));
-                finish();
-            });
-        }
-        if (findViewById(R.id.btn_more_layout) != null) {
-            findViewById(R.id.btn_more_layout).setOnClickListener(v -> {
-                startActivity(new Intent(this, AllFeaturesActivity.class));
-                finish();
-            });
-        }
+            }
+        }).start();
+    }
+
+    private boolean contactExistsLocally(String name, String phone) {
+        Cursor c = db.getReadableDatabase().rawQuery(
+                "SELECT id FROM emergency_contacts WHERE name=? AND phone=?",
+                new String[]{name, phone});
+        boolean exists = c.getCount() > 0;
+        c.close();
+        return exists;
     }
 }

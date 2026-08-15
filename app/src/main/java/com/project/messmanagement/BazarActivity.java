@@ -85,6 +85,13 @@ public class BazarActivity extends AppCompatActivity {
         setupNavigation();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadHistoryData();
+        fetchBazarFromCloud();
+    }
+
     /** Reloads historyList from the database and refreshes the adapter. */
     private void loadHistoryData() {
         historyList.clear();
@@ -126,6 +133,14 @@ public class BazarActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to delete " + item.name + "?")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     dbHelper.deleteBazarItem(item.id);
+                    
+                    // Sync Delete to Supabase
+                    try {
+                        String query = "item_name=eq." + java.net.URLEncoder.encode(item.name, "UTF-8") +
+                                "&date=eq." + java.net.URLEncoder.encode(item.date, "UTF-8");
+                        RemoteAccess.getInstance().syncActionToSupabase("bazar", "DELETE", null, query);
+                    } catch (Exception ignored) {}
+
                     loadHistoryData();
                     Toast.makeText(this, item.name + " deleted", Toast.LENGTH_SHORT).show();
                 })
