@@ -246,6 +246,16 @@ public class CashLedgerActivity extends AppCompatActivity {
 
                 String finalDesc = desc.isEmpty() ? "Payment from " + currentUserName : desc;
 
+                // DUPLICATE BILL CHECK
+                if (type.equals("IN") && finalDesc.startsWith("Bill Payment: ")) {
+                    String billType = finalDesc.substring("Bill Payment: ".length());
+                    String monthYear = date.length() >= 8 ? date.substring(3) : "";
+                    if (!monthYear.isEmpty() && db.isBillPaidThisMonth(targetMemberEmail, billType, monthYear)) {
+                        Toast.makeText(this, "Already paid " + billType + " for this month!", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                }
+
                 db.addCashTransaction(finalDesc, amount, type, date, currentUserName, targetMemberEmail);
                 
                 if (type.equals("IN")) {

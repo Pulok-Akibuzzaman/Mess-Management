@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        tvActiveMembers.setText(String.valueOf(residentCount));
+        tvActiveMembers.setText(String.valueOf(activeCount));
         
         // Update Grid
         if (tvTotalMealsGrid != null) {

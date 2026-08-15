@@ -215,6 +215,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         double paid = 0; if (c.moveToFirst()) paid = c.getDouble(0); c.close(); return paid;
     }
 
+    public boolean isBillPaidThisMonth(String email, String billType, String monthYear) {
+        String description = "Bill Payment: " + billType;
+        Cursor c = this.getReadableDatabase().rawQuery(
+                "SELECT id FROM cash WHERE member_email=? AND description=? AND date LIKE ?",
+                new String[]{email, description, "%" + monthYear});
+        boolean exists = c.getCount() > 0;
+        c.close();
+        return exists;
+    }
+
     // --- BAZAR METHODS ---
     public void addBazarItem(String name, double amount, String date, String boughtBy) {
         ContentValues v = new ContentValues();

@@ -257,6 +257,13 @@ public class UtilityActivity extends AppCompatActivity {
                         db.addUtility(billType, amount, today);
                         Toast.makeText(UtilityActivity.this, "Official Bill Set Dynamically", Toast.LENGTH_SHORT).show();
                     } else {
+                        // Check if already paid this month
+                        String monthYear = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.US).format(new java.util.Date());
+                        if (db.isBillPaidThisMonth(currentUserEmail, billType, monthYear)) {
+                            Toast.makeText(UtilityActivity.this, "You have already paid " + billType + " for this month!", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
                         // Member records their Payment
                         db.addCashTransaction("Bill Payment: " + billType, amount, "IN", today, currentUserName, currentUserEmail);
                         int mid = db.getMemberIdByEmail(currentUserEmail);
