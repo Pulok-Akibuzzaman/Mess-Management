@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout btnBazar, btnCash, btnMeals, btnMore, btnMember;
     ImageView btnLogout;
     android.widget.FrameLayout btnNotification;
+
+    TextView notification_status_count;
     View cardMealRate;
     
     String currentUserEmail;
@@ -146,6 +148,8 @@ public class MainActivity extends AppCompatActivity {
         btnMore = findViewById(R.id.btn_more_layout);
         btnLogout = findViewById(R.id.btn_logout);
         btnNotification = findViewById(R.id.fl_notification);
+
+        notification_status_count = findViewById(R.id.notification_status_count);
 
         // Set Dynamic Month Label
         Calendar cal = Calendar.getInstance();
@@ -294,6 +298,13 @@ public class MainActivity extends AppCompatActivity {
         if (tvUtilityLabelVal != null) tvUtilityLabelVal.setText("৳" + (int)utilities);
         if (tvBuaLabelVal != null) tvBuaLabelVal.setText("৳" + (int)buaSalary);
         if (tvRentLabelVal != null) tvRentLabelVal.setText("৳" + (int)(houseRent + occasionCost));
+
+        // Update Notification Count
+        int noticeCount = db.getNoticeCount();
+        if (notification_status_count != null) {
+            notification_status_count.setText(String.valueOf(noticeCount));
+            notification_status_count.setVisibility(noticeCount > 0 ? View.VISIBLE : View.GONE);
+        }
 
         setupCharts(totalBazar, utilities, buaSalary, houseRent + occasionCost);
     }

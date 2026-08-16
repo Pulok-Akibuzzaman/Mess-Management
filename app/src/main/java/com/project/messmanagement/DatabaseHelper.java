@@ -409,6 +409,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return this.getReadableDatabase().rawQuery("SELECT * FROM notices ORDER BY id DESC", null);
     }
 
+    public int getNoticeCount() {
+        Cursor cursor = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM notices", null);
+        int count = 0;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                count = cursor.getInt(0);
+            }
+            cursor.close();
+        }
+        return count;
+    }
+
     // --- LOANS METHODS ---
     public void addLoan(String lender, double amount, String status, String date, String addedBy) {
         ContentValues v = new ContentValues();

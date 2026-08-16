@@ -80,6 +80,7 @@
                     app:tint="@color/admin_text_dark" />
 
                 <TextView
+                    android:id="@+id/notification_status_count"
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_gravity="top|end"

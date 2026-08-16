@@ -10,6 +10,5 @@ public class Notice {
         this.content = content;
         this.priority = priority;
         this.audience = audience;
-        this.date = date;
-    }
+        this.date = date;    }
 }
